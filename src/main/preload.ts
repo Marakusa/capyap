@@ -1,7 +1,6 @@
 // Disable no-unused-vars, broken for spread args
 /* eslint no-unused-vars: off */
-import { contextBridge, ipcRenderer, IpcRendererEvent } from 'electron';
-import fs from 'fs';
+import { contextBridge, ipcRenderer } from 'electron';
 
 export type Channels = 'ipc-example';
 
@@ -11,6 +10,15 @@ const electronHandler = {
     sendCaptureFile: (base64Data: string) => ipcRenderer.send('capture-file', base64Data),
     onCaptureFile: (callback: (base64Data: string) => void) => {
       ipcRenderer.on('capture-file', (_, base64Data) => callback(`data:image/png;base64,${base64Data}`));
+    },
+    getAuthKeys: () => {
+      return {
+        aw_jwt: localStorage.getItem('aw_jwt'),
+        uploadKey: localStorage.getItem('uploadKey'),
+      };
+    },
+    sendToMain: (channel: string, data: any) => {
+      ipcRenderer.send(channel, data);
     },
   },
 };

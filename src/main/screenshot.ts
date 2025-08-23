@@ -6,6 +6,8 @@ import { resolveHtmlPath } from './util';
 import { mouse } from "@nut-tree-fork/nut-js";
 import { Monitor } from "node-screenshots";
 import sharp from "sharp";
+import { mainWindow } from "./main";
+const fetch = require('node-fetch');
 
 let screenshotPath = "";
 let captureWindow: BrowserWindow | null = null;
@@ -24,7 +26,6 @@ export const captureScreen = async () => {
     screenshotPath = path.resolve(tempDir, `screenshot-temp.png`);
 
     fs.writeFileSync(screenshotPath, await img.toPng());
-    console.log(`Saved screenshot: ${screenshotPath}`);
 
     createCaptureWindow();
   } catch (err) {
@@ -45,11 +46,7 @@ async function handleCropData(event: IpcMainEvent, cropData: { x: number; y: num
       })
       .toFile(outputPath);
 
-    console.log(`Cropped screenshot saved to: ${outputPath}`);
-
-    if (captureWindow) {
-      captureWindow.close();
-    }
+      await uploadCroppedImage(outputPath);
   } catch (error) {
     console.error("Error cropping image:", error);
     event.reply("crop-complete", { success: false, error: error });
@@ -67,13 +64,16 @@ function createCaptureWindow() {
   
   captureWindow = new BrowserWindow({
     show: false,
-    fullscreen: true,
-    frame: false,
+    //fullscreen: true,
+    //frame: false,
+    //resizable: false,
+    //minimizable: false,
+    //maximizable: true,
     transparent: true,
-    alwaysOnTop: true,
+    //alwaysOnTop: true,
     icon: getAssetPath('icon.png'),
     webPreferences: {
-      devTools: false,
+      //devTools: false,
       preload: app.isPackaged
         ? path.join(__dirname, 'preload.js')
         : path.join(__dirname, '../../.erb/dll/preload.js'),
@@ -89,6 +89,8 @@ function createCaptureWindow() {
     }
 
     captureWindow.show();
+    captureWindow.maximize();
+    captureWindow.setFullScreen(true);
 
     ipcMain.on('crop-data', handleCropData);
 
@@ -105,4 +107,65 @@ function createCaptureWindow() {
     shell.openExternal(edata.url);
     return { action: 'deny' };
   });
+}
+
+async function uploadCroppedImage(croppedPath: string) {
+  try {
+    if (!mainWindow) throw new Error("Main window not available");
+
+    const keys = await fetchAuthKeys(); // Step 1 is used here
+
+    if (!keys?.aw_jwt || !keys?.uploadKey) {
+      throw new Error("Missing auth keys");
+    }
+
+    const fileBuffer = fs.readFileSync(croppedPath);
+    const fileName = path.basename(croppedPath);
+
+    const FormData = require('form-data'); // Node FormData
+    const formData = new FormData();
+    console.log(keys.aw_jwt.value);
+    console.log(keys.uploadKey);
+    formData.append('file', fileBuffer, { filename: fileName });
+    formData.append('sessionKey', keys.aw_jwt.value);
+    formData.append('uploadKey', keys.uploadKey);
+
+    const uploadUrl = `https://sc.marakusa.me/f/upload`;
+
+    const response = await fetch(uploadUrl, {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const errorMessage = await response.text();
+      throw new Error(errorMessage);
+    }
+
+    const data = await response.json();
+
+    if (captureWindow) {
+      //captureWindow.close();
+    }
+  } catch (err) {
+    console.error("Failed to upload cropped image:", err);
+  }
+}
+
+// Fetch aw_jwt and uploadKey
+async function fetchAuthKeys() {
+  if (!mainWindow) return null;
+
+  try {
+    const keys = await mainWindow.webContents.executeJavaScript(`
+      ({
+        aw_jwt: localStorage.getItem('aw_jwt'),
+        uploadKey: localStorage.getItem('uploadKey')
+      })
+    `);
+    return keys;
+  } catch (err) {
+    console.error('Error fetching auth keys:', err);
+    return null;
+  }
 }
