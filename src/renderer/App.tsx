@@ -2,6 +2,7 @@ import { HashRouter as Router, Routes, Route } from 'react-router-dom';
 import './App.css';
 import { useState } from "react";
 import { CropSelector } from "./CropSelector";
+import Uploading from "./Uploading";
 
 function Hello() {
   return (
@@ -54,6 +55,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<Hello />} />
         <Route path="/capture" element={<ScreenshotCapture />} />
+        <Route path="/uploading" element={<Uploading />} />
       </Routes>
     </Router>
   );

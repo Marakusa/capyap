@@ -55,3 +55,58 @@ a:hover {
   align-items: center;
   margin: 20px 0;
 }
+
+.uploadingPanel, .uploadingPanelError {
+  display: flex;
+  flex-direction: row;
+  justify-content: start;
+  align-items: center;
+  padding: 0px 24px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: aliceblue;
+  color: black;
+}
+
+.uploadingPanelError {
+  color: rgb(161, 26, 26);
+  flex-direction: column;
+  text-align: start;
+  align-items: start;
+}
+
+.uploadingPanel p, .uploadingPanelError p {
+  height: auto;
+  padding: 0;
+  margin: 0;
+  margin-top: 6px;
+  font-weight: 600;
+}
+
+.uploadingPanelError h3 {
+  padding: 0;
+  margin: 18px 0 4px;
+}
+
+.uploadingErrorCountdown {
+  position: fixed;
+  height: 8px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgb(161, 26, 26);
+  animation: errorBar 5s linear;
+  animation-iteration-count: 1;
+  animation-fill-mode: forwards;
+}
+@keyframes errorBar {
+  from {
+    right: 0;
+  }
+  to {
+    right: 100%;
+  }
+}

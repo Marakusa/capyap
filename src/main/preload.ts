@@ -20,6 +20,9 @@ const electronHandler = {
     sendToMain: (channel: string, data: any) => {
       ipcRenderer.send(channel, data);
     },
+    onUploadFailed: (callback: (message: string) => void) => {
+      ipcRenderer.on('upload-failed', (_, message) => callback(message));
+    },
   },
 };
 
