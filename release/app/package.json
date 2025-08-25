@@ -1,6 +1,6 @@
 {
   "name": "capyap",
-  "description": "A foundation for scalable desktop apps",
+  "description": "Lightweight screen capturing app",
   "version": "0.1.0",
   "license": "MIT",
   "author": {
@@ -14,5 +14,9 @@
     "postinstall": "npm run rebuild && npm run link-modules",
     "link-modules": "node -r ts-node/register ../../.erb/scripts/link-modules.ts"
   },
-  "dependencies": {}
+  "dependencies": {
+    "axios": "^1.11.0",
+    "sharp": "^0.34.3",
+    "source-map-support": "^0.5.21"
+  }
 }

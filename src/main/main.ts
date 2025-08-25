@@ -60,6 +60,10 @@ const createWindow = async () => {
 
   mainWindow.on('closed', () => {
     mainWindow = null;
+    if (process.platform !== 'darwin') {
+        console.log("Closing program.");
+        app.quit();
+    }
   });
 
   const menuBuilder = new MenuBuilder(mainWindow);

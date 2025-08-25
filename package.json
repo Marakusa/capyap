@@ -94,12 +94,12 @@
     "assert-plus": "^1.0.0",
     "axios": "^1.11.0",
     "electron-debug": "^4.1.0",
-    "node-fetch": "^3.3.2",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-router-dom": "^7.3.0",
     "react-spinners": "^0.17.0",
-    "sharp": "^0.34.3"
+    "sharp": "^0.34.3",
+    "source-map-support": "^0.5.21"
   },
   "devDependencies": {
     "@electron/rebuild": "^3.7.1",
@@ -178,11 +178,14 @@
     "asar": true,
     "afterSign": ".erb/scripts/notarize.js",
     "asarUnpack": [
+      "**\\*.{node,dll}",
       "**/node_modules/sharp/**"
     ],
     "files": [
       "dist",
-      "node_modules",
+      "node_modules/sharp",
+      "node_modules/axios",
+      "node_modules/form-data",
       "package.json"
     ],
     "mac": {
@@ -215,8 +218,10 @@
       ]
     },
     "win": {
+      "icon": "/assets/icon.ico",
       "target": [
-        "nsis"
+        "nsis",
+        "msi"
       ],
       "signAndEditExecutable": false,
       "sign": false

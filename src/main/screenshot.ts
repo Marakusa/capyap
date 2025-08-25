@@ -3,7 +3,7 @@ import path from "path";
 import os from "os";
 import { app, BrowserWindow, shell, ipcMain, IpcMainEvent, screen, clipboard, nativeImage, desktopCapturer } from 'electron';
 import { resolveHtmlPath } from './util';
-import sharp from "sharp";
+const sharp = require('sharp');
 import { mainWindow } from "./main";
 const axios = require('axios');
 const FormData = require('form-data');
