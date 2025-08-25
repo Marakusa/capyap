@@ -1,7 +1,7 @@
 {
   "name": "capyap",
   "description": "Lightweight screen capturing app",
-  "version": "2025.8.25.100",
+  "version": "25.8.2501",
   "keywords": [
     "electron",
     "react",
@@ -93,7 +93,9 @@
     "@electron/notarize": "^3.0.0",
     "assert-plus": "^1.0.0",
     "axios": "^1.11.0",
+    "electron-config": "^1.0.0",
     "electron-debug": "^4.1.0",
+    "node-screenshots": "^0.2.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-router-dom": "^7.3.0",
@@ -220,7 +222,6 @@
     "win": {
       "icon": "/assets/icon.ico",
       "target": [
-        "nsis",
         "msi"
       ],
       "signAndEditExecutable": false,

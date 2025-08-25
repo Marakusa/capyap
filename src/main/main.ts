@@ -2,7 +2,8 @@ import path from 'path';
 import { app, BrowserWindow, shell, globalShortcut, session, dialog } from 'electron';
 import MenuBuilder from './menu';
 import { captureScreen, closeCaptureScreen, createScreenshotWindows } from "./screenshot";
-import os from 'os';
+const Config = require('electron-config')
+const config = new Config()
 
 export let mainWindow: BrowserWindow | null = null;
 
@@ -41,6 +42,12 @@ const createWindow = async () => {
         : path.join(__dirname, '../../.erb/dll/preload.js'),
     },
   });
+  if (config.get('winBounds')) {
+    mainWindow.setBounds(config.get('winBounds'));
+  }
+  if (config.get('maximized')) {
+    mainWindow.maximize();
+  }
 
   //mainWindow.loadURL(resolveHtmlPath('index'));
   mainWindow.loadURL('https://sc.marakusa.me');
@@ -56,6 +63,25 @@ const createWindow = async () => {
       mainWindow.minimize();
     } else {
       mainWindow.show();
+    }
+  });
+
+  mainWindow.on('moved', () => {
+    if (mainWindow) {
+      config.set('winBounds', mainWindow.getBounds());
+      config.set('maximized', mainWindow.isMaximized());
+    }
+  });
+  mainWindow.on('resized', () => {
+    if (mainWindow) {
+      config.set('winBounds', mainWindow.getBounds());
+      config.set('maximized', mainWindow.isMaximized());
+    }
+  });
+  mainWindow.on('maximize', () => {
+    if (mainWindow) {
+      config.set('winBounds', mainWindow.getBounds());
+      config.set('maximized', mainWindow.isMaximized());
     }
   });
 

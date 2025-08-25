@@ -1,7 +1,7 @@
 {
   "name": "capyap",
   "description": "Lightweight screen capturing app",
-  "version": "2025.8.25.100",
+  "version": "25.8.2501",
   "license": "MIT",
   "author": {
     "name": "Marakusa",
@@ -16,6 +16,8 @@
   },
   "dependencies": {
     "axios": "^1.11.0",
+    "electron-config": "^1.0.0",
+    "node-screenshots": "^0.2.1",
     "sharp": "^0.34.3",
     "source-map-support": "^0.5.21"
   }

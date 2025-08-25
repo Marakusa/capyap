@@ -1,12 +1,13 @@
 import fs from "fs";
 import path from "path";
 import os from "os";
-import { app, BrowserWindow, shell, ipcMain, IpcMainEvent, screen, clipboard, nativeImage, desktopCapturer, dialog } from 'electron';
+import { app, BrowserWindow, shell, ipcMain, IpcMainEvent, screen, clipboard, nativeImage } from 'electron';
 import { resolveHtmlPath } from './util';
 const sharp = require('sharp');
 import { mainWindow } from "./main";
 const axios = require('axios');
 const FormData = require('form-data');
+import { Monitor } from 'node-screenshots';
 
 let screenshotPath = "";
 const tempDir = os.tmpdir();
@@ -45,37 +46,15 @@ export const captureScreen = async () => {
     if (!targetDisplay) {
       throw new Error("No display found for cursor position");
     }
-
-    // Use desktopCapturer to get the screen source for the target display
-    const sources = await desktopCapturer.getSources({
-      types: ['screen'],
-      thumbnailSize: { width: targetDisplay.bounds.width, height: targetDisplay.bounds.height },
-      fetchWindowIcons: false,
-    });
-
-    // Find the source matching the target display (based on display ID or bounds)
-    const targetSource = sources.find(source => {
-      const sourceBounds = {
-        x: source.display_id ? displays.find(d => d.id.toString() === source.display_id)?.bounds.x : 0,
-        y: source.display_id ? displays.find(d => d.id.toString() === source.display_id)?.bounds.y : 0,
-        width: targetDisplay.bounds.width,
-        height: targetDisplay.bounds.height,
-      };
-      return sourceBounds.x === targetDisplay.bounds.x && sourceBounds.y === targetDisplay.bounds.y;
-    });
-
-    if (!targetSource) {
-      throw new Error("No matching screen source found");
+    
+    const monitor = Monitor.fromPoint(mousePos.x, mousePos.y); // Get monitor at cursor position
+    if (!monitor) {
+      throw new Error("No monitor found at cursor position");
     }
 
-    // Capture the screen as a NativeImage
-    const img = nativeImage.createFromDataURL(targetSource.thumbnail.toDataURL());
-
-    // Define the temporary file path
+    const image = monitor.captureImageSync();
     screenshotPath = path.resolve(tempDir, `capyap-screenshot-temp.png`);
-
-    // Save the image as PNG
-    fs.writeFileSync(screenshotPath, await img.toPNG());
+    fs.writeFileSync(screenshotPath, image.toPngSync());
 
     await createCaptureWindow();
   } catch (err) {
@@ -85,7 +64,7 @@ export const captureScreen = async () => {
 
 async function handleCropData(event: IpcMainEvent, cropData: { x: number; y: number; width: number; height: number }) {
   try {
-    const outputPath = path.resolve(tempDir, `capyap-screenshot-cropped.png`);
+    const outputPath = path.resolve(tempDir, `capyap-screenshot-cropped.jpg`);
 
     await sharp(screenshotPath)
       .extract({
