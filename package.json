@@ -28,7 +28,7 @@
     "build:dll": "cross-env NODE_ENV=development TS_NODE_TRANSPILE_ONLY=true NODE_OPTIONS=\"-r ts-node/register --no-warnings\" webpack --config ./.erb/configs/webpack.config.renderer.dev.dll.ts",
     "build:main": "cross-env NODE_ENV=production TS_NODE_TRANSPILE_ONLY=true NODE_OPTIONS=\"-r ts-node/register --no-warnings\" webpack --config ./.erb/configs/webpack.config.main.prod.ts",
     "build:renderer": "cross-env NODE_ENV=production TS_NODE_TRANSPILE_ONLY=true NODE_OPTIONS=\"-r ts-node/register --no-warnings\" webpack --config ./.erb/configs/webpack.config.renderer.prod.ts",
-    "postinstall": "ts-node .erb/scripts/check-native-dep.js && electron-builder install-app-deps && npm run build:dll",
+    "postinstall": "ts-node .erb/scripts/check-native-dep.js && electron-builder install-app-deps && npm run build:dll && electron-rebuild --parallel --force --types prod,dev,optional --module-dir .",
     "lint": "cross-env NODE_ENV=development eslint . --ext .js,.jsx,.ts,.tsx",
     "lint:fix": "cross-env NODE_ENV=development eslint . --ext .js,.jsx,.ts,.tsx --fix",
     "package": "ts-node ./.erb/scripts/clean.js dist && npm run build && electron-builder build --publish never && npm run build:dll",
@@ -92,9 +92,9 @@
   "dependencies": {
     "@electron/notarize": "^3.0.0",
     "assert-plus": "^1.0.0",
+    "axios": "^1.11.0",
     "electron-debug": "^4.1.0",
     "node-fetch": "^3.3.2",
-    "node-screenshots": "^0.2.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-router-dom": "^7.3.0",
@@ -127,6 +127,7 @@
     "electron": "^35.0.2",
     "electron-builder": "^25.1.8",
     "electron-devtools-installer": "^4.0.0",
+    "electron-rebuild": "^3.2.9",
     "electronmon": "^2.0.3",
     "eslint": "^8.57.1",
     "eslint-config-airbnb-base": "^15.0.0",
@@ -177,7 +178,7 @@
     "asar": true,
     "afterSign": ".erb/scripts/notarize.js",
     "asarUnpack": [
-      "node_modules/**"
+      "**/node_modules/sharp/**"
     ],
     "files": [
       "dist",

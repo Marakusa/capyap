@@ -38,12 +38,7 @@ const configuration: webpack.Configuration = {
   },
   
   externals: [
-    nodeExternals(),
-    'node-screenshots',
-    'commonjs2 node-screenshots',
-    '@nut-tree-fork/nut-js',
-    'commonjs @nut-tree-fork/nut-js',
-    'commonjs2 @nut-tree-fork/nut-js',
+    nodeExternals()
   ],
 
   plugins: [

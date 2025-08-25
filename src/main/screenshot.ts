@@ -1,12 +1,12 @@
 import fs from "fs";
 import path from "path";
 import os from "os";
-import { app, BrowserWindow, shell, ipcMain, IpcMainEvent, screen, clipboard, nativeImage } from 'electron';
+import { app, BrowserWindow, shell, ipcMain, IpcMainEvent, screen, clipboard, nativeImage, desktopCapturer } from 'electron';
 import { resolveHtmlPath } from './util';
-import { Monitor } from "node-screenshots";
 import sharp from "sharp";
 import { mainWindow } from "./main";
-const fetch = require('node-fetch');
+const axios = require('axios');
+const FormData = require('form-data');
 
 let screenshotPath = "";
 let tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'capyap-'));
@@ -23,17 +23,56 @@ export const closeCaptureScreen = async () => {
 
 export const captureScreen = async () => {
   try {
+    // Get the current mouse position
     const mousePos = screen.getCursorScreenPoint();
 
-    const monitor = Monitor.fromPoint(mousePos.x, mousePos.y);
-    if (!monitor) {
-      throw new Error("No monitor found for cursor");
-    }
-    
-    const img = await monitor.captureImage();
-    screenshotPath = path.resolve(tempDir, `screenshot-temp.png`);
+    // Get all displays
+    const displays = screen.getAllDisplays();
 
-    fs.writeFileSync(screenshotPath, await img.toPng());
+    // Find the display where the mouse cursor is located
+    const targetDisplay = displays.find(display =>
+      mousePos.x >= display.bounds.x &&
+      mousePos.x <= display.bounds.x + display.bounds.width &&
+      mousePos.y >= display.bounds.y &&
+      mousePos.y <= display.bounds.y + display.bounds.height
+    );
+
+    if (!targetDisplay) {
+      throw new Error("No display found for cursor position");
+    }
+
+    // Use desktopCapturer to get the screen source for the target display
+    const sources = await desktopCapturer.getSources({
+      types: ['screen'],
+      thumbnailSize: { width: targetDisplay.bounds.width, height: targetDisplay.bounds.height },
+      fetchWindowIcons: false,
+    });
+
+    // Find the source matching the target display (based on display ID or bounds)
+    const targetSource = sources.find(source => {
+      const sourceBounds = {
+        x: source.display_id ? displays.find(d => d.id.toString() === source.display_id)?.bounds.x : 0,
+        y: source.display_id ? displays.find(d => d.id.toString() === source.display_id)?.bounds.y : 0,
+        width: targetDisplay.bounds.width,
+        height: targetDisplay.bounds.height,
+      };
+      return sourceBounds.x === targetDisplay.bounds.x && sourceBounds.y === targetDisplay.bounds.y;
+    });
+
+    if (!targetSource) {
+      throw new Error("No matching screen source found");
+    }
+
+    // Capture the screen as a NativeImage
+    const img = nativeImage.createFromDataURL(targetSource.thumbnail.toDataURL());
+
+    // Define the temporary file path
+    const tempDir = os.tmpdir();
+    screenshotPath = path.resolve(tempDir, `capyap-screenshot-temp.png`);
+
+    // Save the image as PNG
+    fs.writeFileSync(screenshotPath, await img.toPNG());
+    console.log(screenshotPath);
 
     await createCaptureWindow();
   } catch (err) {
@@ -43,7 +82,7 @@ export const captureScreen = async () => {
 
 async function handleCropData(event: IpcMainEvent, cropData: { x: number; y: number; width: number; height: number }) {
   try {
-    const outputPath = path.resolve(tempDir, `screenshot-cropped.png`);
+    const outputPath = path.resolve(tempDir, `capyap-screenshot-cropped.png`);
 
     await sharp(screenshotPath)
       .extract({
@@ -89,6 +128,8 @@ export function createScreenshotWindows() {
     alwaysOnTop: true,
     icon: getAssetPath('icon.png'),
     webPreferences: {
+      nodeIntegration: false,
+      contextIsolation: true,
       devTools: false,
       preload: app.isPackaged
         ? path.join(__dirname, 'preload.js')
@@ -106,6 +147,8 @@ export function createScreenshotWindows() {
     alwaysOnTop: true,
     icon: getAssetPath('icon.png'),
     webPreferences: {
+      nodeIntegration: false,
+      contextIsolation: true,
       devTools: false,
       preload: app.isPackaged
         ? path.join(__dirname, 'preload.js')
@@ -220,19 +263,17 @@ async function uploadCroppedImage(croppedPath: string) {
     const fileBuffer = fs.readFileSync(croppedPath);
     const fileName = path.basename(croppedPath);
 
-    const FormData = require('form-data'); // Node FormData
     const formData = new FormData();
     formData.append('file', fileBuffer, { filename: fileName });
 
     const uploadUrl = `https://sc.marakusa.me/f/u?k=${encodeURIComponent(keys.uploadKey)}`;
 
-    const response = await fetch(uploadUrl, {
-      method: 'POST',
-      body: formData,
+    const response = await axios.post(uploadUrl, formData, {
+      headers: formData.getHeaders(),
     });
 
-    if (!response.ok) {
-      const errorMessage = await response.text();
+    if (response.status > 299) {
+      const errorMessage = response.data?.error || "Upload failed";
       const imageFile = nativeImage.createFromPath(croppedPath);
       clipboard.writeImage(imageFile);
       setTimeout(() => {
@@ -248,9 +289,8 @@ async function uploadCroppedImage(croppedPath: string) {
       }, 5000);
       return;
     }
-
-    const responseJson = await response.json();
-    const capUrl = responseJson.url;
+    
+    const capUrl = response.data.url;
     clipboard.writeText(capUrl);
 
     if (uploadPanel) {
