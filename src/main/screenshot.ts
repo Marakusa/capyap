@@ -1,24 +1,31 @@
 import fs from "fs";
 import path from "path";
 import os from "os";
-import { app, BrowserWindow, shell, ipcMain, IpcMainEvent, screen } from 'electron';
+import { app, BrowserWindow, shell, ipcMain, IpcMainEvent, screen, clipboard, nativeImage } from 'electron';
 import { resolveHtmlPath } from './util';
-import { mouse } from "@nut-tree-fork/nut-js";
 import { Monitor } from "node-screenshots";
 import sharp from "sharp";
 import { mainWindow } from "./main";
 const fetch = require('node-fetch');
 
 let screenshotPath = "";
-let captureWindow: BrowserWindow | null = null;
-let uploadPanel: BrowserWindow | null = null;
 let tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'capyap-'));
+
+export const closeCaptureScreen = async () => {
+  try {
+    if (captureWindow) {
+      captureWindow.hide();
+    }
+  } catch (err) {
+    console.error("Error capturing screenshot:", err);
+  }
+};
 
 export const captureScreen = async () => {
   try {
-    const { x, y } = await mouse.getPosition();
+    const mousePos = screen.getCursorScreenPoint();
 
-    const monitor = Monitor.fromPoint(x, y);
+    const monitor = Monitor.fromPoint(mousePos.x, mousePos.y);
     if (!monitor) {
       throw new Error("No monitor found for cursor");
     }
@@ -45,6 +52,8 @@ async function handleCropData(event: IpcMainEvent, cropData: { x: number; y: num
         width: Math.floor(cropData.width),
         height: Math.floor(cropData.height),
       })
+      .resize({ height: 2160, withoutEnlargement: true }) // Resize to a maximum width of 800px
+      .jpeg({ quality: 75, })
       .toFile(outputPath);
 
       await uploadCroppedImage(outputPath);
@@ -62,21 +71,14 @@ const getAssetPath = (...paths: string[]): string => {
   return path.join(RESOURCES_PATH, ...paths);
 };
 
-async function createCaptureWindow() {
-  // Get current mouse cursor position
-  const mousePos = screen.getCursorScreenPoint();
+var captureWindow: BrowserWindow | null;
+var uploadPanel: BrowserWindow | null;
+const uploadPanelWidth = 400, uploadPanelHeight = 100;
+var captureWindowReady = false;
+var uploadPanelReady = false;
 
-  // Find the display nearest to the cursor
-  const targetDisplay = screen.getDisplayNearestPoint(mousePos);
-  
-  // Set bounds
-  const { x, y, width, height } = targetDisplay.bounds;
-
+export function createScreenshotWindows() {
   captureWindow = new BrowserWindow({
-    x: x,
-    y: y,
-    width: width,
-    height: height,
     show: false,
     fullscreen: true,
     frame: false,
@@ -93,28 +95,73 @@ async function createCaptureWindow() {
         : path.join(__dirname, '../../.erb/dll/preload.js'),
     },
   });
+  uploadPanel = new BrowserWindow({
+    width: uploadPanelWidth,
+    height: uploadPanelHeight,
+    show: false,
+    frame: false,
+    resizable: false,
+    minimizable: false,
+    maximizable: true,
+    alwaysOnTop: true,
+    icon: getAssetPath('icon.png'),
+    webPreferences: {
+      devTools: false,
+      preload: app.isPackaged
+        ? path.join(__dirname, 'preload.js')
+        : path.join(__dirname, '../../.erb/dll/preload.js'),
+    },
+  });
+}
+
+async function createCaptureWindow() {
+  if (!captureWindow) {
+    throw new Error("Capture window was null");
+  }
+
+  // Get current mouse cursor position
+  const mousePos = screen.getCursorScreenPoint();
+
+  // Find the display nearest to the cursor
+  const targetDisplay = screen.getDisplayNearestPoint(mousePos);
+  
+  // Set bounds
+  const { x, y, width, height } = targetDisplay.bounds;
+
+  captureWindow.setPosition(
+    x,
+    y
+  );
+  captureWindow.setSize(
+    width,
+    height
+  );
 
   const indexUrl = resolveHtmlPath('index.html');
   captureWindow.loadURL(`${indexUrl}#capture`);
 
-  captureWindow.on('ready-to-show', () => {
+  const handleWindow = () => {
     if (!captureWindow) {
       throw new Error('"captureWindow" is not defined');
     }
+    captureWindow.off('ready-to-show', handleWindow);
 
+    captureWindowReady  = true;
+    
     captureWindow.show();
     captureWindow.maximize();
     captureWindow.setFullScreen(true);
 
-    ipcMain.on('crop-data', handleCropData);
-
     const fileData = fs.readFileSync(screenshotPath).toString("base64");
     captureWindow.webContents.send("capture-file", fileData);
-  });
+  }
 
-  captureWindow.on('closed', () => {
-    captureWindow = null;
-  });
+  if (!captureWindowReady) {
+    captureWindow.on('ready-to-show', handleWindow);
+    ipcMain.on('crop-data', handleCropData);
+  } else {
+    handleWindow();
+  }
 
   // Open urls in the user's browser
   captureWindow.webContents.setWindowOpenHandler((edata) => {
@@ -124,50 +171,45 @@ async function createCaptureWindow() {
 }
 
 async function uploadCroppedImage(croppedPath: string) {
+  if (!uploadPanel) {
+    throw new Error("Upload panel was null");
+  }
+
   try {
     if (captureWindow) {
-      captureWindow.close();
+      captureWindow.reload();
+      captureWindow.hide();
     }
 
     if (!mainWindow) throw new Error("Main window not available");
 
-    if (uploadPanel) {
-      uploadPanel.close();
-    }
-
     const primaryDisplay = screen.getPrimaryDisplay();
-    const w = 400, h = 100;
-    uploadPanel = new BrowserWindow({
-      x: primaryDisplay.bounds.x + primaryDisplay.bounds.width - w - 10,
-      y: primaryDisplay.bounds.y + primaryDisplay.bounds.height - h - 10 - 47,
-      width: w,
-      height: h,
-      show: false,
-      frame: false,
-      resizable: false,
-      minimizable: false,
-      maximizable: true,
-      alwaysOnTop: true,
-      icon: getAssetPath('icon.png'),
-      webPreferences: {
-        devTools: false,
-        preload: app.isPackaged
-          ? path.join(__dirname, 'preload.js')
-          : path.join(__dirname, '../../.erb/dll/preload.js'),
-      },
-    });
+    uploadPanel.setPosition(
+      primaryDisplay.bounds.x + primaryDisplay.bounds.width - uploadPanelWidth - 10,
+      primaryDisplay.bounds.y + primaryDisplay.bounds.height - uploadPanelHeight - 10 - 47
+    );
 
     const indexUrl = resolveHtmlPath('index.html');
     uploadPanel.loadURL(`${indexUrl}#uploading`);
 
-    uploadPanel.on('ready-to-show', () => {
+    const handleWindow = () => {
+      //console.log(uploadPanel);
       if (!uploadPanel) {
         throw new Error('"uploadPanel" is not defined');
       }
 
-      uploadPanel.show();
-    });
+      uploadPanelReady = true;
 
+      uploadPanel.show();
+      uploadPanel.setAlwaysOnTop(true);
+      uploadPanel.off('ready-to-show', handleWindow);
+    }
+
+    if (!uploadPanelReady) {
+      uploadPanel.on('ready-to-show', handleWindow);
+    } else {
+      handleWindow();
+    }
 
     const keys = await fetchAuthKeys(); // Step 1 is used here
 
@@ -191,20 +233,47 @@ async function uploadCroppedImage(croppedPath: string) {
 
     if (!response.ok) {
       const errorMessage = await response.text();
-      uploadPanel.webContents.send("upload-failed", errorMessage + " Screenshot copied to clipboard.");
+      const imageFile = nativeImage.createFromPath(croppedPath);
+      clipboard.writeImage(imageFile);
       setTimeout(() => {
         if (uploadPanel) {
-          uploadPanel.close();
+          uploadPanel.webContents.send("upload-failed", errorMessage);
+        }
+      }, 1000);
+      setTimeout(() => {
+        if (uploadPanel) {
+          uploadPanel.reload();
+          uploadPanel.hide();
         }
       }, 5000);
       return;
     }
 
+    const responseJson = await response.json();
+    const capUrl = responseJson.url;
+    clipboard.writeText(capUrl);
+
     if (uploadPanel) {
-      uploadPanel.close();
+      uploadPanel.reload();
+      uploadPanel.hide();
     }
   } catch (err) {
     console.error("Failed to upload cropped image:", err);
+    if (uploadPanel) {
+      const imageFile = nativeImage.createFromPath(croppedPath);
+      clipboard.writeImage(imageFile);
+      setTimeout(() => {
+        if (uploadPanel) {
+          uploadPanel.webContents.send("upload-failed", err);
+        }
+      }, 1000);
+      setTimeout(() => {
+        if (uploadPanel) {
+          uploadPanel.reload();
+          uploadPanel.hide();
+        }
+      }, 5000);
+    }
   }
 }
 

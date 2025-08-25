@@ -38,7 +38,7 @@ const configuration: webpack.Configuration = {
 
   externals: [
     nodeExternals(),
-    'node-screenshots',
+    'node-screenshots'
   ],
 
   optimization: {

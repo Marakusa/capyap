@@ -15,6 +15,10 @@ const configuration: webpack.Configuration = {
   module: {
     rules: [
       {
+        test: /\.node$/,
+        use: 'node-loader',
+      },
+      {
         test: /\.[jt]sx?$/,
         exclude: /node_modules/,
         use: {
@@ -42,11 +46,13 @@ const configuration: webpack.Configuration = {
    * Determine the array of extensions that should be used to resolve modules.
    */
   resolve: {
-    extensions: ['.js', '.jsx', '.json', '.ts', '.tsx'],
+    extensions: ['.js', '.jsx', '.json', '.ts', '.tsx', '.node'],
     modules: [webpackPaths.srcPath, 'node_modules'],
     // There is no need to add aliases here, the paths in tsconfig get mirrored
     plugins: [new TsconfigPathsPlugins()],
   },
+  
+  target: 'electron-renderer',
 
   plugins: [new webpack.EnvironmentPlugin({ NODE_ENV: 'production' })],
 };

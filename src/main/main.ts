@@ -1,18 +1,7 @@
 import path from 'path';
 import { app, BrowserWindow, shell, globalShortcut } from 'electron';
-import { autoUpdater } from 'electron-updater';
-import log from 'electron-log';
 import MenuBuilder from './menu';
-import { resolveHtmlPath } from './util';
-import { captureScreen } from "./screenshot";
-
-class AppUpdater {
-  constructor() {
-    log.transports.file.level = 'info';
-    autoUpdater.logger = log;
-    autoUpdater.checkForUpdatesAndNotify();
-  }
-}
+import { captureScreen, closeCaptureScreen, createScreenshotWindows } from "./screenshot";
 
 export let mainWindow: BrowserWindow | null = null;
 
@@ -39,8 +28,8 @@ const createWindow = async () => {
 
   mainWindow = new BrowserWindow({
     show: false,
-    width: 1180,
-    height: 800,
+    width: 1480,
+    height: 900,
     icon: getAssetPath('icon.png'),
     webPreferences: {
       devTools: false,
@@ -79,10 +68,6 @@ const createWindow = async () => {
     shell.openExternal(edata.url);
     return { action: 'deny' };
   });
-
-  // Remove this if your app does not use auto updates
-  // eslint-disable-next-line
-  new AppUpdater();
 };
 
 /**
@@ -101,10 +86,14 @@ app
   .whenReady()
   .then(() => {
     createWindow();
+    createScreenshotWindows();
 
     // Register Global Shortcut
     globalShortcut.register('CommandOrControl+PrintScreen', () => {
       captureScreen();
+    });
+    globalShortcut.register('Escape', () => {
+      closeCaptureScreen();
     });
 
     app.on('activate', () => {

@@ -23,7 +23,7 @@ export default function Uploading() {
                 error ? (
                     <>
                         <div className="uploadingPanelError">
-                            <h3>Upload failed</h3>
+                            <h3>Upload failed, screenshot copied to clipboard.</h3>
                             <p>{error}</p>
                         </div>
                         <div className="uploadingErrorCountdown"></div>
