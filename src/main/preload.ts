@@ -6,10 +6,18 @@ export type Channels = 'ipc-example';
 
 const electronHandler = {
   ipcRenderer: {
-    sendCropData: (cropData: { x: number; y: number; width: number; height: number }) => ipcRenderer.send('crop-data', cropData),
-    sendCaptureFile: (base64Data: string) => ipcRenderer.send('capture-file', base64Data),
+    sendCropData: (cropData: {
+      x: number;
+      y: number;
+      width: number;
+      height: number;
+    }) => ipcRenderer.send('crop-data', cropData),
+    sendCaptureFile: (base64Data: string) =>
+      ipcRenderer.send('capture-file', base64Data),
     onCaptureFile: (callback: (base64Data: string) => void) => {
-      ipcRenderer.on('capture-file', (_, base64Data) => callback(`data:image/png;base64,${base64Data}`));
+      ipcRenderer.on('capture-file', (_, base64Data) =>
+        callback(`data:image/png;base64,${base64Data}`),
+      );
     },
     getAuthKeys: () => {
       return {

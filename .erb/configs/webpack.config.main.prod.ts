@@ -7,11 +7,11 @@ import webpack from 'webpack';
 import { merge } from 'webpack-merge';
 import TerserPlugin from 'terser-webpack-plugin';
 import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer';
+import nodeExternals from 'webpack-node-externals';
 import baseConfig from './webpack.config.base';
 import webpackPaths from './webpack.paths';
 import checkNodeEnv from '../scripts/check-node-env';
 import deleteSourceMaps from '../scripts/delete-source-maps';
-import nodeExternals from 'webpack-node-externals';
 
 checkNodeEnv('production');
 deleteSourceMaps();
@@ -36,9 +36,7 @@ const configuration: webpack.Configuration = {
     },
   },
 
-  externals: [
-    nodeExternals()
-  ],
+  externals: [nodeExternals()],
 
   optimization: {
     minimizer: [

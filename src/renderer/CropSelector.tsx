@@ -1,8 +1,13 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef } from 'react';
 
 interface CropSelectorProps {
   imageData: string; // base64 data URL
-  onCrop: (crop: { x: number; y: number; width: number; height: number }) => void;
+  onCrop: (crop: {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  }) => void;
 }
 
 export const CropSelector: React.FC<CropSelectorProps> = ({
@@ -53,12 +58,12 @@ export const CropSelector: React.FC<CropSelectorProps> = ({
     <div
       ref={containerRef}
       style={{
-        position: "fixed",
+        position: 'fixed',
         top: 0,
         left: 0,
-        width: "100%",
-        height: "100vh",
-        cursor: "crosshair",
+        width: '100%',
+        height: '100vh',
+        cursor: 'crosshair',
         background: `url(${imageData}) center / contain no-repeat`,
       }}
       onMouseDown={handleMouseDown}
@@ -70,10 +75,10 @@ export const CropSelector: React.FC<CropSelectorProps> = ({
         width="100%"
         height="100%"
         style={{
-          position: "absolute",
+          position: 'absolute',
           top: 0,
           left: 0,
-          pointerEvents: "none",
+          pointerEvents: 'none',
         }}
       >
         <defs>

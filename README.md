@@ -3,6 +3,8 @@ CapYap is a lightweight screen capturing app that lets you upload and manage you
 
 The app uses Discord to authorize users. This makes it very quick and easy for the users to start using the app.
 
+### I will probably rewrite this in another language because Electron is well... not optimal for this
+
 ## Run manually
 ```
 git clone https://github.com/Marakusa/capyap.git

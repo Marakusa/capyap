@@ -51,7 +51,7 @@ const configuration: webpack.Configuration = {
     // There is no need to add aliases here, the paths in tsconfig get mirrored
     plugins: [new TsconfigPathsPlugins()],
   },
-  
+
   target: 'electron-renderer',
 
   plugins: [new webpack.EnvironmentPlugin({ NODE_ENV: 'production' })],

@@ -1,14 +1,20 @@
 import path from 'path';
-import { app, BrowserWindow, shell, globalShortcut, session, dialog } from 'electron';
+import { app, BrowserWindow, shell, globalShortcut } from 'electron';
 import MenuBuilder from './menu';
-import { captureScreen, closeCaptureScreen, createScreenshotWindows } from "./screenshot";
-const Config = require('electron-config')
-const config = new Config()
+import {
+  captureScreen,
+  closeCaptureScreen,
+  createScreenshotWindows,
+} from './screenshot';
 
-export let mainWindow: BrowserWindow | null = null;
+const sourceMapSupport = require('source-map-support');
+const electronDebug = require('electron-debug');
+
+const Config = require('electron-config');
+
+const config = new Config();
 
 if (process.env.NODE_ENV === 'production') {
-  const sourceMapSupport = require('source-map-support');
   sourceMapSupport.install();
 }
 
@@ -16,18 +22,20 @@ const isDebug =
   process.env.NODE_ENV === 'development' || process.env.DEBUG_PROD === 'true';
 
 if (isDebug) {
-  require('electron-debug').default();
+  electronDebug.default();
 }
 
+const RESOURCES_PATH = app.isPackaged
+  ? path.join(process.resourcesPath, 'assets')
+  : path.join(__dirname, '../../assets');
+
+const getAssetPath = (...paths: string[]): string => {
+  return path.join(RESOURCES_PATH, ...paths);
+};
+
+let mainWindow: BrowserWindow | null;
+
 const createWindow = async () => {
-  const RESOURCES_PATH = app.isPackaged
-    ? path.join(process.resourcesPath, 'assets')
-    : path.join(__dirname, '../../assets');
-
-  const getAssetPath = (...paths: string[]): string => {
-    return path.join(RESOURCES_PATH, ...paths);
-  };
-
   mainWindow = new BrowserWindow({
     show: false,
     width: 1480,
@@ -42,6 +50,7 @@ const createWindow = async () => {
         : path.join(__dirname, '../../.erb/dll/preload.js'),
     },
   });
+
   if (config.get('winBounds')) {
     mainWindow.setBounds(config.get('winBounds'));
   }
@@ -49,14 +58,14 @@ const createWindow = async () => {
     mainWindow.maximize();
   }
 
-  //mainWindow.loadURL(resolveHtmlPath('index'));
+  // mainWindow.loadURL(resolveHtmlPath('index'));
   mainWindow.loadURL('https://sc.marakusa.me');
 
   mainWindow.on('ready-to-show', () => {
     if (!mainWindow) {
       throw new Error('"mainWindow" is not defined');
     }
-    
+
     mainWindow.setMenu(null);
 
     if (process.env.START_MINIMIZED) {
@@ -86,10 +95,8 @@ const createWindow = async () => {
   });
 
   mainWindow.on('closed', () => {
-    mainWindow = null;
     if (process.platform !== 'darwin') {
-        console.log("Closing program.");
-        app.quit();
+      app.quit();
     }
   });
 
@@ -115,15 +122,32 @@ app.on('window-all-closed', () => {
   }
 });
 
-app
-  .whenReady()
-  .then(() => {
+// Fetch uploadKey
+export async function fetchAuthKeys(): Promise<string> {
+  if (!mainWindow) {
+    throw new Error('"mainWindow" is not defined');
+  }
+
+  try {
+    const keys = await mainWindow.webContents.executeJavaScript(`
+      ({
+        uploadKey: localStorage.getItem('uploadKey')
+      })
+    `);
+    return keys.uploadKey;
+  } catch (err) {
+    throw new Error(`Error fetching auth keys: ${err}`);
+  }
+}
+
+app.on('ready', () => {
+  try {
     createWindow();
     createScreenshotWindows();
 
     // Register Global Shortcut
-    globalShortcut.register('CommandOrControl+PrintScreen', () => {
-      captureScreen();
+    globalShortcut.register('CommandOrControl+PrintScreen', async () => {
+      captureScreen(await fetchAuthKeys());
     });
     globalShortcut.register('Escape', () => {
       closeCaptureScreen();
@@ -132,8 +156,10 @@ app
     app.on('activate', () => {
       if (mainWindow === null) createWindow();
     });
-  })
-  .catch(console.log);
+  } catch (error) {
+    throw new Error(`Failed to start the app: ${error}`);
+  }
+});
 
 // Clean up shortcuts
 app.on('will-quit', () => {
