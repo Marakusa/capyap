@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 import os from "os";
-import { app, BrowserWindow, shell, ipcMain, IpcMainEvent, screen, clipboard, nativeImage, desktopCapturer } from 'electron';
+import { app, BrowserWindow, shell, ipcMain, IpcMainEvent, screen, clipboard, nativeImage, desktopCapturer, dialog } from 'electron';
 import { resolveHtmlPath } from './util';
 const sharp = require('sharp');
 import { mainWindow } from "./main";
@@ -9,7 +9,8 @@ const axios = require('axios');
 const FormData = require('form-data');
 
 let screenshotPath = "";
-let tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'capyap-'));
+const tempDir = os.tmpdir();
+let mousePos: Electron.Point;
 
 export const closeCaptureScreen = async () => {
   try {
@@ -24,7 +25,11 @@ export const closeCaptureScreen = async () => {
 export const captureScreen = async () => {
   try {
     // Get the current mouse position
-    const mousePos = screen.getCursorScreenPoint();
+    mousePos = screen.getCursorScreenPoint();
+
+    if (mousePos == null) {
+      throw new Error("Failed to get mouse position");
+    }
 
     // Get all displays
     const displays = screen.getAllDisplays();
@@ -67,12 +72,10 @@ export const captureScreen = async () => {
     const img = nativeImage.createFromDataURL(targetSource.thumbnail.toDataURL());
 
     // Define the temporary file path
-    const tempDir = os.tmpdir();
     screenshotPath = path.resolve(tempDir, `capyap-screenshot-temp.png`);
 
     // Save the image as PNG
     fs.writeFileSync(screenshotPath, await img.toPNG());
-    console.log(screenshotPath);
 
     await createCaptureWindow();
   } catch (err) {
@@ -162,8 +165,14 @@ async function createCaptureWindow() {
     throw new Error("Capture window was null");
   }
 
-  // Get current mouse cursor position
-  const mousePos = screen.getCursorScreenPoint();
+  if (mousePos == null) {
+    // Get the current mouse position
+    mousePos = screen.getCursorScreenPoint();
+  }
+
+  if (mousePos == null) {
+    throw new Error("Failed to get mouse position");
+  }
 
   // Find the display nearest to the cursor
   const targetDisplay = screen.getDisplayNearestPoint(mousePos);
@@ -236,7 +245,6 @@ async function uploadCroppedImage(croppedPath: string) {
     uploadPanel.loadURL(`${indexUrl}#uploading`);
 
     const handleWindow = () => {
-      //console.log(uploadPanel);
       if (!uploadPanel) {
         throw new Error('"uploadPanel" is not defined');
       }

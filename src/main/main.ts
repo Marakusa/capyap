@@ -1,7 +1,8 @@
 import path from 'path';
-import { app, BrowserWindow, shell, globalShortcut } from 'electron';
+import { app, BrowserWindow, shell, globalShortcut, session, dialog } from 'electron';
 import MenuBuilder from './menu';
 import { captureScreen, closeCaptureScreen, createScreenshotWindows } from "./screenshot";
+import os from 'os';
 
 export let mainWindow: BrowserWindow | null = null;
 
