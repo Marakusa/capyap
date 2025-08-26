@@ -1,4 +1,7 @@
-﻿using CapYap.Interfaces;
+﻿using System.Windows.Controls;
+using CapYap.API.Models.Appwrite;
+using CapYap.Interfaces;
+using CapYap.Utils;
 using CapYap.ViewModels.Windows;
 using Wpf.Ui;
 using Wpf.Ui.Abstractions;
@@ -28,12 +31,60 @@ namespace CapYap.Views.Windows
             _authService = authorizationService;
             _loginWindow = loginWindow;
 
+            _authService.OnUserChanged += OnUserChanged;
+
             SystemThemeWatcher.Watch(this);
 
             InitializeComponent();
             SetPageService(navigationViewPageProvider);
 
             navigationService.SetNavigationControl(RootNavigation);
+        }
+
+        private void OnUserChanged(object? sender, User? user)
+        {
+            if (user == null)
+            {
+                _loginWindow.Owner = this;
+                _loginWindow.ShowDialog();
+                return;
+            }
+
+            AccountButton.Content = user.Name;
+
+            AccountButton.ContextMenu = new ContextMenu();
+
+            Wpf.Ui.Controls.MenuItem external = new();
+            external.Header = "Open in browser";
+            external.Click += External_Click;
+            AccountButton.ContextMenu.Items.Add(external);
+            AccountButton.Click += AccountButton_Click;
+
+            Separator separator = new Separator();
+            AccountButton.ContextMenu.Items.Add(separator);
+
+            Wpf.Ui.Controls.MenuItem logOut = new();
+            logOut.Header = "Log Out";
+            logOut.Click += LogOut_Click;
+            AccountButton.ContextMenu.Items.Add(logOut);
+            AccountButton.Click += AccountButton_Click;
+        }
+
+        private void AccountButton_Click(object sender, RoutedEventArgs e)
+        {
+            AccountButton.ContextMenu.PlacementTarget = sender as UIElement;
+            AccountButton.ContextMenu.IsOpen = true;
+        }
+
+        private void External_Click(object sender, RoutedEventArgs e)
+        {
+            AppUtils.OpenUrl("https://sc.marakusa.me/settings");
+        }
+
+        private void LogOut_Click(object sender, RoutedEventArgs e)
+        {
+            _authService.LogOutAsync();
+            _loginWindow?.ShowDialog();
         }
 
         #region INavigationWindow methods
@@ -47,6 +98,7 @@ namespace CapYap.Views.Windows
         public void ShowWindow()
         {
             Show();
+            _loginWindow.Owner = this;
             _loginWindow.ShowDialog();
         }
 

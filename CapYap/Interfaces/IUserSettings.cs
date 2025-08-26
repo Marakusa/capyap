@@ -2,7 +2,6 @@
 {
     public interface IUserSettings
     {
-        string UserToken { get; }
-        string UploadToken { get; }
+        string CookieFallback { get; }
     }
 }

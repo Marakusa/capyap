@@ -1,4 +1,6 @@
 ﻿using System.Collections.ObjectModel;
+using CapYap.Interfaces;
+using Microsoft.Win32;
 using Wpf.Ui.Controls;
 
 namespace CapYap.ViewModels.Windows

@@ -1,34 +1,28 @@
-﻿using System.IO;
-using System.Net.Http;
-using Appwrite.Models;
-using CapYap.API;
+﻿using CapYap.API;
+using CapYap.API.Models.Appwrite;
+using CapYap.API.Models.Events;
 using CapYap.Interfaces;
-using Config.Net;
 
 namespace CapYap.Services
 {
     public class AuthorizationService : IAuthorizationService
     {
-        private readonly IUserSettings _userSettings;
         private readonly CapYapApi _api;
 
-        public AuthorizationService(HttpClient client)
-        {
-            string userSessionConfigPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "CapYap", "userSession.json");
-            IUserSettings settings = new ConfigurationBuilder<IUserSettings>()
-               .UseJsonFile(userSessionConfigPath)
-               .Build();
+        public event EventHandler<User?>? OnUserChanged;
 
-            _userSettings = settings;
-            _api = new CapYapApi(client);
+        public AuthorizationService()
+        {
+            _api = new CapYapApi();
         }
 
-        public async Task BeginOAuthAsync(Action<object?, EventArgs> successCallback, Action<object?, OnAuthorizationFailedEventArgs> failedCallback)
+        public async Task BeginOAuthAsync(Action<object?, AuthorizedUserEventArgs> successCallback, Action<object?, OnAuthorizationFailedEventArgs> failedCallback, bool checkOnly = false)
         {
             if (successCallback != null)
             {
-                _api.OnClientAuthorizationFinished += (object? sender, EventArgs e) =>
+                _api.OnClientAuthorizationFinished += (object? sender, AuthorizedUserEventArgs e) =>
                 {
+                    OnUserChanged?.Invoke(this, e.Data);
                     successCallback.Invoke(null, e);
                 };
             }
@@ -47,12 +41,26 @@ namespace CapYap.Services
             {
                 if (successCallback != null)
                 {
-                    successCallback.Invoke(null, EventArgs.Empty);
+                    User? user = await _api.GetUserAsync();
+
+                    OnUserChanged?.Invoke(this, user);
+
+                    if (user != null)
+                    {
+                        successCallback.Invoke(null, new AuthorizedUserEventArgs(user));
+                        return;
+                    }
                 }
-                return;
             }
 
-            await _api.OAuthAuthorizeAsync();
+            if (!checkOnly)
+            {
+                await _api.OAuthAuthorizeAsync();
+            }
+            else
+            {
+                failedCallback?.Invoke(null, new OnAuthorizationFailedEventArgs("User session changed. Please relogin."));
+            }
         }
 
         public async Task<bool> IsAuthorizedAsync()
@@ -65,6 +73,34 @@ namespace CapYap.Services
             {
                 Console.WriteLine($"Failed to authorize user: {ex}");
                 return false;
+            }
+        }
+
+        public async Task<User?> GetUserAsync()
+        {
+            try
+            {
+                User? user = await _api.GetUserAsync();
+                OnUserChanged?.Invoke(this, user);
+                return user;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Failed to fetch user: {ex}");
+                return null;
+            }
+        }
+
+        public async Task LogOutAsync()
+        {
+            try
+            {
+                await _api.DeleteSessionAsync();
+                OnUserChanged?.Invoke(this, null);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Failed to log user out: {ex}");
             }
         }
     }

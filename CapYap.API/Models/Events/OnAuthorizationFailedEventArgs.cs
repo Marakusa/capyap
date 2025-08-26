@@ -1,4 +1,4 @@
-﻿namespace CapYap.API
+﻿namespace CapYap.API.Models.Events
 {
     public class OnAuthorizationFailedEventArgs : EventArgs
     {

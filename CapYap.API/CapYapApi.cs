@@ -1,69 +1,98 @@
 ﻿using System.Net;
 using System.Text;
-using Appwrite.Models;
+using CapYap.API.Models.Appwrite;
+using CapYap.API.Models.Events;
 using CapYap.API.Utils;
+using Newtonsoft.Json;
 
 namespace CapYap.API
 {
     public class CapYapApi
     {
         private readonly Appwrite _appwrite;
-        private readonly HttpClient _httpClient;
-        private readonly HttpListener _listener;
-        private const int LISTENER_PORT = 19375;
 
         private readonly string _apiHost = "https://sc.marakusa.me";
+
+        private Session? _currentSession;
 
         #region Event callbacks
         private delegate Task AsyncEventHandler<TEventArgs>(object? sender, TEventArgs e);
         private event AsyncEventHandler<OnAuthorizedEventArgs>? OnClientAuthorizedAsync;
 
-        public event EventHandler? OnClientAuthorizationFinished;
+        public event EventHandler<AuthorizedUserEventArgs>? OnClientAuthorizationFinished;
         public event EventHandler<OnAuthorizationFailedEventArgs>? OnClientAuthorizationFailed;
 
         private async Task ApiOnClientAuthorized(object? sender, OnAuthorizedEventArgs e)
         {
-            try
-            {
-                Session session = await _appwrite.account.CreateSession(e.UserId, e.Secret);
-                
-                if (session == null)
-                {
-                    _runListenerServer = false;
-                    OnClientAuthorizationFailed?.Invoke(this, new OnAuthorizationFailedEventArgs("Failed to create a session: session was null"));
-                    return;
-                }
-
-                OnClientAuthorizationFinished?.Invoke(this, EventArgs.Empty);
-            }
-            catch (Exception ex)
-            {
-                _runListenerServer = false;
-                OnClientAuthorizationFailed?.Invoke(this, new OnAuthorizationFailedEventArgs($"Failed to create a session: {ex}"));
-            }
+            await CreateSessionAsync(e.UserId, e.Secret);
         }
         #endregion
 
-        public CapYapApi(HttpClient client)
+        private readonly CookieContainer _cookieContainer;
+
+        public CapYapApi()
         {
-            _appwrite = new Appwrite();
-            _httpClient = client;
+            _cookieContainer = new CookieContainer();
+
+            CookieCollection? loadedCookies = LoadCookies();
+            if (loadedCookies != null)
+            {
+                _cookieContainer.Add(loadedCookies);
+            }
+
+            HttpClientHandler clientHandler = new()
+            {
+                AllowAutoRedirect = true,
+                UseCookies = true,
+                CookieContainer = _cookieContainer
+            };
+            _appwrite = new Appwrite(new HttpClient(clientHandler), SaveCookies);
             _apiHost = "https://sc.marakusa.me";
-            _listener = new HttpListener();
-            _listener.Prefixes.Add($"http://localhost:{LISTENER_PORT}/");
+
             OnClientAuthorizedAsync += ApiOnClientAuthorized;
         }
 
+        private void SaveCookies()
+        {
+            string userSessionConfigFolderPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "CapYap");
+            string userSessionConfigPath = Path.Combine(userSessionConfigFolderPath, "usrSes.dat");
+
+            if (!Directory.Exists(userSessionConfigFolderPath))
+            {
+                Directory.CreateDirectory(userSessionConfigFolderPath);
+            }
+
+            string cookieData = JsonConvert.SerializeObject(_cookieContainer.GetAllCookies());
+            File.WriteAllText(userSessionConfigPath, cookieData);
+        }
+
+        private CookieCollection? LoadCookies()
+        {
+            string userSessionConfigPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "CapYap", "usrSes.dat");
+            if (File.Exists(userSessionConfigPath))
+            {
+                string cookieData = File.ReadAllText(userSessionConfigPath);
+                return JsonConvert.DeserializeObject<CookieCollection?>(cookieData);
+            }
+
+            return null;
+        }
+
         #region HTTP server to listen for callbacks
+        private bool _listenerRunning = false;
+        private const int LISTENER_PORT = 19375;
         private bool _runListenerServer = true;
 
-        private async Task StartHttpListenerAsync(HttpListener listener)
+        private async Task StartHttpListenerAsync()
         {
+            using HttpListener listener = new HttpListener();
+            listener.Prefixes.Add($"http://localhost:{LISTENER_PORT}/");
             listener.Start();
+            _runListenerServer = true;
 
             try
             {
-                await HandleIncomingConnectionsAsync();
+                await HandleIncomingConnectionsAsync(listener);
             }
             catch (Exception ex)
             {
@@ -72,15 +101,18 @@ namespace CapYap.API
             finally
             {
                 listener.Close();
+                _listenerRunning = false;
             }
         }
 
-        private async Task HandleIncomingConnectionsAsync()
+        private async Task HandleIncomingConnectionsAsync(HttpListener listener)
         {
+            _listenerRunning = true;
+
             while (_runListenerServer)
             {
                 // Will wait here until we hear from a connection
-                HttpListenerContext ctx = await _listener.GetContextAsync();
+                HttpListenerContext ctx = await listener.GetContextAsync();
 
                 // Peel out the requests and response objects
                 HttpListenerRequest req = ctx.Request;
@@ -110,18 +142,18 @@ namespace CapYap.API
                             return;
                         }
 
+                        // Write the response info
+                        data = Encoding.UTF8.GetBytes("Client successfully authorized. You may now close this window.");
+                        resp.ContentType = "text/html";
+                        resp.ContentEncoding = Encoding.UTF8;
+                        resp.ContentLength64 = data.LongLength;
+
+                        // Write out to the response stream (asynchronously), then close it
+                        await resp.OutputStream.WriteAsync(data, 0, data.Length);
+                        resp.Close();
+
                         if (OnClientAuthorizedAsync != null)
                         {
-                            // Write the response info
-                            data = Encoding.UTF8.GetBytes("Client successfully authorized. You can close this window now.");
-                            resp.ContentType = "text/html";
-                            resp.ContentEncoding = Encoding.UTF8;
-                            resp.ContentLength64 = data.LongLength;
-
-                            // Write out to the response stream (asynchronously), then close it
-                            await resp.OutputStream.WriteAsync(data, 0, data.Length);
-                            resp.Close();
-
                             await OnClientAuthorizedAsync.Invoke(this, new OnAuthorizedEventArgs(userId, secret));
                         }
 
@@ -169,16 +201,25 @@ namespace CapYap.API
         {
             try
             {
-                Session session = await _appwrite.account.CreateSession(userId, secret);
+                _currentSession = await _appwrite.CreateSessionAsync(userId, secret);
 
-                if (session == null)
+                if (_currentSession == null)
                 {
                     _runListenerServer = false;
                     OnClientAuthorizationFailed?.Invoke(this, new OnAuthorizationFailedEventArgs("Failed to create a session: session was null"));
                     return;
                 }
 
-                OnClientAuthorizationFinished?.Invoke(this, EventArgs.Empty);
+                User? user = await GetUserAsync();
+
+                if (user == null)
+                {
+                    _runListenerServer = false;
+                    OnClientAuthorizationFailed?.Invoke(this, new OnAuthorizationFailedEventArgs("Failed to fetch user: user was null"));
+                    return;
+                }
+
+                OnClientAuthorizationFinished?.Invoke(this, new AuthorizedUserEventArgs(user));
             }
             catch (Exception ex)
             {
@@ -191,9 +232,9 @@ namespace CapYap.API
         {
             AppUtils.OpenUrl($"{_apiHost}/oauth?desktop");
 
-            if (!_listener.IsListening)
+            if (!_listenerRunning)
             {
-                await StartHttpListenerAsync(_listener);
+                await StartHttpListenerAsync();
             }
         }
 
@@ -201,13 +242,40 @@ namespace CapYap.API
         {
             try
             {
-                User user = await _appwrite.account.Get();
+                User? user = await _appwrite.GetAccountAsync();
                 return user != null;
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Account.Get returned an error: {ex}");
                 return false;
+            }
+        }
+
+        public async Task<User?> GetUserAsync()
+        {
+            try
+            {
+                User? user = await _appwrite.GetAccountAsync();
+                return user;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Account.Get returned an error: {ex}");
+                OnClientAuthorizationFailed?.Invoke(this, new OnAuthorizationFailedEventArgs(ex.ToString()));
+                return null;
+            }
+        }
+
+        public async Task DeleteSessionAsync()
+        {
+            try
+            {
+                await _appwrite.DeleteSessionAsync();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"DELETE Account.Session returned an error: {ex}");
             }
         }
     }

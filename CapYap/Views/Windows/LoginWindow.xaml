@@ -6,13 +6,14 @@
     xmlns:local="clr-namespace:CapYap.Views.Windows"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    xmlns:custom="clr-namespace:LoadingSpinnerControl;assembly=LoadingSpinnerControl"
     Title="{Binding ViewModel.ApplicationTitle, Mode=OneWay}"
-    Width="1100"
-    Height="650"
+    Width="400"
+    Height="300"
     d:DataContext="{d:DesignInstance local:LoginWindow,
                                      IsDesignTimeCreatable=True}"
-    d:DesignHeight="450"
-    d:DesignWidth="800"
+    d:DesignWidth="400"
+    d:DesignHeight="300"
     ui:Design.Background="{ui:ThemeResource ApplicationBackgroundBrush}"
     ui:Design.Foreground="{ui:ThemeResource TextFillColorPrimaryBrush}"
     ExtendsContentIntoTitleBar="True"
@@ -20,7 +21,9 @@
     WindowBackdropType="Mica"
     WindowCornerPreference="Round"
     WindowStartupLocation="CenterOwner"
-    mc:Ignorable="d">
+    mc:Ignorable="d"
+    ResizeMode="NoResize"
+    ShowInTaskbar="False">
     <Grid>
         <ui:TitleBar
             x:Name="TitleBar"
@@ -31,7 +34,61 @@
                 <ui:ImageIcon Source="/Views/Windows/icon.png" />
             </ui:TitleBar.Icon>
         </ui:TitleBar>
-        <ui:TextBlock x:Name="ErrorText" HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" Text="ErrorText" VerticalAlignment="Center" Height="128" Width="508"/>
+
+        <Grid x:Name="LogInView">
+            <ui:Button 
+                x:Name="SignInButton" 
+                Content="Log In with Discord" 
+                Click="AuthorizeButton_Click"
+                Margin="0,179,0,0" 
+                VerticalAlignment="Top" 
+                HorizontalAlignment="Center"/>
+            <TextBlock
+                Margin="1,96,1,0"
+                VerticalAlignment="Top"
+                TextAlignment="Center"
+                Text="CapYap" FontSize="24"
+            />
+            <TextBlock
+                Width="400"
+                TextWrapping="Wrap"
+                TextAlignment="Center"
+                VerticalAlignment="Top"
+                Text="Login with Discord to use the CapYap app." Opacity="0.50" Height="25" Margin="0,142,0,0" 
+            />
+        </Grid>
+
+        <Grid x:Name="LoadingView" Visibility="Hidden">
+            <ui:RichTextBox
+                x:Name="ErrorText" 
+                HorizontalAlignment="Center" 
+                VerticalAlignment="Top" 
+                Height="194"
+                Width="380" 
+                Margin="0,53,0,0"
+                Visibility="Hidden">
+                <FlowDocument>
+                    <Paragraph>
+                        <Run x:Name="ErrorTextContent" Text="RichTextBox" FontFamily="Segoe UI" FontSize="14"/>
+                    </Paragraph>
+                </FlowDocument>
+            </ui:RichTextBox>
+            <ui:TextBlock x:Name="LoadingText" HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" Text="Signing in..." VerticalAlignment="Top" Height="78" Width="380" Margin="0,196,0,0"/>
+            <custom:LoadingSpinner x:Name="LoadingRing"
+                Cap="Round"
+                Diameter="64"
+                IsLoading="true"
+                Thickness="8"
+                Color="MediumPurple" VerticalAlignment="Top" HorizontalAlignment="Center" Margin="0,119,0,0" />
+            <ui:Button 
+                x:Name="TryAgainButton" 
+                Content="Try Again" 
+                Click="AuthorizeButton_Click"
+                Margin="0,252,0,0" 
+                VerticalAlignment="Top" 
+                HorizontalAlignment="Center"
+                Visibility="Hidden"/>
+        </Grid>
 
     </Grid>
 </ui:FluentWindow>
