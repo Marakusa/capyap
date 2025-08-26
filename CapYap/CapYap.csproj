@@ -1,11 +1,64 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net8.0-windows</TargetFramework>
+    <TargetFramework>net9.0-windows</TargetFramework>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>Assets\icon.ico</ApplicationIcon>
+    <UseWPF>true</UseWPF>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <UseWPF>true</UseWPF>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="Assets\icon.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="WPF-UI" Version="4.0.2" />
+    <PackageReference Include="WPF-UI.DependencyInjection" Version="4.0.2" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.1" />
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0 " />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="Assets\icon.ico" />
+    <None Remove="Assets\icon.png" />
+    <None Remove="Assets\icon.svg" />
+    <None Remove="Assets\icons\1024x1024.png" />
+    <None Remove="Assets\icons\128x128.png" />
+    <None Remove="Assets\icons\16x16.png" />
+    <None Remove="Assets\icons\24x24.png" />
+    <None Remove="Assets\icons\256x256.png" />
+    <None Remove="Assets\icons\32x32.png" />
+    <None Remove="Assets\icons\48x48.png" />
+    <None Remove="Assets\icons\512x512.png" />
+    <None Remove="Assets\icons\64x64.png" />
+    <None Remove="Assets\icons\96x96.png" />
+    <None Remove="Assets\icon_capyap.svg" />
+    <None Remove="Assets\wpfui-icon-256.png" />
+    <None Remove="Assets\wpfui-icon-1024.png" />
+    <None Remove="Views\Windows\icon.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+	<Resource Include="Assets\icon.ico" />
+	<Resource Include="Assets\icon.png" />
+	<Resource Include="Assets\icon.svg" />
+	<Resource Include="Assets\icons\1024x1024.png" />
+	<Resource Include="Assets\icons\128x128.png" />
+	<Resource Include="Assets\icons\16x16.png" />
+	<Resource Include="Assets\icons\24x24.png" />
+	<Resource Include="Assets\icons\256x256.png" />
+	<Resource Include="Assets\icons\32x32.png" />
+	<Resource Include="Assets\icons\48x48.png" />
+	<Resource Include="Assets\icons\512x512.png" />
+	<Resource Include="Assets\icons\64x64.png" />
+	<Resource Include="Assets\icons\96x96.png" />
+	<Resource Include="Assets\icon_capyap.svg" />
+    <Resource Include="Assets\wpfui-icon-256.png" />
+    <Resource Include="Assets\wpfui-icon-1024.png" />
+    <Resource Include="Views\Windows\icon.png" />
+  </ItemGroup>
 
 </Project>
