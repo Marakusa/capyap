@@ -1,4 +1,5 @@
-﻿using CapYap.ViewModels.Windows;
+﻿using CapYap.Interfaces;
+using CapYap.ViewModels.Windows;
 using Wpf.Ui;
 using Wpf.Ui.Abstractions;
 using Wpf.Ui.Appearance;
@@ -10,14 +11,22 @@ namespace CapYap.Views.Windows
     {
         public MainWindowViewModel ViewModel { get; }
 
+        private readonly IAuthorizationService _authService;
+        private readonly LoginWindow _loginWindow;
+
         public MainWindow(
             MainWindowViewModel viewModel,
             INavigationViewPageProvider navigationViewPageProvider,
-            INavigationService navigationService
+            INavigationService navigationService,
+            IAuthorizationService authorizationService,
+            LoginWindow loginWindow
         )
         {
             ViewModel = viewModel;
             DataContext = this;
+
+            _authService = authorizationService;
+            _loginWindow = loginWindow;
 
             SystemThemeWatcher.Watch(this);
 
@@ -35,7 +44,11 @@ namespace CapYap.Views.Windows
 
         public void SetPageService(INavigationViewPageProvider navigationViewPageProvider) => RootNavigation.SetPageProviderService(navigationViewPageProvider);
 
-        public void ShowWindow() => Show();
+        public void ShowWindow()
+        {
+            Show();
+            _loginWindow.ShowDialog();
+        }
 
         public void CloseWindow() => Close();
 

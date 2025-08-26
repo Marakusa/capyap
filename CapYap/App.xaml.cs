@@ -1,6 +1,8 @@
 ﻿using System.IO;
-using System.Reflection;
+using System.Net.Http;
 using System.Windows.Threading;
+using CapYap.API;
+using CapYap.Interfaces;
 using CapYap.Services;
 using CapYap.ViewModels.Pages;
 using CapYap.ViewModels.Windows;
@@ -45,6 +47,16 @@ namespace CapYap
                 // Main window with navigation
                 services.AddSingleton<INavigationWindow, MainWindow>();
                 services.AddSingleton<MainWindowViewModel>();
+
+                // Login window
+                services.AddSingleton<LoginWindow>();
+                services.AddSingleton<LoginWindowViewModel>();
+
+                services.AddScoped<HttpClient>();
+
+                services.AddSingleton<CapYapApi>();
+
+                services.AddSingleton<IAuthorizationService, AuthorizationService>();
 
                 services.AddSingleton<DashboardPage>();
                 services.AddSingleton<DashboardViewModel>();
