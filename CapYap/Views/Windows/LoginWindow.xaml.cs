@@ -12,11 +12,10 @@ namespace CapYap.Views.Windows
 
         private bool _authorized = false;
         private bool _authorizationInProgress = false;
-        private bool _error = false;
         private string? _authFailMessage = null;
         private bool _authInitByUser = false;
 
-        public event EventHandler<AuthorizedUserEventArgs?> OnAuthorizedUser;
+        public event EventHandler<AuthorizedUserEventArgs?>? OnAuthorizedUser;
 
         public LoginWindow(
             LoginWindowViewModel viewModel,
@@ -45,7 +44,6 @@ namespace CapYap.Views.Windows
         {
             _authorized = true;
             _authorizationInProgress = false;
-            _error = false;
             LoadingRing.Visibility = Visibility.Visible;
             LoadingText.Text = "Loading...";
             ErrorText.Visibility = Visibility.Hidden;
@@ -55,7 +53,6 @@ namespace CapYap.Views.Windows
 
             _authorized = false;
             _authorizationInProgress = false;
-            _error = false;
             LogInView.Visibility = Visibility.Visible;
             LoadingView.Visibility = Visibility.Hidden;
 
@@ -74,7 +71,6 @@ namespace CapYap.Views.Windows
             {
                 _authorized = false;
                 _authorizationInProgress = false;
-                _error = false;
                 LogInView.Visibility = Visibility.Visible;
                 LoadingView.Visibility = Visibility.Hidden;
                 Activate();
@@ -83,7 +79,6 @@ namespace CapYap.Views.Windows
 
             _authorized = false;
             _authorizationInProgress = false;
-            _error = true;
             _authFailMessage = e.Message;
             LoadingRing.Visibility = Visibility.Hidden;
             LoadingText.Text = "";
@@ -109,7 +104,6 @@ namespace CapYap.Views.Windows
 
             _authorized = false;
             _authorizationInProgress = true;
-            _error = false;
             LoadingRing.Visibility = Visibility.Visible;
             LoadingText.Text = _authInitByUser ? "Please wait while a browser window opens..." : "Please wait...";
             ErrorText.Visibility = Visibility.Hidden;

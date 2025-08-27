@@ -13,8 +13,37 @@ namespace CapYap.ScreenCapture
         {
             Bounds bounds = NativeUtils.GetFullVirtualBounds();
 
+            int left = bounds.Left;
+            int top = bounds.Top;
+            int right = bounds.Right;
+            int bottom = bounds.Bottom;
+
+            // This can happen when in example the primary monitor is on the right side and left will be on the negative for the second monitor
+            if (left < 0)
+            {
+                int differenceLeft = Math.Abs(left);
+                left += differenceLeft;
+                right += differenceLeft;
+            }
+            if (top < 0)
+            {
+                int differenceTop = Math.Abs(top);
+                top += differenceTop;
+                bottom += differenceTop;
+            }
+            if (left > 0)
+            {
+                left = 0;
+                right -= left;
+            }
+            if (top > 0)
+            {
+                top = 0;
+                bottom -= top;
+            }
+
             // Create a bitmap of the appropriate size to receive the screen-shot.
-            Bitmap bmp = new(bounds.Right, bounds.Bottom);
+            Bitmap bmp = new(right, bottom);
 
             // Draw the screen-shot into our bitmap.
             using Graphics graphics = Graphics.FromImage(bmp);
@@ -27,8 +56,8 @@ namespace CapYap.ScreenCapture
                 ci.cbSize = Marshal.SizeOf(typeof(NativeUtils.CURSORINFO));
                 if (NativeUtils.GetCursorInfo(out ci) && (ci.flags & NativeUtils.CURSOR_SHOWING) != 0)
                 {
-                    int cursorX = ci.ptScreenPos.x - bounds.Left;
-                    int cursorY = ci.ptScreenPos.y - bounds.Top;
+                    int cursorX = ci.ptScreenPos.x - left;
+                    int cursorY = ci.ptScreenPos.y - top;
                     NativeUtils.DrawIcon(graphics.GetHdc(), cursorX, cursorY, ci.hCursor);
                     graphics.ReleaseHdc();
                 }

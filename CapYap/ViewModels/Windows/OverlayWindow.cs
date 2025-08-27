@@ -29,7 +29,7 @@ namespace CapYap.ViewModels.Windows
             WindowStyle = WindowStyle.None;
             AllowsTransparency = true;
             Background = System.Windows.Media.Brushes.Transparent;
-            Topmost = true;
+            //Topmost = true;
             ShowInTaskbar = false;
             Cursor = Cursors.Cross;
             ResizeMode = ResizeMode.NoResize;
