@@ -18,7 +18,7 @@ namespace CapYap.Views.Windows
     {
         public MainWindowViewModel ViewModel { get; }
 
-        private readonly IAuthorizationService _authService;
+        private readonly IApiService _apiService;
         private readonly IScreenshotService _screenshotService;
 
         private readonly LoginWindow _loginWindow;
@@ -29,7 +29,7 @@ namespace CapYap.Views.Windows
             MainWindowViewModel viewModel,
             INavigationViewPageProvider navigationViewPageProvider,
             INavigationService navigationService,
-            IAuthorizationService authorizationService,
+            IApiService apiService,
             LoginWindow loginWindow,
             IScreenshotService screenshotService,
             HotKeyManager hotKeys
@@ -38,14 +38,14 @@ namespace CapYap.Views.Windows
             ViewModel = viewModel;
             DataContext = this;
 
-            _authService = authorizationService;
+            _apiService = apiService;
             _screenshotService = screenshotService;
 
             RegisterHotkeys(hotKeys);
 
             _loginWindow = loginWindow;
 
-            _authService.OnUserChanged += OnUserChanged;
+            _apiService.OnUserChanged += OnUserChanged;
 
             SystemThemeWatcher.Watch(this);
 
@@ -121,7 +121,7 @@ namespace CapYap.Views.Windows
         private void LogOut_Click(object sender, RoutedEventArgs e)
         {
             Hide();
-            _authService.LogOutAsync();
+            _apiService.LogOutAsync();
             _loginWindow?.ShowDialog();
             Show();
         }

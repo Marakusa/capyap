@@ -1,5 +1,6 @@
 ﻿using System.Net.Http;
 using CapYap.API;
+using CapYap.API.Models;
 using CapYap.API.Models.Appwrite;
 using CapYap.API.Models.Events;
 using CapYap.Interfaces;
@@ -7,16 +8,20 @@ using CapYap.Models;
 
 namespace CapYap.Services
 {
-    public class AuthorizationService : IAuthorizationService
+    public class ApiService : IApiService
     {
         private readonly CapYapApi _api;
 
-        public event EventHandler<User?>? OnUserChanged;
         public event EventHandler<GalleryChangedEventArgs>? OnGalleryChanged;
+        public event Action<EventArgs>? OnGalleryFetching;
+        public event EventHandler<User?>? OnUserChanged;
 
-        public AuthorizationService(HttpClient client)
+        private int _currentPage = 1;
+
+        public ApiService(HttpClient client)
         {
             _api = new CapYapApi(client);
+            _currentPage = 1;
         }
 
         public async Task BeginOAuthAsync(Action<object?, AuthorizedUserEventArgs> successCallback, Action<object?, OnAuthorizationFailedEventArgs> failedCallback, bool checkOnly = false)
@@ -107,11 +112,34 @@ namespace CapYap.Services
             }
         }
 
-        public async Task<List<string>?> FetchGalleryAsync()
+        public async Task<Gallery?> FetchGalleryAsync()
+        {
+            return await FetchGalleryAsync(_currentPage);
+        }
+
+        public async Task<Gallery?> FetchGalleryNextAsync()
+        {
+            _currentPage++;
+            return await FetchGalleryAsync(_currentPage);
+        }
+
+        public async Task<Gallery?> FetchGalleryPrevAsync()
+        {
+            _currentPage--;
+            if (_currentPage < 1)
+            {
+                _currentPage = 1;
+            }
+            return await FetchGalleryAsync(_currentPage);
+        }
+
+        public async Task<Gallery?> FetchGalleryAsync(int page)
         {
             try
             {
-                List<string>? gallery = await _api.FetchGalleryAsync();
+                OnGalleryFetching?.Invoke(EventArgs.Empty);
+                _currentPage = page;
+                Gallery? gallery = await _api.FetchGalleryAsync(_currentPage);
                 OnGalleryChanged?.Invoke(this, new GalleryChangedEventArgs(gallery));
                 return gallery;
             }

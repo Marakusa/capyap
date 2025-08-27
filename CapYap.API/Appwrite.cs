@@ -43,7 +43,7 @@ namespace CapYap.API
                     "application/json"));
         }
 
-        public async Task<JWT> CreateJWTAsync()
+        private async Task<JWT> CreateJWTAsync()
         {
             DateTime expireTime = DateTime.UtcNow.AddMinutes(15);
             JWT? jwt = await SendAsync<JWT>(HttpMethod.Post, "/account/jwts");
@@ -85,7 +85,7 @@ namespace CapYap.API
             jwtKeyExpire = null;
         }
 
-        private async Task<string> CheckJWT()
+        public async Task<string> CheckJWT()
         {
             if (jwtKey != null && DateTime.UtcNow < jwtKeyExpire)
             {

@@ -213,15 +213,15 @@ namespace CapYap.API
             }
         }
 
-        public async Task<List<string>> FetchGalleryAsync()
+        public async Task<Gallery?> FetchGalleryAsync(int page)
         {
             try
             {
-                JWT jwt = await _appwrite.CreateJWTAsync();
-                HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, $"{_apiHost}/f/fetchGallery")
+                string jwt = await _appwrite.CheckJWT();
+                HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, $"{_apiHost}/f/fetchGallery?limit=24&page={page}")
                 {
                     Content = new StringContent(
-                        JsonConvert.SerializeObject(new CapYapApiJwtRequest(jwt.Jwt)),
+                        JsonConvert.SerializeObject(new CapYapApiJwtRequest(jwt)),
                         Encoding.UTF8,
                         "application/json"
                     )
@@ -231,7 +231,12 @@ namespace CapYap.API
 
                 if (response.IsSuccessStatusCode)
                 {
-                    return JsonConvert.DeserializeObject<List<string>>(responseData) ?? [];
+                    Gallery? gallery = JsonConvert.DeserializeObject<Gallery?>(responseData);
+                    if (gallery != null)
+                    {
+                        return gallery;
+                    }
+                    throw new Exception("Gallery was null.");
                 }
                 else
                 {
@@ -241,7 +246,7 @@ namespace CapYap.API
             catch (Exception ex)
             {
                 Console.WriteLine($"FetchGallery returned an error: {ex}");
-                return [];
+                return null;
             }
         }
 
@@ -249,11 +254,11 @@ namespace CapYap.API
         {
             try
             {
-                JWT jwt = await _appwrite.CreateJWTAsync();
+                string jwt = await _appwrite.CheckJWT();
 
                 MultipartFormDataContent form = new()
                 {
-                    { new StringContent(jwt.Jwt), "sessionKey" }
+                    { new StringContent(jwt), "sessionKey" }
                 };
 
                 var capContent = new ByteArrayContent(await File.ReadAllBytesAsync(filePath));

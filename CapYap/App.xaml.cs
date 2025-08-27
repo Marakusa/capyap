@@ -58,7 +58,7 @@ namespace CapYap
                 services.AddSingleton<CapYapApi>();
                 services.AddSingleton<HotKeyManager>();
 
-                services.AddSingleton<IAuthorizationService, AuthorizationService>();
+                services.AddSingleton<IApiService, ApiService>();
                 services.AddSingleton<IScreenshotService, ScreenshotService>();
 
                 services.AddSingleton<DashboardPage>();

@@ -22,7 +22,7 @@
     <Grid>
         <ui:VirtualizingItemsControl x:Name="GalleryControl"
             Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-            VirtualizingPanel.CacheLengthUnit="Item">
+            VirtualizingPanel.CacheLengthUnit="Item" Margin="0,0,0,54">
             <ItemsControl.ItemTemplate>
                 <DataTemplate>
                     <Border Width="200"
@@ -55,5 +55,14 @@
             TextAlignment="Center"
             VerticalAlignment="Center" 
             HorizontalAlignment="Center"/>
+        <Grid>
+            <StackPanel x:Name="PageBar" Margin="0,408,0,8" Orientation="Horizontal" VerticalAlignment="Bottom" HorizontalAlignment="Center" Height="36">
+                <ui:Button Margin="2" Content="&lt;" />
+                <ui:Button Margin="2" Content="1"/>
+                <ui:Button Margin="2" Content="2"/>
+                <ui:Button Margin="2" Content="3"/>
+                <ui:Button Margin="2" Content="&gt;"/>
+            </StackPanel>
+        </Grid>
     </Grid>
 </Page>

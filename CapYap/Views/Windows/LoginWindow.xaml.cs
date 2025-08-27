@@ -8,7 +8,7 @@ namespace CapYap.Views.Windows
     {
         public LoginWindowViewModel ViewModel { get; }
 
-        private readonly IAuthorizationService _authService;
+        private readonly IApiService _apiService;
 
         private bool _authorized = false;
         private bool _authorizationInProgress = false;
@@ -19,12 +19,12 @@ namespace CapYap.Views.Windows
 
         public LoginWindow(
             LoginWindowViewModel viewModel,
-            IAuthorizationService authorizationService
+            IApiService authorizationService
         )
         {
             ViewModel = viewModel;
 
-            _authService = authorizationService;
+            _apiService = authorizationService;
 
             InitializeComponent();
         }
@@ -110,7 +110,7 @@ namespace CapYap.Views.Windows
             ErrorTextContent.Text = "";
             TryAgainButton.Visibility = Visibility.Hidden;
 
-            _ = _authService.BeginOAuthAsync(OnClientAuthorized, OnClientAuthorizationFailed, !_authInitByUser);
+            _ = _apiService.BeginOAuthAsync(OnClientAuthorized, OnClientAuthorizationFailed, !_authInitByUser);
         }
 
         protected override void OnContentRendered(EventArgs e)
