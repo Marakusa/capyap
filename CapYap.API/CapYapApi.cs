@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using System.Text;
+using CapYap.API.Models;
 using CapYap.API.Models.Appwrite;
 using CapYap.API.Models.Events;
 using CapYap.API.Utils;
@@ -10,7 +11,7 @@ namespace CapYap.API
     public class CapYapApi
     {
         private readonly Appwrite _appwrite;
-
+        private readonly HttpClient _httpClient;
         private readonly string _apiHost = "https://sc.marakusa.me";
 
         private Session? _currentSession;
@@ -28,29 +29,8 @@ namespace CapYap.API
         }
         #endregion
 
+        #region Handle cookies
         private readonly CookieContainer _cookieContainer;
-
-        public CapYapApi()
-        {
-            _cookieContainer = new CookieContainer();
-
-            CookieCollection? loadedCookies = LoadCookies();
-            if (loadedCookies != null)
-            {
-                _cookieContainer.Add(loadedCookies);
-            }
-
-            HttpClientHandler clientHandler = new()
-            {
-                AllowAutoRedirect = true,
-                UseCookies = true,
-                CookieContainer = _cookieContainer
-            };
-            _appwrite = new Appwrite(new HttpClient(clientHandler), SaveCookies);
-            _apiHost = "https://sc.marakusa.me";
-
-            OnClientAuthorizedAsync += ApiOnClientAuthorized;
-        }
 
         private void SaveCookies()
         {
@@ -76,6 +56,31 @@ namespace CapYap.API
             }
 
             return null;
+        }
+        #endregion
+
+        public CapYapApi(HttpClient httpClient)
+        {
+            _httpClient = httpClient;
+
+            _cookieContainer = new CookieContainer();
+
+            CookieCollection? loadedCookies = LoadCookies();
+            if (loadedCookies != null)
+            {
+                _cookieContainer.Add(loadedCookies);
+            }
+
+            HttpClientHandler clientHandler = new()
+            {
+                AllowAutoRedirect = true,
+                UseCookies = true,
+                CookieContainer = _cookieContainer
+            };
+            _appwrite = new Appwrite(new HttpClient(clientHandler), SaveCookies);
+            _apiHost = "https://sc.marakusa.me";
+
+            OnClientAuthorizedAsync += ApiOnClientAuthorized;
         }
 
         #region HTTP server to listen for callbacks
@@ -276,6 +281,30 @@ namespace CapYap.API
             catch (Exception ex)
             {
                 Console.WriteLine($"DELETE Account.Session returned an error: {ex}");
+            }
+        }
+
+        public async Task<List<string>> FetchGalleryAsync()
+        {
+            try
+            {
+                JWT jwt = await _appwrite.CreateJWTAsync();
+                HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, $"{_apiHost}/f/fetchGallery")
+                {
+                    Content = new StringContent(
+                        JsonConvert.SerializeObject(new CapYapApiJwtRequest(jwt.Jwt)),
+                        Encoding.UTF8,
+                        "application/json"
+                    )
+                };
+                HttpResponseMessage response = await _httpClient.SendAsync(request);
+                string responseJson = await response.Content.ReadAsStringAsync();
+                return JsonConvert.DeserializeObject<List<string>>(responseJson) ?? [];
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"FetchGallery returned an error: {ex}");
+                return [];
             }
         }
     }

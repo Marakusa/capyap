@@ -7,6 +7,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:models="clr-namespace:CapYap.Models"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    xmlns:custom="clr-namespace:LoadingSpinnerControl;assembly=LoadingSpinnerControl"
     Title="DataPage"
     d:DataContext="{d:DesignInstance local:DataPage,
                                      IsDesignTimeCreatable=False}"
@@ -19,25 +20,31 @@
     mc:Ignorable="d">
 
     <Grid>
-        <ui:VirtualizingItemsControl
+        <ui:VirtualizingItemsControl x:Name="GalleryControl"
             Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-            ItemsSource="{Binding ViewModel.Colors, Mode=OneWay}"
             VirtualizingPanel.CacheLengthUnit="Item">
             <ItemsControl.ItemTemplate>
-                <DataTemplate DataType="{x:Type models:DataColor}">
-                    <ui:Button
-                        Width="130"
-                        Height="130"
+                <DataTemplate>
+                    <Border Width="200"
+                        Height="200"
                         Margin="2"
-                        Padding="0"
-                        HorizontalAlignment="Stretch"
-                        VerticalAlignment="Stretch"
-                        Appearance="Secondary"
-                        Background="{Binding Color, Mode=OneWay}"
-                        FontSize="25"
-                        Icon="Fluent24" />
+                        BorderBrush="Gray"
+                        BorderThickness="1"
+                        CornerRadius="0"
+                        ClipToBounds="True">
+                        <Image Source="{Binding}"
+                            Stretch="UniformToFill"
+                            VerticalAlignment="Center"
+                            HorizontalAlignment="Center"/>
+                    </Border>
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
         </ui:VirtualizingItemsControl>
+        <custom:LoadingSpinner x:Name="LoadingRing"
+            Cap="Round"
+            Diameter="96"
+            IsLoading="true"
+            Thickness="12"
+            Color="MediumPurple" VerticalAlignment="Center" HorizontalAlignment="Center" />
     </Grid>
 </Page>

@@ -9,7 +9,7 @@ namespace CapYap.Utils
         {
             try
             {
-                Process.Start(url);
+                System.Diagnostics.Process.Start(url);
             }
             catch
             {
@@ -17,15 +17,15 @@ namespace CapYap.Utils
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
                     url = url.Replace("&", "^&");
-                    Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
+                    System.Diagnostics.Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
                 }
                 else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
                 {
-                    Process.Start("xdg-open", url);
+                    System.Diagnostics.Process.Start("xdg-open", url);
                 }
                 else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
                 {
-                    Process.Start("open", url);
+                    System.Diagnostics.Process.Start("open", url);
                 }
                 else
                 {

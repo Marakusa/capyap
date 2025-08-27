@@ -57,6 +57,7 @@ namespace CapYap
                 services.AddSingleton<CapYapApi>();
 
                 services.AddSingleton<IAuthorizationService, AuthorizationService>();
+                services.AddSingleton<IScreenshotService, ScreenshotService>();
 
                 services.AddSingleton<DashboardPage>();
                 services.AddSingleton<DashboardViewModel>();

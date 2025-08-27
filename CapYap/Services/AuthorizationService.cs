@@ -1,4 +1,5 @@
-﻿using CapYap.API;
+﻿using System.Net.Http;
+using CapYap.API;
 using CapYap.API.Models.Appwrite;
 using CapYap.API.Models.Events;
 using CapYap.Interfaces;
@@ -10,10 +11,11 @@ namespace CapYap.Services
         private readonly CapYapApi _api;
 
         public event EventHandler<User?>? OnUserChanged;
+        public event EventHandler<List<string>?>? OnGalleryChanged;
 
-        public AuthorizationService()
+        public AuthorizationService(HttpClient client)
         {
-            _api = new CapYapApi();
+            _api = new CapYapApi(client);
         }
 
         public async Task BeginOAuthAsync(Action<object?, AuthorizedUserEventArgs> successCallback, Action<object?, OnAuthorizationFailedEventArgs> failedCallback, bool checkOnly = false)
@@ -101,6 +103,21 @@ namespace CapYap.Services
             catch (Exception ex)
             {
                 Console.WriteLine($"Failed to log user out: {ex}");
+            }
+        }
+
+        public async Task<List<string>?> FetchGalleryAsync()
+        {
+            try
+            {
+                List<string>? gallery = await _api.FetchGalleryAsync();
+                OnGalleryChanged?.Invoke(this, gallery);
+                return gallery;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Failed to fetch user: {ex}");
+                return null;
             }
         }
     }

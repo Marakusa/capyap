@@ -2,7 +2,7 @@
 
 namespace CapYap.Models
 {
-    public struct DataColor
+    public struct DataImage
     {
         public Brush Color { get; set; }
     }

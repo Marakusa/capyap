@@ -1,6 +1,4 @@
-﻿using CapYap.Views.Pages;
-using CapYap.Views.Windows;
-using Microsoft.Extensions.DependencyInjection;
+﻿using CapYap.Views.Windows;
 using Microsoft.Extensions.Hosting;
 using Wpf.Ui;
 

@@ -22,7 +22,8 @@ namespace CapYap.Views.Windows
             INavigationViewPageProvider navigationViewPageProvider,
             INavigationService navigationService,
             IAuthorizationService authorizationService,
-            LoginWindow loginWindow
+            LoginWindow loginWindow,
+            IScreenshotService screenshotService
         )
         {
             ViewModel = viewModel;
@@ -39,6 +40,8 @@ namespace CapYap.Views.Windows
             SetPageService(navigationViewPageProvider);
 
             navigationService.SetNavigationControl(RootNavigation);
+
+            screenshotService.CaptureAllScreens();
         }
 
         private void OnUserChanged(object? sender, User? user)

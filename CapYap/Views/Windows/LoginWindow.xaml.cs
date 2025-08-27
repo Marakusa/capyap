@@ -1,7 +1,5 @@
-﻿using System.Windows.Input;
-using CapYap.API.Models.Events;
+﻿using CapYap.API.Models.Events;
 using CapYap.Interfaces;
-using CapYap.Models;
 using CapYap.ViewModels.Windows;
 
 namespace CapYap.Views.Windows
