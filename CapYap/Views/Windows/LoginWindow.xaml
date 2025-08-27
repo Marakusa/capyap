@@ -23,7 +23,7 @@
     WindowStartupLocation="CenterOwner"
     mc:Ignorable="d"
     ResizeMode="NoResize"
-    ShowInTaskbar="False">
+    ShowInTaskbar="True">
     <Grid>
         <ui:TitleBar
             x:Name="TitleBar"
