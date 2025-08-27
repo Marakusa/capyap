@@ -202,6 +202,84 @@ namespace CapYap.API
         }
         #endregion
 
+        #region API functions
+        public async Task OAuthAuthorizeAsync()
+        {
+            AppUtils.OpenUrl($"{_apiHost}/oauth?desktop");
+
+            if (!_listenerRunning)
+            {
+                await StartHttpListenerAsync();
+            }
+        }
+
+        public async Task<List<string>> FetchGalleryAsync()
+        {
+            try
+            {
+                JWT jwt = await _appwrite.CreateJWTAsync();
+                HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, $"{_apiHost}/f/fetchGallery")
+                {
+                    Content = new StringContent(
+                        JsonConvert.SerializeObject(new CapYapApiJwtRequest(jwt.Jwt)),
+                        Encoding.UTF8,
+                        "application/json"
+                    )
+                };
+                HttpResponseMessage response = await _httpClient.SendAsync(request);
+                string responseData = await response.Content.ReadAsStringAsync();
+
+                if (response.IsSuccessStatusCode)
+                {
+                    return JsonConvert.DeserializeObject<List<string>>(responseData) ?? [];
+                }
+                else
+                {
+                    throw new Exception(responseData);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"FetchGallery returned an error: {ex}");
+                return [];
+            }
+        }
+
+        public async Task UploadCaptureAsync(string filePath)
+        {
+            try
+            {
+                JWT jwt = await _appwrite.CreateJWTAsync();
+
+                MultipartFormDataContent form = new()
+                {
+                    { new StringContent(jwt.Jwt), "sessionKey" }
+                };
+
+                var capContent = new ByteArrayContent(await File.ReadAllBytesAsync(filePath));
+                form.Add(capContent, "file", Path.GetFileName(filePath));
+
+                HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, $"{_apiHost}/f/upload")
+                {
+                    Content = form
+                };
+                HttpResponseMessage response = await _httpClient.SendAsync(request);
+                string responseData = await response.Content.ReadAsStringAsync();
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    throw new Exception(responseData);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"FetchGallery returned an error: {ex}");
+                throw new Exception(ex.Message);
+            }
+        }
+        #endregion
+
+        #region Appwrite functions
         public async Task CreateSessionAsync(string userId, string secret)
         {
             try
@@ -230,16 +308,6 @@ namespace CapYap.API
             {
                 _runListenerServer = false;
                 OnClientAuthorizationFailed?.Invoke(this, new OnAuthorizationFailedEventArgs($"Failed to create a session: {ex}"));
-            }
-        }
-
-        public async Task OAuthAuthorizeAsync()
-        {
-            AppUtils.OpenUrl($"{_apiHost}/oauth?desktop");
-
-            if (!_listenerRunning)
-            {
-                await StartHttpListenerAsync();
             }
         }
 
@@ -283,29 +351,6 @@ namespace CapYap.API
                 Console.WriteLine($"DELETE Account.Session returned an error: {ex}");
             }
         }
-
-        public async Task<List<string>> FetchGalleryAsync()
-        {
-            try
-            {
-                JWT jwt = await _appwrite.CreateJWTAsync();
-                HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, $"{_apiHost}/f/fetchGallery")
-                {
-                    Content = new StringContent(
-                        JsonConvert.SerializeObject(new CapYapApiJwtRequest(jwt.Jwt)),
-                        Encoding.UTF8,
-                        "application/json"
-                    )
-                };
-                HttpResponseMessage response = await _httpClient.SendAsync(request);
-                string responseJson = await response.Content.ReadAsStringAsync();
-                return JsonConvert.DeserializeObject<List<string>>(responseJson) ?? [];
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"FetchGallery returned an error: {ex}");
-                return [];
-            }
-        }
+        #endregion
     }
 }

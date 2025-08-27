@@ -1,7 +1,7 @@
 ﻿using System.Runtime.InteropServices;
-using CapYap.ScreenCapture.Models;
+using CapYap.Utils.Models;
 
-namespace CapYap.ScreenCapture.Helpers
+namespace CapYap.Utils
 {
     public static class NativeUtils
     {

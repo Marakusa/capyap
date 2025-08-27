@@ -7,9 +7,13 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CapYap", "CapYap\CapYap.csp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CapYap.API", "CapYap.API\CapYap.API.csproj", "{86196D85-5436-4180-961E-0251265EA839}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CapYap.ScreenCapture", "CapYap.ScreenCapture\CapYap.ScreenCapture.csproj", "{6D9CB6DB-2ACB-444B-8F01-95ACE86B84EC}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CapYap.ScreenCapture.Windows", "CapYap.ScreenCapture\CapYap.ScreenCapture.Windows.csproj", "{6D9CB6DB-2ACB-444B-8F01-95ACE86B84EC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CapYap.HotKeys", "CapYap.HotKeys\CapYap.HotKeys.csproj", "{5AB4EFE8-2F99-4F6D-86C3-5568D5F5F29D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CapYap.HotKeys.Windows", "CapYap.HotKeys\CapYap.HotKeys.Windows.csproj", "{5AB4EFE8-2F99-4F6D-86C3-5568D5F5F29D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CapYap.Toast", "CapYap.Toast\CapYap.Toast.csproj", "{CAAFC8C8-1636-4551-B3C2-E9F29E519372}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CapYap.Utils", "CapYap.Utils\CapYap.Utils.csproj", "{9663F3FF-EF67-46AE-9891-C05AA792467B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +37,14 @@ Global
 		{5AB4EFE8-2F99-4F6D-86C3-5568D5F5F29D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5AB4EFE8-2F99-4F6D-86C3-5568D5F5F29D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5AB4EFE8-2F99-4F6D-86C3-5568D5F5F29D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CAAFC8C8-1636-4551-B3C2-E9F29E519372}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CAAFC8C8-1636-4551-B3C2-E9F29E519372}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CAAFC8C8-1636-4551-B3C2-E9F29E519372}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CAAFC8C8-1636-4551-B3C2-E9F29E519372}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9663F3FF-EF67-46AE-9891-C05AA792467B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9663F3FF-EF67-46AE-9891-C05AA792467B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9663F3FF-EF67-46AE-9891-C05AA792467B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9663F3FF-EF67-46AE-9891-C05AA792467B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

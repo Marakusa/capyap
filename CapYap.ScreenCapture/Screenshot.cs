@@ -1,7 +1,7 @@
-﻿using CapYap.ScreenCapture.Helpers;
-using CapYap.ScreenCapture.Models;
-using System.Drawing;
+﻿using System.Drawing;
 using System.Runtime.InteropServices;
+using CapYap.Utils;
+using CapYap.Utils.Models;
 
 namespace CapYap.ScreenCapture
 {

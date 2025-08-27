@@ -1,11 +1,10 @@
 ﻿using System.Drawing.Imaging;
 using System.Drawing;
 using System.Windows.Media;
-using CapYap.ScreenCapture.Models;
-using CapYap.ScreenCapture.Helpers;
 using System.Windows.Input;
 using System.Windows.Controls;
 using CapYap.Utils;
+using CapYap.Utils.Models;
 
 namespace CapYap.ViewModels.Windows
 {
@@ -13,16 +12,18 @@ namespace CapYap.ViewModels.Windows
     {
         private readonly string _tempCapturePath;
         private readonly Bitmap _bitmap;
+        private readonly Action<string> _uploadCallback;
 
         private readonly Canvas _overlayCanvas;
         private System.Windows.Shapes.Rectangle drawRectangle;
         private System.Windows.Shapes.Path _darkOverlay;
         private RectangleGeometry _selectionRectGeometry;
 
-        public OverlayWindow(Bitmap screenshot, string tempCapturePath)
+        public OverlayWindow(Bitmap screenshot, string tempCapturePath, Action<string> uploadCallback)
         {
             _tempCapturePath = tempCapturePath;
             _bitmap = screenshot;
+            _uploadCallback = uploadCallback;
 
             // Make the window borderless, transparent, topmost
             WindowStyle = WindowStyle.None;
@@ -31,6 +32,7 @@ namespace CapYap.ViewModels.Windows
             Topmost = true;
             ShowInTaskbar = false;
             Cursor = Cursors.Cross;
+            ResizeMode = ResizeMode.NoResize;
 
             // Create a Canvas to draw rectangles
             _overlayCanvas = new Canvas();
@@ -82,6 +84,7 @@ namespace CapYap.ViewModels.Windows
         private void SaveCapture(Rect captureArea)
         {
             BitmapUtils.Crop(_bitmap, captureArea).Save(_tempCapturePath, ImageFormat.Jpeg);
+            _uploadCallback.Invoke(_tempCapturePath);
         }
 
         #region Mouse events

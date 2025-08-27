@@ -3,6 +3,7 @@ using CapYap.API;
 using CapYap.API.Models.Appwrite;
 using CapYap.API.Models.Events;
 using CapYap.Interfaces;
+using CapYap.Models;
 
 namespace CapYap.Services
 {
@@ -11,7 +12,7 @@ namespace CapYap.Services
         private readonly CapYapApi _api;
 
         public event EventHandler<User?>? OnUserChanged;
-        public event EventHandler<List<string>?>? OnGalleryChanged;
+        public event EventHandler<GalleryChangedEventArgs>? OnGalleryChanged;
 
         public AuthorizationService(HttpClient client)
         {
@@ -111,12 +112,13 @@ namespace CapYap.Services
             try
             {
                 List<string>? gallery = await _api.FetchGalleryAsync();
-                OnGalleryChanged?.Invoke(this, gallery);
+                OnGalleryChanged?.Invoke(this, new GalleryChangedEventArgs(gallery));
                 return gallery;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Failed to fetch user: {ex}");
+                Console.WriteLine($"Failed to fetch gallery: {ex}");
+                OnGalleryChanged?.Invoke(this, new GalleryChangedEventArgs(null, true, ex.Message));
                 return null;
             }
         }

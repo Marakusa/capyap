@@ -45,6 +45,15 @@
             Diameter="96"
             IsLoading="true"
             Thickness="12"
-            Color="MediumPurple" VerticalAlignment="Center" HorizontalAlignment="Center" />
+            Color="MediumPurple" 
+            VerticalAlignment="Center" 
+            HorizontalAlignment="Center"/>
+        <ui:TextBlock x:Name="ErrorText" 
+            MaxWidth="500"
+            TextWrapping="Wrap" 
+            Text=""
+            TextAlignment="Center"
+            VerticalAlignment="Center" 
+            HorizontalAlignment="Center"/>
     </Grid>
 </Page>

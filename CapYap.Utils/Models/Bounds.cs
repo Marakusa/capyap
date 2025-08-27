@@ -1,4 +1,4 @@
-﻿namespace CapYap.ScreenCapture.Models
+﻿namespace CapYap.Utils.Models
 {
     public class Bounds
     {

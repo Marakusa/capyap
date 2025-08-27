@@ -1,8 +1,10 @@
-﻿using System.Windows.Controls;
+﻿using System.ComponentModel;
+using System.Windows.Controls;
 using CapYap.API.Models.Appwrite;
 using CapYap.HotKeys;
 using CapYap.HotKeys.Models;
 using CapYap.Interfaces;
+using CapYap.Properties;
 using CapYap.Utils;
 using CapYap.ViewModels.Windows;
 using Wpf.Ui;
@@ -75,9 +77,11 @@ namespace CapYap.Views.Windows
         {
             if (user == null)
             {
+                Hide();
                 _currentUser = null;
                 _loginWindow.Owner = this;
                 _loginWindow.ShowDialog();
+                Show();
                 return;
             }
 
@@ -116,8 +120,10 @@ namespace CapYap.Views.Windows
 
         private void LogOut_Click(object sender, RoutedEventArgs e)
         {
+            Hide();
             _authService.LogOutAsync();
             _loginWindow?.ShowDialog();
+            Show();
         }
 
         #region INavigationWindow methods
@@ -130,14 +136,46 @@ namespace CapYap.Views.Windows
 
         public void ShowWindow()
         {
+            Width = WindowSettings.Default.Width;
+            Height = WindowSettings.Default.Height;
+
+            if (WindowSettings.Default.Maximized)
+            {
+                WindowState = WindowState.Maximized;
+            }
+
             Show();
+            Hide();
+
             _loginWindow.Owner = this;
             _loginWindow.ShowDialog();
+
+            Show();
         }
 
         public void CloseWindow() => Close();
 
         #endregion INavigationWindow methods
+
+        protected override void OnClosing(CancelEventArgs e)
+        {
+            if (WindowState == WindowState.Maximized)
+            {
+                WindowSettings.Default.Width = RestoreBounds.Width;
+                WindowSettings.Default.Height = RestoreBounds.Height;
+                WindowSettings.Default.Maximized = true;
+            }
+            else
+            {
+                WindowSettings.Default.Width = Width;
+                WindowSettings.Default.Height = Height;
+                WindowSettings.Default.Maximized = false;
+            }
+
+            WindowSettings.Default.Save();
+
+            base.OnClosing(e);
+        }
 
         /// <summary>
         /// Raises the closed event.
