@@ -45,6 +45,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\CapYap.API\CapYap.API.csproj" />
+    <ProjectReference Include="..\CapYap.HotKeys\CapYap.HotKeys.csproj" />
     <ProjectReference Include="..\CapYap.ScreenCapture\CapYap.ScreenCapture.csproj" />
   </ItemGroup>
 

@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CapYap.API", "CapYap.API\Ca
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CapYap.ScreenCapture", "CapYap.ScreenCapture\CapYap.ScreenCapture.csproj", "{6D9CB6DB-2ACB-444B-8F01-95ACE86B84EC}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CapYap.HotKeys", "CapYap.HotKeys\CapYap.HotKeys.csproj", "{5AB4EFE8-2F99-4F6D-86C3-5568D5F5F29D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{6D9CB6DB-2ACB-444B-8F01-95ACE86B84EC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6D9CB6DB-2ACB-444B-8F01-95ACE86B84EC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6D9CB6DB-2ACB-444B-8F01-95ACE86B84EC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5AB4EFE8-2F99-4F6D-86C3-5568D5F5F29D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5AB4EFE8-2F99-4F6D-86C3-5568D5F5F29D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5AB4EFE8-2F99-4F6D-86C3-5568D5F5F29D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5AB4EFE8-2F99-4F6D-86C3-5568D5F5F29D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

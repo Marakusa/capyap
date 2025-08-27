@@ -1,5 +1,7 @@
 ﻿using System.Windows.Controls;
 using CapYap.API.Models.Appwrite;
+using CapYap.HotKeys;
+using CapYap.HotKeys.Models;
 using CapYap.Interfaces;
 using CapYap.Utils;
 using CapYap.ViewModels.Windows;
@@ -15,7 +17,11 @@ namespace CapYap.Views.Windows
         public MainWindowViewModel ViewModel { get; }
 
         private readonly IAuthorizationService _authService;
+        private readonly IScreenshotService _screenshotService;
+
         private readonly LoginWindow _loginWindow;
+
+        private User? _currentUser;
 
         public MainWindow(
             MainWindowViewModel viewModel,
@@ -23,13 +29,18 @@ namespace CapYap.Views.Windows
             INavigationService navigationService,
             IAuthorizationService authorizationService,
             LoginWindow loginWindow,
-            IScreenshotService screenshotService
+            IScreenshotService screenshotService,
+            HotKeyManager hotKeys
         )
         {
             ViewModel = viewModel;
             DataContext = this;
 
             _authService = authorizationService;
+            _screenshotService = screenshotService;
+
+            RegisterHotkeys(hotKeys);
+
             _loginWindow = loginWindow;
 
             _authService.OnUserChanged += OnUserChanged;
@@ -40,20 +51,39 @@ namespace CapYap.Views.Windows
             SetPageService(navigationViewPageProvider);
 
             navigationService.SetNavigationControl(RootNavigation);
+        }
 
-            screenshotService.CaptureAllScreens();
+        private void RegisterHotkeys(HotKeyManager hotKeyManager)
+        {
+            hotKeyManager.HotKey_ScreenCapture += CaptureScreen;
+
+            hotKeyManager.Bind(BindingAction.CaptureScreen, System.Windows.Input.Key.PrintScreen, KeyModifier.Ctrl);
+            hotKeyManager.Bind(BindingAction.CloseCropView, System.Windows.Input.Key.Escape, KeyModifier.None);
+        }
+
+        private void CaptureScreen(HotKey key)
+        {
+            if (_currentUser == null)
+            {
+                return;
+            }
+
+            _screenshotService.CaptureAllScreens();
         }
 
         private void OnUserChanged(object? sender, User? user)
         {
             if (user == null)
             {
+                _currentUser = null;
                 _loginWindow.Owner = this;
                 _loginWindow.ShowDialog();
                 return;
             }
 
-            AccountButton.Content = user.Name;
+            _currentUser = user;
+
+            AccountButton.Content = _currentUser.Name;
 
             AccountButton.ContextMenu = new ContextMenu();
 

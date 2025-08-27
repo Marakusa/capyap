@@ -2,6 +2,7 @@
 using System.Net.Http;
 using System.Windows.Threading;
 using CapYap.API;
+using CapYap.HotKeys;
 using CapYap.Interfaces;
 using CapYap.Services;
 using CapYap.ViewModels.Pages;
@@ -55,6 +56,7 @@ namespace CapYap
                 services.AddScoped<HttpClient>();
 
                 services.AddSingleton<CapYapApi>();
+                services.AddSingleton<HotKeyManager>();
 
                 services.AddSingleton<IAuthorizationService, AuthorizationService>();
                 services.AddSingleton<IScreenshotService, ScreenshotService>();
