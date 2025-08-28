@@ -81,17 +81,14 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="NSIS\Installer.nsi">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </None>
     <None Update="Properties\WindowSettings.settings">
       <Generator>PublicSettingsSingleFileGenerator</Generator>
       <LastGenOutput>WindowSettings.Designer.cs</LastGenOutput>
     </None>
   </ItemGroup>
 
-  <Target Name="CustomPostPublishActions" AfterTargets="Publish">
-    <Exec Command="call $(ProjectDir)post_build.bat $(ProjectDir)Assets\icon.ico $(ProjectDir)$(OutDir) $(ProjectDir)NSIS\Installer.nsi" />
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="&quot;C:\Program Files (x86)\NSIS\makensis.exe&quot; &quot;$(ProjectDir)\NSISInstaller\Installer.nsi&quot;" />
   </Target>
 
 </Project>

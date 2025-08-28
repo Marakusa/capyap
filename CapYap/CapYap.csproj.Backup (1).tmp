@@ -90,8 +90,8 @@
     </None>
   </ItemGroup>
 
-  <Target Name="CustomPostPublishActions" AfterTargets="Publish">
-    <Exec Command="call $(ProjectDir)post_build.bat $(ProjectDir)Assets\icon.ico $(ProjectDir)$(OutDir) $(ProjectDir)NSIS\Installer.nsi" />
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="call &quot;$(ProjectDir)post_build.bat&quot; &quot;$(ProjectDir)Assets\icon.ico&quot; &quot;$(ProjectDir)$(OutDir)publish&quot; &quot;$(ProjectDir)NSIS\Installer.nsi&quot;" />
   </Target>
 
 </Project>
