@@ -1,11 +1,27 @@
-﻿Name "CapYap"
-OutFile "Install_CapYap.exe"
+﻿!include "MUI2.nsh"
+
+!define MUI_COMPONENTSPAGE_SMALLDESC
+!define MUI_INSTFILESPAGE_COLORS "FFFFFF 000000" ; Background and text colors
+
+!define APP_VERSION "${APP_VERSION}"
+
+Name "CapYap ${APP_VERSION}"
+OutFile "CapYap_Installer_${APP_VERSION}.exe"
 RequestExecutionLevel user
 SilentInstall silent
 
 Icon "${ICONFILE}"
 
 InstallDir "$LOCALAPPDATA\CapYap"
+
+!insertmacro MUI_PAGE_INSTFILES
+
+!insertmacro MUI_UNPAGE_WELCOME
+!insertmacro MUI_UNPAGE_CONFIRM
+!insertmacro MUI_UNPAGE_INSTFILES
+!insertmacro MUI_UNPAGE_FINISH
+
+!insertmacro MUI_LANGUAGE "English"
 
 Section "Install"
 
@@ -17,7 +33,8 @@ Section "Install"
   WriteRegStr HKEY_CURRENT_USER "Software\Microsoft\Windows\CurrentVersion\Uninstall\CapYap" "DisplayName" "CapYap"
   WriteRegStr HKEY_CURRENT_USER "Software\Microsoft\Windows\CurrentVersion\Uninstall\CapYap" "UninstallString" '"$INSTDIR\uninstall.exe"'
   WriteRegStr HKEY_CURRENT_USER "Software\Microsoft\Windows\CurrentVersion\Uninstall\CapYap" "DisplayIcon" '"$INSTDIR\CapYap.exe"'
-  WriteRegStr HKEY_CURRENT_USER "Software\Microsoft\Windows\CurrentVersion\Uninstall\CapYap" "Publisher" "Your Company Name"
+  WriteRegStr HKEY_CURRENT_USER "Software\Microsoft\Windows\CurrentVersion\Uninstall\CapYap" "Publisher" "Marakusa"
+  WriteRegStr HKEY_CURRENT_USER "Software\Microsoft\Windows\CurrentVersion\Uninstall\CapYap" "DisplayVersion" "${APP_VERSION}"
 
   CreateShortCut "$SMPROGRAMS\CapYap.lnk" "$INSTDIR\CapYap.exe" "" "$INSTDIR\CapYap.exe" 0
 
@@ -28,9 +45,10 @@ Section "Install"
 SectionEnd
 
 Section "Uninstall"
-  
-  Delete "$SMPROGRAMS\CapYap.lnk"
-  Delete "$DESKTOP\CapYap.lnk"
+  !insertmacro MUI_UNGETLANGUAGE
+
+  Delete "$SMPROGRAMS\CapYap ${APP_VERSION}.lnk"
+  Delete "$DESKTOP\CapYap ${APP_VERSION}.lnk"
 
   RMDir /r "$INSTDIR"
 

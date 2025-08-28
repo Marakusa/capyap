@@ -3,6 +3,7 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net8.0-windows</TargetFramework>
+	<Version>$([System.DateTime]::Now.ToString('yyyy.M.d.HHmm'))</Version>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <ApplicationIcon>Assets\icon.ico</ApplicationIcon>
     <UseWPF>true</UseWPF>
@@ -91,7 +92,10 @@
   </ItemGroup>
 
   <Target Name="CustomPostPublishActions" AfterTargets="Publish">
-    <Exec Command="call $(ProjectDir)post_build.bat $(ProjectDir)Assets\icon.ico $(ProjectDir)$(OutDir) $(ProjectDir)NSIS\Installer.nsi" />
+	<PropertyGroup>
+		<PublishDir>$([System.IO.Path]::GetDirectoryName('$(OutDir)'))</PublishDir>
+	</PropertyGroup>
+    <Exec Command="call $(ProjectDir)post_build.bat $(ProjectDir)Assets\icon.ico $(ProjectDir)$(OutDir) $(ProjectDir)NSIS\Installer.nsi /DAPP_VERSION=$(Version)" />
   </Target>
 
 </Project>
