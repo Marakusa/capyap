@@ -29,10 +29,11 @@ namespace CapYap.ViewModels.Windows
             WindowStyle = WindowStyle.None;
             AllowsTransparency = true;
             Background = System.Windows.Media.Brushes.Transparent;
-            //Topmost = true;
-            ShowInTaskbar = false;
+            Topmost = true;
+            ShowInTaskbar = true;
             Cursor = Cursors.Cross;
             ResizeMode = ResizeMode.NoResize;
+            Title = "CapYap Overlay";
 
             // Create a Canvas to draw rectangles
             _overlayCanvas = new Canvas();
