@@ -52,8 +52,8 @@
             <ui:Button HorizontalAlignment="Stretch" Margin="5" Height="80">
                 <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
                     <StackPanel VerticalAlignment="Top" HorizontalAlignment="Left">
-                        <TextBlock Text="Storage Usage (Gb)" FontSize="16" Margin="8,8,0,0"/>
-                        <TextBlock Text="0" Foreground="#AAA" FontSize="12" Margin="8,4,0,0"/>
+                        <TextBlock Text="Storage Usage (Gb)" FontSize="16" Margin="0,0,0,0" TextAlignment="Left"/>
+                        <TextBlock Text="0" Foreground="#AAA" FontSize="12" Margin="0,4,0,0"/>
                     </StackPanel>
                 </Grid>
             </ui:Button>
@@ -61,8 +61,8 @@
             <ui:Button HorizontalAlignment="Stretch" Margin="5" Height="80">
                 <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
                     <StackPanel VerticalAlignment="Top" HorizontalAlignment="Left">
-                        <TextBlock Text="Uploaded files" FontSize="16" Margin="0,8,0,0" VerticalAlignment="Top"/>
-                        <TextBlock Text="0" Foreground="#AAA" FontSize="12" Margin="0,8,0,0"/>
+                        <TextBlock Text="Uploaded files" FontSize="16" Margin="0,0,0,0" TextAlignment="Left"/>
+                        <TextBlock Text="0" Foreground="#AAA" FontSize="12" Margin="0,4,0,0"/>
                     </StackPanel>
                 </Grid>
             </ui:Button>
@@ -70,8 +70,8 @@
             <ui:Button HorizontalAlignment="Stretch" Margin="5" Height="80">
                 <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
                     <StackPanel VerticalAlignment="Top" HorizontalAlignment="Left">
-                        <TextBlock Text="Views (7 days)" FontSize="16" Margin="0,8,0,0" VerticalAlignment="Top"/>
-                        <TextBlock Text="0" Foreground="#AAA" FontSize="12" Margin="0,8,0,0"/>
+                        <TextBlock Text="Views (7 days)" FontSize="16" Margin="0,0,0,0" TextAlignment="Left"/>
+                        <TextBlock Text="0" Foreground="#AAA" FontSize="12" Margin="0,4,0,0"/>
                     </StackPanel>
                 </Grid>
             </ui:Button>
@@ -79,8 +79,8 @@
             <ui:Button HorizontalAlignment="Stretch" Margin="5" Height="80">
                 <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
                     <StackPanel VerticalAlignment="Top" HorizontalAlignment="Left">
-                        <TextBlock Text="Views (All time)" FontSize="16" Margin="0,8,0,0" VerticalAlignment="Top"/>
-                        <TextBlock Text="0" Foreground="#AAA" FontSize="12" Margin="0,8,0,0"/>
+                        <TextBlock Text="Views (All time)" FontSize="16" Margin="0,0,0,0" TextAlignment="Left"/>
+                        <TextBlock Text="0" Foreground="#AAA" FontSize="12" Margin="0,4,0,0"/>
                     </StackPanel>
                 </Grid>
             </ui:Button>
