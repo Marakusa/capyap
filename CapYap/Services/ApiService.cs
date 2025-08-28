@@ -1,4 +1,5 @@
 ﻿using System.Net.Http;
+using System.Windows.Controls;
 using CapYap.API;
 using CapYap.API.Models;
 using CapYap.API.Models.Appwrite;
@@ -14,6 +15,8 @@ namespace CapYap.Services
 
         public event EventHandler<GalleryChangedEventArgs>? OnGalleryChanged;
         public event Action<EventArgs>? OnGalleryFetching;
+        public event EventHandler<StatsChangedEventArgs>? OnStatsChanged;
+        public event Action<EventArgs>? OnStatsFetching;
         public event EventHandler<User?>? OnUserChanged;
 
         private int _currentPage = 1;
@@ -149,6 +152,28 @@ namespace CapYap.Services
                 OnGalleryChanged?.Invoke(this, new GalleryChangedEventArgs(null, true, ex.Message));
                 return null;
             }
+        }
+
+        public async Task<Stats?> FetchStatsAsync()
+        {
+            try
+            {
+                OnStatsFetching?.Invoke(EventArgs.Empty);
+                Stats? stats = await _api.FetchStatsAsync();
+                OnStatsChanged?.Invoke(this, new StatsChangedEventArgs(stats));
+                return stats;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Failed to fetch gallery: {ex}");
+                OnStatsChanged?.Invoke(this, new StatsChangedEventArgs(null, true, ex.Message));
+                return null;
+            }
+        }
+
+        public async Task<string> UploadCaptureAsync(string path)
+        {
+            return await _api.UploadCaptureAsync(path);
         }
     }
 }

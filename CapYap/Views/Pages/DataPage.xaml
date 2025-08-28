@@ -35,7 +35,8 @@
                         <Image Source="{Binding}"
                             Stretch="UniformToFill"
                             VerticalAlignment="Center"
-                            HorizontalAlignment="Center"/>
+                            HorizontalAlignment="Center"
+                            MouseLeftButtonUp="OnImageClick"/>
                     </Border>
                 </DataTemplate>
             </ItemsControl.ItemTemplate>

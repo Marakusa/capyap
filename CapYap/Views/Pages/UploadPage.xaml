@@ -16,15 +16,23 @@
     Foreground="{DynamicResource TextFillColorPrimaryBrush}"
     mc:Ignorable="d">
 
-    <Grid VerticalAlignment="Top">
+    <Grid HorizontalAlignment="Center">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="Auto" MinWidth="171.81" />
             <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
 
-        <ui:Button
-            Grid.Column="0"
-            Command="{Binding ViewModel.UploadClickedCommand, Mode=OneWay}"
-            Content="Upload a screenshot" />
+        <StackPanel HorizontalAlignment="Center" Orientation="Vertical" Margin="0,16,0,0" VerticalAlignment="Top">
+            <ui:Button x:Name="UploadButton"
+                Click="Button_Click"
+                Content="Upload a screenshot" HorizontalAlignment="Center" />
+            <ui:TextBlock x:Name="UploadSuccess" TextWrapping="Wrap" Text="Screenshot uploaded!" VerticalAlignment="Center" Margin="0,8,0,0" HorizontalAlignment="Center"/>
+            <ui:TextBlock x:Name="UploadFail" Foreground="IndianRed" TextWrapping="Wrap" Text="Screenshot upload failed." VerticalAlignment="Center" Margin="0,8,0,0" HorizontalAlignment="Center"/>
+            <WrapPanel x:Name="UploadingStatus" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,8,0,0">
+                <ui:ProgressRing IsIndeterminate="True" Height="32" Width="32"/>
+                <ui:TextBlock TextWrapping="Wrap" Text="Uploading..." VerticalAlignment="Center" Margin="10,0,0,0"/>
+            </WrapPanel>
+        </StackPanel>
+        <ui:Image x:Name="UploadedImage" Source="/Assets/icons/1024x1024.png" Margin="16,84,16,16" VerticalAlignment="Top" Height="350"/>
     </Grid>
 </Page>

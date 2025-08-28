@@ -1,6 +1,5 @@
 ﻿using System.Drawing;
 using System.IO;
-using CapYap.API;
 using CapYap.HotKeys;
 using CapYap.HotKeys.Models;
 using CapYap.Interfaces;
@@ -12,16 +11,16 @@ namespace CapYap.Services
     public class ScreenshotService : IScreenshotService
     {
         private readonly HotKeyManager _hotKeys;
-        private readonly CapYapApi _capYapApi;
+        private readonly IApiService _apiService;
 
         private readonly string tempScreenshotPath;
 
         private OverlayWindow? _overlayWindow;
 
-        public ScreenshotService(HotKeyManager hotKeys, CapYapApi capYapApi)
+        public ScreenshotService(HotKeyManager hotKeys, IApiService apiService)
         {
             _hotKeys = hotKeys;
-            _capYapApi = capYapApi;
+            _apiService = apiService;
 
             tempScreenshotPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "CapYap", "screenshot-temp.jpg");
         }
@@ -66,8 +65,9 @@ namespace CapYap.Services
             toast.SetWait("Uploading screen capture...");
             try
             {
-                await _capYapApi.UploadCaptureAsync(path);
-                toast.SetSuccess("Screen capture uploaded.");
+                string url = await _apiService.UploadCaptureAsync(path);
+                Clipboard.SetText(url);
+                toast.SetSuccess("Screen capture uploaded and copied to clipboard");
             }
             catch (Exception ex)
             {

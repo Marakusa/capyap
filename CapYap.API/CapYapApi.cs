@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
 using System.Text;
 using CapYap.API.Models;
 using CapYap.API.Models.Appwrite;
@@ -15,6 +16,8 @@ namespace CapYap.API
         private readonly string _apiHost = "https://sc.marakusa.me";
 
         private Session? _currentSession;
+
+        public static event EventHandler? ImageUploaded;
 
         #region Event callbacks
         private delegate Task AsyncEventHandler<TEventArgs>(object? sender, TEventArgs e);
@@ -61,8 +64,6 @@ namespace CapYap.API
 
         public CapYapApi(HttpClient httpClient)
         {
-            _httpClient = httpClient;
-
             _cookieContainer = new CookieContainer();
 
             CookieCollection? loadedCookies = LoadCookies();
@@ -77,7 +78,8 @@ namespace CapYap.API
                 UseCookies = true,
                 CookieContainer = _cookieContainer
             };
-            _appwrite = new Appwrite(new HttpClient(clientHandler), SaveCookies);
+            _httpClient = new HttpClient(clientHandler);
+            _appwrite = new Appwrite(_httpClient, SaveCookies);
             _apiHost = "https://sc.marakusa.me";
 
             OnClientAuthorizedAsync += ApiOnClientAuthorized;
@@ -213,6 +215,43 @@ namespace CapYap.API
             }
         }
 
+        public async Task<Stats?> FetchStatsAsync()
+        {
+            try
+            {
+                string jwt = await _appwrite.CheckJWT();
+                HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, $"{_apiHost}/f/all/stats")
+                {
+                    Content = new StringContent(
+                        JsonConvert.SerializeObject(new CapYapApiJwtRequest(jwt)),
+                        Encoding.UTF8,
+                        "application/json"
+                    )
+                };
+                HttpResponseMessage response = await _httpClient.SendAsync(request);
+                string responseData = await response.Content.ReadAsStringAsync();
+
+                if (response.IsSuccessStatusCode)
+                {
+                    Stats? stats = JsonConvert.DeserializeObject<Stats?>(responseData);
+                    if (stats != null)
+                    {
+                        return stats;
+                    }
+                    throw new Exception("Stats was null.");
+                }
+                else
+                {
+                    throw new Exception(responseData);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"FetchStats returned an error: {ex}");
+                return null;
+            }
+        }
+
         public async Task<Gallery?> FetchGalleryAsync(int page)
         {
             try
@@ -250,7 +289,7 @@ namespace CapYap.API
             }
         }
 
-        public async Task UploadCaptureAsync(string filePath)
+        public async Task<string> UploadCaptureAsync(string filePath)
         {
             try
             {
@@ -258,7 +297,7 @@ namespace CapYap.API
 
                 MultipartFormDataContent form = new()
                 {
-                    { new StringContent(jwt), "sessionKey" }
+                    { new StringContent(jwt, Encoding.UTF8, "text/plain"), "sessionKey" }
                 };
 
                 var capContent = new ByteArrayContent(await File.ReadAllBytesAsync(filePath));
@@ -275,6 +314,16 @@ namespace CapYap.API
                 {
                     throw new Exception(responseData);
                 }
+
+                UploadResponse? uploadResponse = JsonConvert.DeserializeObject<UploadResponse?>(responseData);
+
+                if (uploadResponse?.Url != null)
+                {
+                    ImageUploaded?.Invoke(this, EventArgs.Empty);
+                    return uploadResponse.Url;
+                }
+
+                throw new Exception("No URL returned");
             }
             catch (Exception ex)
             {

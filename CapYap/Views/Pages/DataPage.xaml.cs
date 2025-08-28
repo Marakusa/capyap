@@ -1,8 +1,13 @@
-﻿using System.Windows.Media;
+﻿using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using CapYap.API;
 using CapYap.Interfaces;
 using CapYap.Models;
+using CapYap.Toast;
 using CapYap.ViewModels.Pages;
 using Wpf.Ui.Abstractions.Controls;
+using Wpf.Ui.Controls;
 
 namespace CapYap.Views.Pages
 {
@@ -12,6 +17,8 @@ namespace CapYap.Views.Pages
 
         private readonly IApiService _apiService;
 
+        public static event EventHandler<string>? ImageClicked;
+
         public DataPage(DataViewModel viewModel,
             IApiService apiService)
         {
@@ -20,11 +27,23 @@ namespace CapYap.Views.Pages
 
             _apiService = apiService;
 
+            InitializeComponent();
+        }
+
+        protected override void OnInitialized(EventArgs e)
+        {
+            base.OnInitialized(e);
+
             _apiService.OnGalleryChanged += OnGalleryChanged;
             _apiService.OnGalleryFetching += OnGalleryFetching;
 
-            InitializeComponent();
-
+            CapYapApi.ImageUploaded += (_, _) =>
+            {
+                LoadingRing.Visibility = Visibility.Visible;
+                ErrorText.Visibility = Visibility.Hidden;
+                ErrorText.Text = "";
+                _ = _apiService.FetchGalleryAsync();
+            };
             LoadingRing.Visibility = Visibility.Visible;
             ErrorText.Visibility = Visibility.Hidden;
             ErrorText.Text = "";
@@ -61,7 +80,12 @@ namespace CapYap.Views.Pages
             }
 
             // Bind the list of URLs to the gallery
-            GalleryControl.ItemsSource = e.Gallery.Documents;
+            List<string> urls = new List<string>();
+            foreach (var url in e.Gallery.Documents)
+            {
+                urls.Add(url.ToString() + "&noView=1");
+            }
+            GalleryControl.ItemsSource = urls;
             LoadingRing.Visibility = Visibility.Hidden;
             ErrorText.Visibility = Visibility.Hidden;
             ErrorText.Text = "";
@@ -74,6 +98,27 @@ namespace CapYap.Views.Pages
             ErrorText.Visibility = Visibility.Hidden;
             ErrorText.Text = "";
             PageBar.IsEnabled = false;
+        }
+        
+        private void OnImageClick(object sender, MouseButtonEventArgs e)
+        {
+            System.Windows.Controls.Image img;
+            if (sender is System.Windows.Controls.Image)
+            {
+                img = (System.Windows.Controls.Image)sender;
+            }
+            else
+            {
+                return;
+            }
+
+            string? url = img.DataContext.ToString();
+            if (img.DataContext == null || string.IsNullOrEmpty(url))
+            {
+                return;
+            }
+
+            ImageClicked?.Invoke(this, url);
         }
 
         #region Page actions

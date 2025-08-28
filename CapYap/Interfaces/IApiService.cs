@@ -9,6 +9,8 @@ namespace CapYap.Interfaces
     {
         public event EventHandler<GalleryChangedEventArgs>? OnGalleryChanged;
         public event Action<EventArgs>? OnGalleryFetching;
+        public event EventHandler<StatsChangedEventArgs>? OnStatsChanged;
+        public event Action<EventArgs>? OnStatsFetching;
         public event EventHandler<User?>? OnUserChanged;
 
         public Task BeginOAuthAsync(Action<object?, AuthorizedUserEventArgs> successCallback, Action<object?, OnAuthorizationFailedEventArgs> failedCallback, bool checkOnly = false);
@@ -26,5 +28,9 @@ namespace CapYap.Interfaces
         public Task<Gallery?> FetchGalleryPrevAsync();
 
         public Task<Gallery?> FetchGalleryAsync(int page);
+
+        public Task<Stats?> FetchStatsAsync();
+
+        public Task<string> UploadCaptureAsync(string path);
     }
 }

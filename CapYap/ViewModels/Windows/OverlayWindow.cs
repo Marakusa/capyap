@@ -83,8 +83,31 @@ namespace CapYap.ViewModels.Windows
 
         private void SaveCapture(Rect captureArea)
         {
-            BitmapUtils.Crop(_bitmap, captureArea).Save(_tempCapturePath, ImageFormat.Jpeg);
-            _uploadCallback.Invoke(_tempCapturePath);
+            try
+            {
+                BitmapUtils.Crop(_bitmap, captureArea).Save(_tempCapturePath, ImageFormat.Jpeg);
+                _uploadCallback.Invoke(_tempCapturePath);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                new Toast.Toast().SetFail(ex.Message);
+            }
+        }
+
+        // Dont lose focus
+        protected override void OnDeactivated(EventArgs e)
+        {
+            Topmost = true;
+            Activate();
+        }
+
+        // Dont lose focus
+        protected override void OnInitialized(EventArgs e)
+        {
+            base.OnInitialized(e);
+            Topmost = true;
+            Activate();
         }
 
         #region Mouse events

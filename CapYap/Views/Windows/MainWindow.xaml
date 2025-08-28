@@ -9,6 +9,8 @@
     Title="{Binding ViewModel.ApplicationTitle, Mode=OneWay}"
     Width="1100"
     Height="650"
+    MinWidth="1150"
+    MinHeight="600"
     d:DataContext="{d:DesignInstance local:MainWindow,
                                      IsDesignTimeCreatable=True}"
     d:DesignHeight="450"
@@ -75,5 +77,53 @@
                 </Grid>
             </ui:NavigationView.ContentOverlay>
         </ui:NavigationView>
+
+
+        <Grid x:Name="PreviewPanel" Background="#CC000000" Visibility="Hidden">
+            <Canvas x:Name="PreviewCanvas">
+                <ui:Image x:Name="PreviewImageComponent"
+                  RenderTransformOrigin="0.5,0.5"
+                  Stretch="Uniform">
+                    <ui:Image.RenderTransform>
+                        <TransformGroup>
+                            <ScaleTransform x:Name="PreviewImageScale" ScaleX="1" ScaleY="1"/>
+                            <TranslateTransform x:Name="PreviewImageTranslate" X="0" Y="0"/>
+                        </TransformGroup>
+                    </ui:Image.RenderTransform>
+                </ui:Image>
+            </Canvas>
+            <StackPanel Margin="0,408,0,8" Orientation="Horizontal" VerticalAlignment="Bottom" HorizontalAlignment="Center" Height="36">
+                <ui:Button x:Name="SaveButton" Margin="2">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="&#xe896;" 
+                           FontFamily="Segoe Fluent Icons"
+                           FontSize="16"
+                           VerticalAlignment="Center"
+                           Margin="0,0,4,0"/>
+                        <TextBlock Text="Save" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </ui:Button>
+                <ui:Button x:Name="ShareButton" Margin="2">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="&#xE72D;" 
+                           FontFamily="Segoe Fluent Icons"
+                           FontSize="16"
+                           VerticalAlignment="Center"
+                           Margin="0,0,4,0"/>
+                        <TextBlock Text="Share" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </ui:Button>
+                <ui:Button x:Name="DeleteButton" Margin="2">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="&#xe74d;" 
+                           FontFamily="Segoe Fluent Icons"
+                           FontSize="16"
+                           VerticalAlignment="Center"
+                           Margin="0,0,4,0"/>
+                        <TextBlock Text="Delete" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </ui:Button>
+            </StackPanel>
+        </Grid>
     </Grid>
 </ui:FluentWindow>
