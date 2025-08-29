@@ -1,8 +1,9 @@
 name: .NET
 
 on:
-  push:
+  pull_request:
     branches: [ "main" ]
+    types: [closed]
 
 jobs:
   build:
