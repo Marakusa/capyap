@@ -94,7 +94,7 @@
 	<PropertyGroup>
 		<PublishDir>$([System.IO.Path]::GetDirectoryName('$(OutDir)'))</PublishDir>
 	</PropertyGroup>
-    <Exec Command="call $(ProjectDir)post_build.bat $(ProjectDir)Assets\icon.ico $(ProjectDir)$(OutDir) $(ProjectDir)NSIS\Installer.nsi $(Version)" />
+    <Exec Command="call $(ProjectDir)post_build.bat $(ProjectDir)Assets\icon.ico $(ProjectDir)$(OutDir) $(ProjectDir)NSIS\Installer.nsi $(Version) $(RuntimeIdentifier)" />
   </Target>
 
 </Project>
