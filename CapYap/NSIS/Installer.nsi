@@ -4,7 +4,7 @@
 !define MUI_INSTFILESPAGE_COLORS "FFFFFF 000000" ; Background and text colors
 
 Name "CapYap ${APP_VERSION}"
-OutFile "CapYap_Installer_${APP_VERSION}.exe"
+OutFile "CapYap_${APP_VERSION}-${PLATFORM}.exe"
 RequestExecutionLevel user
 SilentInstall silent
 

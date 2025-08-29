@@ -10,8 +10,31 @@ jobs:
     runs-on: windows-latest
 
     steps:
+
     - name: Checkout code
       uses: actions/checkout@v4
+
+    - name: Set version number
+      id: version
+      shell: bash
+      run: |
+        VERSION=$(date +"%y.%-m%d.%H%M")
+        echo "VERSION=$VERSION" >> $GITHUB_ENV
+        echo "Version: $VERSION"
+
+    - name: Get merged PR
+      id: get_pr
+      uses: actions-ecosystem/action-get-merged-pull-request@v1
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Extract PR description
+      id: pr_body
+      run: |
+        BODY="${{ steps.get_pr.outputs.body }}"
+        echo "BODY<<EOF" >> $GITHUB_ENV
+        echo "$BODY" >> $GITHUB_ENV
+        echo "EOF" >> $GITHUB_ENV
 
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
@@ -26,14 +49,6 @@ jobs:
 
     - name: Test
       run: dotnet test --no-build --verbosity normal
-
-    - name: Set version number
-      id: version
-      shell: bash
-      run: |
-        VERSION=$(date +"%y.%m.%d.%H%M")
-        echo "VERSION=$VERSION" >> $GITHUB_ENV
-        echo "Version: $VERSION"
 
     - name: Create version branch
       run: |
@@ -61,5 +76,6 @@ jobs:
         tag_name: ${{ env.VERSION }}
         name: Release ${{ env.VERSION }}
         files: ${{ env.INSTALLER }}
+        body: ${{ env.BODY }}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
