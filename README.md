@@ -4,3 +4,9 @@ CapYap is a lightweight screen capturing app that lets you upload and manage you
 The app uses Discord to authorize users. This makes it very quick and easy for the users to start using the app.
 
 Backend runs on my server (https://sc.marakusa.me)
+
+## TODO
+- [ ] Tray icon + background process
+- [ ] Optimize crop overlay
+- [ ] Update changes
+- [ ] Mac + Linux support
