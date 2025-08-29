@@ -85,7 +85,7 @@ jobs:
           path: ./build
 
       - name: Publish
-        run: dotnet publish --configuration Release --runtime win-x86 /p:Version=${{ needs.build.outputs.version }} /p:RuntimeIdentifier=win-x86
+        run: dotnet publish --configuration Release --self-contained true --runtime win-x86 /p:Version=${{ needs.build.outputs.version }} /p:RuntimeIdentifier=win-x86
         env:
           VERSION: ${{ needs.build.outputs.version }}
           RUNTIME_IDENTIFIER: win-x86
