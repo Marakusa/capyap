@@ -41,9 +41,14 @@ jobs:
         git config user.email "github-actions@github.com"
         git checkout -b ${{ env.VERSION }}
         git push origin ${{ env.VERSION }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Publish
       run: dotnet publish --configuration Release
+
+    - name: Install NSIS
+      run: choco install nsis -y
 
     - name: Build NSIS installer
       run: |
