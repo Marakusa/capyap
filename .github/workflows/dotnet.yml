@@ -1,7 +1,7 @@
 name: .NET
 
 on:
-  pull_request:
+  push:
     branches: [ "main" ]
 
 jobs:
@@ -47,19 +47,11 @@ jobs:
     - name: Publish
       run: dotnet publish --configuration Release
 
-    - name: Install NSIS
-      run: choco install nsis -y
-
-    - name: Build NSIS installer
-      run: |
-        call post_build.bat Assets\icon.ico $(OutDir) NSIS\Installer.nsi ${{ env.VERSION }}
-      shell: cmd
-
     - name: Find installer
       id: find_installer
       shell: bash
       run: |
-        INSTALLER=$(find . -name "*.exe" | grep -i installer | head -n 1)
+        INSTALLER=$(find ./CapYap/NSIS -name "*.exe" | head -n 1)
         echo "INSTALLER=$INSTALLER" >> $GITHUB_ENV
         echo "Found installer: $INSTALLER"
 
