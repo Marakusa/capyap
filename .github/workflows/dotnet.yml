@@ -30,6 +30,7 @@ jobs:
 
     - name: Extract PR description
       id: pr_body
+      shell: bash
       run: |
         BODY="${{ steps.get_pr.outputs.body }}"
         echo "BODY<<EOF" >> $GITHUB_ENV
