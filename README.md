@@ -12,6 +12,7 @@ Backend runs on my server (https://sc.marakusa.me)
 [capyap-web-frontend](https://github.com/Marakusa/capyap-web-frontend)
 
 ## TODO
+- [ ] Save and delete functions on image preview
 - [ ] Tray icon + background process
 - [ ] Optimize crop overlay
 - [ ] Update changes
