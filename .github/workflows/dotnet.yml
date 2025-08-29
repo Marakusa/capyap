@@ -46,7 +46,10 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Publish
-      run: dotnet publish --configuration Release
+      run: dotnet publish --configuration Release --runtime win-x86 /p:Version=${{ env.VERSION }} /p:RuntimeIdentifier=win-x86
+      env:
+        VERSION: ${{ env.VERSION }}
+        RUNTIME_IDENTIFIER: win-x86
 
     - name: Find installer
       id: find_installer
