@@ -104,5 +104,6 @@ jobs:
           name: Release ${{ needs.build.outputs.version }}
           files: ${{ env.INSTALLER }}
           body: "CapYap release ${{ needs.build.outputs.version }}"
+          overwrite: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
