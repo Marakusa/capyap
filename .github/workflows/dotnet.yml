@@ -6,65 +6,103 @@ on:
 
 jobs:
   build:
-
     runs-on: windows-latest
-
+    outputs:
+      version: ${{ steps.version.outputs.version }}
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Set version number
+        id: version
+        shell: bash
+        run: |
+          VERSION=$(date +"%y.%-m%d.%H%M")
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "Version: $VERSION"
+          echo "::set-output name=version::$VERSION"
 
-    - name: Set version number
-      id: version
-      shell: bash
-      run: |
-        VERSION=$(date +"%y.%-m%d.%H%M")
-        echo "VERSION=$VERSION" >> $GITHUB_ENV
-        echo "Version: $VERSION"
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
 
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: 8.0.x
+      - name: Restore dependencies
+        run: dotnet restore
 
-    - name: Restore dependencies
-      run: dotnet restore
+      - name: Build
+        run: dotnet build --no-restore --configuration Release
 
-    - name: Build
-      run: dotnet build --no-restore --configuration Release
+      - name: Test
+        run: dotnet test --no-build --verbosity normal
 
-    - name: Test
-      run: dotnet test --no-build --verbosity normal
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: build-output
+          path: |
+            **/bin/Release/**
 
-    - name: Create version branch
-      run: |
-        git config user.name "github-actions"
-        git config user.email "github-actions@github.com"
-        git checkout -b ${{ env.VERSION }}
-        git push origin ${{ env.VERSION }}
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  prepare:
+    runs-on: windows-latest
+    needs: build
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Publish
-      run: dotnet publish --configuration Release --runtime win-x86 /p:Version=${{ env.VERSION }} /p:RuntimeIdentifier=win-x86
-      env:
-        VERSION: ${{ env.VERSION }}
-        RUNTIME_IDENTIFIER: win-x86
+      - name: Download build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: build-output
+          path: ./build
 
-    - name: Find installer
-      id: find_installer
-      shell: bash
-      run: |
-        INSTALLER=$(find ./CapYap/NSIS -name "*.exe" | head -n 1)
-        echo "INSTALLER=$INSTALLER" >> $GITHUB_ENV
-        echo "Found installer: $INSTALLER"
+      - name: Create version branch
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git checkout -b ${{ needs.build.outputs.version }}
+          git push origin ${{ needs.build.outputs.version }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Create GitHub Release
-      uses: softprops/action-gh-release@v2
-      with:
-        tag_name: ${{ env.VERSION }}
-        name: Release ${{ env.VERSION }}
-        files: ${{ env.INSTALLER }}
-        body: "CapYap release ${{ env.VERSION }}"
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  publish:
+    runs-on: windows-latest
+    needs: [build, prepare]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: build-output
+          path: ./build
+
+      - name: Publish
+        run: dotnet publish --configuration Release --runtime win-x86 /p:Version=${{ needs.build.outputs.version }} /p:RuntimeIdentifier=win-x86
+        env:
+          VERSION: ${{ needs.build.outputs.version }}
+          RUNTIME_IDENTIFIER: win-x86
+
+      - name: Find installer
+        id: find_installer
+        shell: bash
+        run: |
+          INSTALLER=$(find ./CapYap/NSIS -name "*.exe" | head -n 1)
+          echo "INSTALLER=$INSTALLER" >> $GITHUB_ENV
+          echo "Found installer: $INSTALLER"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.build.outputs.version }}
+          name: Release ${{ needs.build.outputs.version }}
+          files: ${{ env.INSTALLER }}
+          body: "CapYap release ${{ needs.build.outputs.version }}"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
