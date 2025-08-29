@@ -1,0 +1,69 @@
+<Page
+    x:Class="CapYap.Views.Pages.DataPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:CapYap.Views.Pages"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:models="clr-namespace:CapYap.Models"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    xmlns:custom="clr-namespace:LoadingSpinnerControl;assembly=LoadingSpinnerControl"
+    Title="DataPage"
+    d:DataContext="{d:DesignInstance local:DataPage,
+                                     IsDesignTimeCreatable=False}"
+    d:DesignHeight="450"
+    d:DesignWidth="800"
+    ui:Design.Background="{DynamicResource ApplicationBackgroundBrush}"
+    ui:Design.Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+    ScrollViewer.CanContentScroll="False"
+    mc:Ignorable="d">
+
+    <Grid>
+        <ui:VirtualizingItemsControl x:Name="GalleryControl"
+            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+            VirtualizingPanel.CacheLengthUnit="Item" Margin="0,0,0,54">
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <Border Width="200"
+                        Height="200"
+                        Margin="2"
+                        BorderBrush="Gray"
+                        BorderThickness="1"
+                        CornerRadius="0"
+                        ClipToBounds="True">
+                        <Image Source="{Binding}"
+                            Stretch="UniformToFill"
+                            VerticalAlignment="Center"
+                            HorizontalAlignment="Center"
+                            MouseLeftButtonUp="OnImageClick"/>
+                    </Border>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ui:VirtualizingItemsControl>
+        <custom:LoadingSpinner x:Name="LoadingRing"
+            Cap="Round"
+            Diameter="96"
+            IsLoading="true"
+            Thickness="12"
+            Color="MediumPurple" 
+            VerticalAlignment="Center" 
+            HorizontalAlignment="Center"/>
+        <ui:TextBlock x:Name="ErrorText" 
+            MaxWidth="500"
+            TextWrapping="Wrap" 
+            Text=""
+            TextAlignment="Center"
+            VerticalAlignment="Center" 
+            HorizontalAlignment="Center"/>
+        <Grid>
+            <StackPanel x:Name="PageBar" Margin="0,408,0,8" Orientation="Horizontal" VerticalAlignment="Bottom" HorizontalAlignment="Center" Height="36">
+                <ui:Button Margin="2" Content="&lt;" />
+                <ui:Button Margin="2" Content="1"/>
+                <ui:Button Margin="2" Content="2"/>
+                <ui:Button Margin="2" Content="3"/>
+                <ui:Button Margin="2" Content="&gt;"/>
+            </StackPanel>
+        </Grid>
+    </Grid>
+</Page>
