@@ -3,8 +3,6 @@
 !define MUI_COMPONENTSPAGE_SMALLDESC
 !define MUI_INSTFILESPAGE_COLORS "FFFFFF 000000" ; Background and text colors
 
-!define APP_VERSION "${APP_VERSION}"
-
 Name "CapYap ${APP_VERSION}"
 OutFile "CapYap_Installer_${APP_VERSION}.exe"
 RequestExecutionLevel user
