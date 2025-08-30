@@ -15,7 +15,7 @@ Backend runs on my server (https://sc.marakusa.me)
 
 ## TODO
 - [x] Fix app blocking ESC key
-- [ ] Save and delete functions on image preview
+- [x] Save and delete functions on image preview
 - [x] Tray icon + background process
 - [x] Optimize crop overlay
 - [ ] Add implementation for drawing over caps
