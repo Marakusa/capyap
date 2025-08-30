@@ -174,5 +174,10 @@ namespace CapYap.Services
         {
             return await _api.UploadCaptureAsync(path);
         }
+
+        public async Task DeleteCaptureAsync(string? url)
+        {
+            await _api.DeleteCaptureAsync(url);
+        }
     }
 }

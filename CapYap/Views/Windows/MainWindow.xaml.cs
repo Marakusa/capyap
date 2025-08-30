@@ -3,11 +3,14 @@ using CapYap.HotKeys;
 using CapYap.HotKeys.Models;
 using CapYap.Interfaces;
 using CapYap.Properties;
+using CapYap.Tray;
 using CapYap.Utils;
 using CapYap.Utils.Windows;
 using CapYap.ViewModels.Windows;
 using CapYap.Views.Pages;
 using System.ComponentModel;
+using System.IO;
+using System.Net.Http;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media.Imaging;
@@ -15,6 +18,7 @@ using Wpf.Ui;
 using Wpf.Ui.Abstractions;
 using Wpf.Ui.Appearance;
 using Wpf.Ui.Controls;
+using Wpf.Ui.Extensions;
 
 namespace CapYap.Views.Windows
 {
@@ -30,6 +34,8 @@ namespace CapYap.Views.Windows
         private readonly LoginWindow _loginWindow;
 
         private User? _currentUser;
+
+        private TrayIcon? _trayIcon;
 
         public MainWindow(
             MainWindowViewModel viewModel,
@@ -65,15 +71,25 @@ namespace CapYap.Views.Windows
             {
                 PreviewImage(url);
             };
+
+            _trayIcon = new TrayIcon("CapYap", "Assets/icon.ico", System.Reflection.Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? string.Empty);
+            _trayIcon.OnOpenClicked += (_, _) =>
+            {
+                Show();
+                WindowState = WindowSettings.Default.Maximized ? WindowState.Maximized : WindowState.Normal;
+                Activate();
+                BringIntoView();
+            };
+            _trayIcon.OnCaptureClicked += (_, _) => _screenshotService.CaptureAllScreens();
+            _trayIcon.OnOpenExternalClicked += (_, _) => OpenExternal();
+            _trayIcon.OnExitClicked += (_, _) => Application.Current.Shutdown();
         }
 
         private void RegisterHotkeys(HotKeyManager hotKeyManager)
         {
             hotKeyManager.HotKey_ScreenCapture += CaptureScreen;
-            _hotKeys.HotKey_CloseCropView += (_) => { ClosePreviewView(); };
 
-            hotKeyManager.Bind(BindingAction.CaptureScreen, System.Windows.Input.Key.PrintScreen, KeyModifier.Ctrl);
-            hotKeyManager.Bind(BindingAction.CloseCropView, System.Windows.Input.Key.Escape, KeyModifier.None);
+            hotKeyManager.Bind(BindingAction.CaptureScreen, Key.PrintScreen, KeyModifier.Ctrl);
         }
 
         private void CaptureScreen(HotKey key)
@@ -128,6 +144,10 @@ namespace CapYap.Views.Windows
 
         private void External_Click(object sender, RoutedEventArgs e)
         {
+            OpenExternal();
+        }
+        private void OpenExternal()
+        {
             AppUtils.OpenUrl("https://sc.marakusa.me/settings");
         }
 
@@ -158,20 +178,22 @@ namespace CapYap.Views.Windows
             }
 
             Show();
-            Hide();
 
             _loginWindow.Owner = this;
             _loginWindow.ShowDialog();
 
-            Show();
+            Activate();
         }
 
-        public void CloseWindow() => Close();
+        public void CloseWindow() => Hide();
 
         #endregion INavigationWindow methods
 
         protected override void OnClosing(CancelEventArgs e)
         {
+            e.Cancel = true;
+            Hide();
+
             if (WindowState == WindowState.Maximized)
             {
                 WindowSettings.Default.Width = RestoreBounds.Width;
@@ -187,7 +209,7 @@ namespace CapYap.Views.Windows
 
             WindowSettings.Default.Save();
 
-            base.OnClosing(e);
+            //base.OnClosing(e);
         }
 
         /// <summary>
@@ -214,27 +236,43 @@ namespace CapYap.Views.Windows
         protected override void OnInitialized(EventArgs e)
         {
             base.OnInitialized(e);
-            SaveButton.Click += SaveButtonClick;
-            ShareButton.Click += ShareButtonClick;
-            DeleteButton.Click += DeleteButtonClick;
-            /* PreviewPanel.MouseUp += (object sender, MouseButtonEventArgs e) =>
+            SaveButton.Click += async (sender, e) =>
             {
-                if (e.Source is Wpf.Ui.Controls.Image)
+                await SaveButtonClickAsync(sender, e);
+            };
+            ShareButton.Click += ShareButtonClick;
+            DeleteButton.Click += async (sender, e) =>
+            {
+                await DeleteButtonClickAsync(sender, e);
+            };
+            PreviewPanel.MouseUp += (object sender, MouseButtonEventArgs e) =>
+            {
+                if (PreviewPanel.Visibility == Visibility.Hidden)
                 {
                     return;
                 }
 
-                if (e.Source is Grid grid && grid.Name != "PreviewPanel")
+                Point mousePos = e.GetPosition(PreviewImageComponent);
+                if (PreviewImageComponent.RenderSize.Width > mousePos.X && 0 < mousePos.X &&
+                    PreviewImageComponent.RenderSize.Height > mousePos.Y && 0 < mousePos.Y)
                 {
                     return;
                 }
 
-                ClosePreviewView();
-            };*/
+                PreviewImage(null);
+            };
             PreviewPanel.MouseWheel += PreviewPanelMouseWheel;
             PreviewPanel.MouseDown += PreviewPanelMouseDown;
             PreviewPanel.MouseMove += PreviewPanelMouseMove;
             PreviewPanel.MouseUp += PreviewPanelMouseUp;
+
+            KeyUp += (object sender, System.Windows.Input.KeyEventArgs e) =>
+            {
+                if (e.Key == Key.Escape)
+                {
+                    PreviewImage(null);
+                }
+            };
         }
 
         private string? _currentPreviewImage;
@@ -243,6 +281,7 @@ namespace CapYap.Views.Windows
 
         private void PreviewImage(string? url)
         {
+            LoadingRing.Visibility = Visibility.Hidden;
             _currentPreviewImage = url;
             PreviewPanel.Visibility = url == null ? Visibility.Hidden : Visibility.Visible;
 
@@ -253,9 +292,19 @@ namespace CapYap.Views.Windows
                 _currentPreviewImageBitmap.UriSource = new Uri(url);
                 _currentPreviewImageBitmap.CacheOption = BitmapCacheOption.OnLoad;
                 _currentPreviewImageBitmap.EndInit();
-                _currentPreviewImageBitmap.DownloadCompleted += (s, e) => CenterImage(_currentPreviewImageBitmap);
+                _currentPreviewImageBitmap.DownloadProgress += (_, _) =>
+                {
+                    LoadingRing.Visibility = Visibility.Visible;
+                };
+                _currentPreviewImageBitmap.DownloadCompleted += (_, _) =>
+                {
+                    CenterImage(_currentPreviewImageBitmap);
+                    LoadingRing.Visibility = Visibility.Hidden;
+                };
 
                 PreviewImageComponent.Source = _currentPreviewImageBitmap;
+
+                CenterImage(_currentPreviewImageBitmap);
             }
         }
 
@@ -268,6 +317,7 @@ namespace CapYap.Views.Windows
             {
                 previewScale = 1;
             }
+            previewScale *= 0.9;
 
             // Reset zoom & translation
             PreviewImageScale.ScaleX = previewScale;
@@ -288,14 +338,37 @@ namespace CapYap.Views.Windows
             Canvas.SetTop(PreviewImageComponent, top);
         }
 
-        private void ClosePreviewView()
+        private async Task SaveButtonClickAsync(object sender, RoutedEventArgs e)
         {
-            PreviewImage(null);
-        }
+            Microsoft.Win32.SaveFileDialog saveFileDialog = new()
+            {
+                Title = "Save",
+                Filter = "Image files (*.jpg, *.jpeg, *.png)|*.jpg;*.jpeg;*.png",
+                FileName = "image.jpg"
+            };
+            bool saveDialog = saveFileDialog.ShowDialog(this) ?? false;
 
-        private void SaveButtonClick(object sender, RoutedEventArgs e)
-        {
+            if (saveDialog)
+            {
+                Toast.Toast saveToast = new();
+                try
+                {
+                    saveToast.SetWait("Saving cap...");
+                    string saveFilePath = saveFileDialog.FileName;
 
+                    using HttpClient client = new();
+                    var imageBytes = await client.GetByteArrayAsync(_currentPreviewImage);
+
+                    await File.WriteAllBytesAsync(saveFilePath, imageBytes);
+
+                    saveToast.SetSuccess("Cap saved successfully!");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Failed to save cap: {ex}");
+                    saveToast.SetFail($"Failed to save cap: {ex.Message}");
+                }
+            }
         }
 
         private void ShareButtonClick(object sender, RoutedEventArgs e)
@@ -310,9 +383,42 @@ namespace CapYap.Views.Windows
             new Toast.Toast().SetSuccess("Link copied to clipboard.");
         }
 
-        private void DeleteButtonClick(object sender, RoutedEventArgs e)
+        private async Task DeleteButtonClickAsync(object sender, RoutedEventArgs e)
         {
+            var contentDialogService = new ContentDialogService();
+            contentDialogService.SetDialogHost(RootContentDialogPresenter);
 
+            SimpleContentDialogCreateOptions options = new()
+            {
+                Title = "Delete a cap",
+                Content = "Are you sure you want to delete this cap? This action cannot be undone.",
+                PrimaryButtonText = "Delete",
+                CloseButtonText = "Cancel"
+            };
+            ContentDialogResult dialogResult = await contentDialogService.ShowSimpleDialogAsync(options);
+            
+            if (dialogResult != ContentDialogResult.Primary)
+            {
+                return;
+            }
+
+            Toast.Toast deleteToast = new();
+            try
+            {
+                deleteToast.SetWait("Deleting cap...");
+
+                await _apiService.DeleteCaptureAsync(_currentPreviewImage);
+
+                deleteToast.SetSuccess("Cap deleted successfully!");
+
+                await _apiService.FetchGalleryAsync();
+                PreviewImage(null);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Failed to delete cap: {ex}");
+                deleteToast.SetFail($"Failed to delete cap: {ex.Message}");
+            }
         }
 
         private void PreviewPanelMouseWheel(object sender, MouseWheelEventArgs e)
@@ -362,7 +468,7 @@ namespace CapYap.Views.Windows
             PreviewPanel.ReleaseMouseCapture();
         }
 
-        private void PreviewPanelMouseMove(object sender, MouseEventArgs e)
+        private void PreviewPanelMouseMove(object sender, System.Windows.Input.MouseEventArgs e)
         {
             if (!_mouseDownPreview)
                 return;

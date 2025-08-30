@@ -11,15 +11,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Include="Assets\icon.ico" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="LoadingSpinner.WPF" Version="1.0.0" />
-    <PackageReference Include="WPF-UI" Version="4.0.2" />
-    <PackageReference Include="WPF-UI.DependencyInjection" Version="4.0.2" />
-    <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.1" />
+    <PackageReference Include="WPF-UI" Version="4.0.3" />
+    <PackageReference Include="WPF-UI.DependencyInjection" Version="4.0.3" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.1" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0 " />
+    <PackageReference Include="WPF-UI.Tray" Version="4.0.3" />
   </ItemGroup>
 
   <ItemGroup>
@@ -40,6 +37,7 @@
     <None Remove="Assets\loader.png" />
     <None Remove="Assets\wpfui-icon-256.png" />
     <None Remove="Assets\wpfui-icon-1024.png" />
+    <None Remove="Views\Windows\icon.ico" />
     <None Remove="Views\Windows\icon.png" />
   </ItemGroup>
 
@@ -48,12 +46,15 @@
     <ProjectReference Include="..\CapYap.HotKeys\CapYap.HotKeys.Windows.csproj" />
     <ProjectReference Include="..\CapYap.ScreenCapture\CapYap.ScreenCapture.Windows.csproj" />
     <ProjectReference Include="..\CapYap.Toast\CapYap.Toast.csproj" />
+    <ProjectReference Include="..\CapYap.Tray\CapYap.Tray.csproj" />
     <ProjectReference Include="..\CapYap.Utils.Windows\CapYap.Utils.Windows.csproj" />
     <ProjectReference Include="..\CapYap.Utils\CapYap.Utils.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-	<Resource Include="Assets\icon.ico" />
+	<Content Include="Assets\icon.ico">
+	  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	</Content>
 	<Resource Include="Assets\icon.png" />
 	<Resource Include="Assets\icon.svg" />
 	<Resource Include="Assets\icons\1024x1024.png" />
@@ -70,6 +71,7 @@
 	<Resource Include="Assets\loader.png" />
     <Resource Include="Assets\wpfui-icon-256.png" />
     <Resource Include="Assets\wpfui-icon-1024.png" />
+    <Resource Include="Views\Windows\icon.ico" />
     <Resource Include="Views\Windows\icon.png" />
   </ItemGroup>
 

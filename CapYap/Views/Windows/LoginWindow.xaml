@@ -85,7 +85,7 @@
                 Diameter="64"
                 IsLoading="true"
                 Thickness="8"
-                Color="MediumPurple" VerticalAlignment="Top" HorizontalAlignment="Center" Margin="0,119,0,0" />
+                Color="#5E5EFF" VerticalAlignment="Top" HorizontalAlignment="Center" Margin="0,119,0,0" />
             <ui:Button 
                 x:Name="TryAgainButton" 
                 Content="Try Again" 

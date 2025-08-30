@@ -8,7 +8,7 @@ namespace CapYap.ViewModels.Pages
         private bool _isInitialized = false;
 
         [ObservableProperty]
-        private string _appVersion = String.Empty;
+        private string _appVersion = string.Empty;
 
         [ObservableProperty]
         private ApplicationTheme _currentTheme = ApplicationTheme.Unknown;
@@ -26,7 +26,7 @@ namespace CapYap.ViewModels.Pages
         private void InitializeViewModel()
         {
             CurrentTheme = ApplicationThemeManager.GetAppTheme();
-            AppVersion = $"UiDesktopApp1 - {GetAssemblyVersion()}";
+            AppVersion = $"CapYap - {GetAssemblyVersion()}";
 
             _isInitialized = true;
         }
@@ -34,7 +34,7 @@ namespace CapYap.ViewModels.Pages
         private string GetAssemblyVersion()
         {
             return System.Reflection.Assembly.GetExecutingAssembly().GetName().Version?.ToString()
-                ?? String.Empty;
+                ?? string.Empty;
         }
 
         [RelayCommand]
