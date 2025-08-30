@@ -9,6 +9,8 @@ using CapYap.Utils.Windows;
 using CapYap.ViewModels.Windows;
 using CapYap.Views.Pages;
 using System.ComponentModel;
+using System.IO;
+using System.Net.Http;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media.Imaging;
@@ -16,6 +18,7 @@ using Wpf.Ui;
 using Wpf.Ui.Abstractions;
 using Wpf.Ui.Appearance;
 using Wpf.Ui.Controls;
+using Wpf.Ui.Extensions;
 
 namespace CapYap.Views.Windows
 {
@@ -86,7 +89,7 @@ namespace CapYap.Views.Windows
         {
             hotKeyManager.HotKey_ScreenCapture += CaptureScreen;
 
-            hotKeyManager.Bind(BindingAction.CaptureScreen, System.Windows.Input.Key.PrintScreen, KeyModifier.Ctrl);
+            hotKeyManager.Bind(BindingAction.CaptureScreen, Key.PrintScreen, KeyModifier.Ctrl);
         }
 
         private void CaptureScreen(HotKey key)
@@ -233,9 +236,15 @@ namespace CapYap.Views.Windows
         protected override void OnInitialized(EventArgs e)
         {
             base.OnInitialized(e);
-            SaveButton.Click += SaveButtonClick;
+            SaveButton.Click += async (sender, e) =>
+            {
+                await SaveButtonClickAsync(sender, e);
+            };
             ShareButton.Click += ShareButtonClick;
-            DeleteButton.Click += DeleteButtonClick;
+            DeleteButton.Click += async (sender, e) =>
+            {
+                await DeleteButtonClickAsync(sender, e);
+            };
             PreviewPanel.MouseUp += (object sender, MouseButtonEventArgs e) =>
             {
                 if (PreviewPanel.Visibility == Visibility.Hidden)
@@ -257,7 +266,7 @@ namespace CapYap.Views.Windows
             PreviewPanel.MouseMove += PreviewPanelMouseMove;
             PreviewPanel.MouseUp += PreviewPanelMouseUp;
 
-            KeyUp += (object sender, KeyEventArgs e) =>
+            KeyUp += (object sender, System.Windows.Input.KeyEventArgs e) =>
             {
                 if (e.Key == Key.Escape)
                 {
@@ -329,9 +338,37 @@ namespace CapYap.Views.Windows
             Canvas.SetTop(PreviewImageComponent, top);
         }
 
-        private void SaveButtonClick(object sender, RoutedEventArgs e)
+        private async Task SaveButtonClickAsync(object sender, RoutedEventArgs e)
         {
+            Microsoft.Win32.SaveFileDialog saveFileDialog = new()
+            {
+                Title = "Save",
+                Filter = "Image files (*.jpg, *.jpeg, *.png)|*.jpg;*.jpeg;*.png",
+                FileName = "image.jpg"
+            };
+            bool saveDialog = saveFileDialog.ShowDialog(this) ?? false;
 
+            if (saveDialog)
+            {
+                Toast.Toast saveToast = new();
+                try
+                {
+                    saveToast.SetWait("Saving cap...");
+                    string saveFilePath = saveFileDialog.FileName;
+
+                    using HttpClient client = new();
+                    var imageBytes = await client.GetByteArrayAsync(_currentPreviewImage);
+
+                    await File.WriteAllBytesAsync(saveFilePath, imageBytes);
+
+                    saveToast.SetSuccess("Cap saved successfully!");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Failed to save cap: {ex}");
+                    saveToast.SetFail($"Failed to save cap: {ex.Message}");
+                }
+            }
         }
 
         private void ShareButtonClick(object sender, RoutedEventArgs e)
@@ -346,9 +383,42 @@ namespace CapYap.Views.Windows
             new Toast.Toast().SetSuccess("Link copied to clipboard.");
         }
 
-        private void DeleteButtonClick(object sender, RoutedEventArgs e)
+        private async Task DeleteButtonClickAsync(object sender, RoutedEventArgs e)
         {
+            var contentDialogService = new ContentDialogService();
+            contentDialogService.SetDialogHost(RootContentDialogPresenter);
 
+            SimpleContentDialogCreateOptions options = new()
+            {
+                Title = "Delete a cap",
+                Content = "Are you sure you want to delete this cap? This action cannot be undone.",
+                PrimaryButtonText = "Delete",
+                CloseButtonText = "Cancel"
+            };
+            ContentDialogResult dialogResult = await contentDialogService.ShowSimpleDialogAsync(options);
+            
+            if (dialogResult != ContentDialogResult.Primary)
+            {
+                return;
+            }
+
+            Toast.Toast deleteToast = new();
+            try
+            {
+                deleteToast.SetWait("Deleting cap...");
+
+                await _apiService.DeleteCaptureAsync(_currentPreviewImage);
+
+                deleteToast.SetSuccess("Cap deleted successfully!");
+
+                await _apiService.FetchGalleryAsync();
+                PreviewImage(null);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Failed to delete cap: {ex}");
+                deleteToast.SetFail($"Failed to delete cap: {ex.Message}");
+            }
         }
 
         private void PreviewPanelMouseWheel(object sender, MouseWheelEventArgs e)
@@ -398,7 +468,7 @@ namespace CapYap.Views.Windows
             PreviewPanel.ReleaseMouseCapture();
         }
 
-        private void PreviewPanelMouseMove(object sender, MouseEventArgs e)
+        private void PreviewPanelMouseMove(object sender, System.Windows.Input.MouseEventArgs e)
         {
             if (!_mouseDownPreview)
                 return;

@@ -32,5 +32,7 @@ namespace CapYap.Interfaces
         public Task<Stats?> FetchStatsAsync();
 
         public Task<string> UploadCaptureAsync(string path);
+
+        public Task DeleteCaptureAsync(string? url);
     }
 }

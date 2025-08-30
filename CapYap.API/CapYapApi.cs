@@ -1,10 +1,11 @@
-﻿using System.Net;
-using System.Text;
-using CapYap.API.Models;
+﻿using CapYap.API.Models;
 using CapYap.API.Models.Appwrite;
 using CapYap.API.Models.Events;
 using CapYap.Utils;
 using Newtonsoft.Json;
+using System;
+using System.Net;
+using System.Text;
 
 namespace CapYap.API
 {
@@ -323,6 +324,42 @@ namespace CapYap.API
                 }
 
                 throw new Exception("No URL returned");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"FetchGallery returned an error: {ex}");
+                throw new Exception(ex.Message);
+            }
+        }
+
+        public async Task DeleteCaptureAsync(string? url)
+        {
+            try
+            {
+                string jwt = await _appwrite.CheckJWT();
+
+                var fileUri = new Uri(url ?? "");
+                string path = fileUri.AbsolutePath.TrimStart('/');
+                if (path.StartsWith("f/"))
+                    path = path.Substring(2);
+
+                MultipartFormDataContent form = new()
+                {
+                    { new StringContent(jwt, Encoding.UTF8, "text/plain"), "sessionKey" },
+                    { new StringContent(path, Encoding.UTF8, "text/plain"), "file" }
+                };
+
+                HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, $"{_apiHost}/f/delete")
+                {
+                    Content = form
+                };
+                HttpResponseMessage response = await _httpClient.SendAsync(request);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    string responseData = await response.Content.ReadAsStringAsync();
+                    throw new Exception(responseData);
+                }
             }
             catch (Exception ex)
             {
