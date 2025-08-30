@@ -1,5 +1,4 @@
-![banner](https://github.com/user-attachments/assets/6af2d4fb-ee7a-41a1-906a-9baba46fbe36)
-
+<img width="4096" height="1289" alt="banner" src="https://github.com/user-attachments/assets/bef4a8e1-365f-475b-909b-7a8b24a8239f" />
 
 # CapYap
 CapYap is a lightweight screen capturing app that lets you upload and manage your screenshots. This is pretty much just a practicing project and nothing serious. But if you want to try it out and enjoy using it, you are free to do so. This is just a standalone frontend for the app with the actual screen capturing function on desktop. The app for now only works on Windows, it haven't been tested on any other platforms yet.
