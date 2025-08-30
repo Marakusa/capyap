@@ -1,10 +1,11 @@
-﻿using System.Drawing;
-using System.IO;
-using CapYap.HotKeys;
+﻿using CapYap.HotKeys;
 using CapYap.HotKeys.Models;
 using CapYap.Interfaces;
 using CapYap.ScreenCapture;
+using CapYap.Utils.Windows;
 using CapYap.ViewModels.Windows;
+using System.Drawing;
+using System.IO;
 
 namespace CapYap.Services
 {
@@ -66,7 +67,7 @@ namespace CapYap.Services
             try
             {
                 string url = await _apiService.UploadCaptureAsync(path);
-                Clipboard.SetText(url);
+                ClipboardUtils.SetClipboard(url);
                 toast.SetSuccess("Screen capture uploaded and copied to clipboard");
             }
             catch (Exception ex)

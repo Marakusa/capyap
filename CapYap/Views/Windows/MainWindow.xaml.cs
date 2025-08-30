@@ -1,16 +1,16 @@
-﻿using System.ComponentModel;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Input;
-using System.Windows.Media.Imaging;
-using CapYap.API.Models.Appwrite;
+﻿using CapYap.API.Models.Appwrite;
 using CapYap.HotKeys;
 using CapYap.HotKeys.Models;
 using CapYap.Interfaces;
 using CapYap.Properties;
 using CapYap.Utils;
+using CapYap.Utils.Windows;
 using CapYap.ViewModels.Windows;
 using CapYap.Views.Pages;
+using System.ComponentModel;
+using System.Windows.Controls;
+using System.Windows.Input;
+using System.Windows.Media.Imaging;
 using Wpf.Ui;
 using Wpf.Ui.Abstractions;
 using Wpf.Ui.Appearance;
@@ -306,7 +306,7 @@ namespace CapYap.Views.Windows
             {
                 url = url.Substring(0, url.Length - noViewString.Length);
             }
-            Clipboard.SetText(url);
+            ClipboardUtils.SetClipboard(url);
             new Toast.Toast().SetSuccess("Link copied to clipboard.");
         }
 

@@ -1,10 +1,11 @@
-﻿using System.Drawing.Imaging;
-using System.Drawing;
+﻿using System.Drawing;
 using System.IO;
 using System.Windows.Media.Imaging;
 using System.Windows.Media;
+using System.Drawing.Imaging;
+using System.Windows;
 
-namespace CapYap.Utils
+namespace CapYap.Utils.Windows
 {
     public static class BitmapUtils
     {
