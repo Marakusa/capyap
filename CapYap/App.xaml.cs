@@ -1,7 +1,4 @@
-﻿using System.IO;
-using System.Net.Http;
-using System.Windows.Threading;
-using CapYap.API;
+﻿using CapYap.API;
 using CapYap.HotKeys;
 using CapYap.Interfaces;
 using CapYap.Services;
@@ -12,6 +9,11 @@ using CapYap.Views.Windows;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using System.Diagnostics;
+using System.IO;
+using System.Net.Http;
+using System.Runtime.InteropServices;
+using System.Windows.Threading;
 using Wpf.Ui;
 using Wpf.Ui.DependencyInjection;
 
@@ -22,6 +24,15 @@ namespace CapYap
     /// </summary>
     public partial class App
     {
+        // Windows API imports to focus the existing window
+        [DllImport("user32.dll")]
+        private static extern bool SetForegroundWindow(IntPtr hWnd);
+
+        [DllImport("user32.dll")]
+        private static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+
+        private const int SW_RESTORE = 9;
+
         // The.NET Generic Host provides dependency injection, configuration, logging, and other services.
         // https://docs.microsoft.com/dotnet/core/extensions/generic-host
         // https://docs.microsoft.com/dotnet/core/extensions/dependency-injection
@@ -84,6 +95,12 @@ namespace CapYap
         /// </summary>
         private async void OnStartup(object sender, StartupEventArgs e)
         {
+            if (IsAnotherInstanceRunning())
+            {
+                Shutdown(); // Exit this instance
+                return;
+            }
+
             await _host.StartAsync();
         }
 
@@ -103,6 +120,26 @@ namespace CapYap
         private void OnDispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
         {
             // For more info see https://docs.microsoft.com/en-us/dotnet/api/system.windows.application.dispatcherunhandledexception?view=windowsdesktop-6.0
+        }
+
+        private bool IsAnotherInstanceRunning()
+        {
+            var current = Process.GetCurrentProcess();
+            var other = Process.GetProcessesByName(current.ProcessName)
+                .FirstOrDefault(p => p.Id != current.Id);
+
+            if (other != null)
+            {
+                IntPtr handle = other.MainWindowHandle;
+                if (handle != IntPtr.Zero)
+                {
+                    ShowWindow(handle, SW_RESTORE);
+                    SetForegroundWindow(handle);
+                }
+                return true;
+            }
+
+            return false;
         }
     }
 }
