@@ -1,13 +1,10 @@
 ﻿using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
 using CapYap.API;
 using CapYap.Interfaces;
 using CapYap.Models;
-using CapYap.Toast;
 using CapYap.ViewModels.Pages;
 using Wpf.Ui.Abstractions.Controls;
-using Wpf.Ui.Controls;
 
 namespace CapYap.Views.Pages
 {

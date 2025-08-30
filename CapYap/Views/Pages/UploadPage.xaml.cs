@@ -1,8 +1,8 @@
-﻿using System.Windows.Media.Imaging;
-using CapYap.API;
-using CapYap.Interfaces;
+﻿using CapYap.Interfaces;
+using CapYap.Utils.Windows;
 using CapYap.ViewModels.Pages;
 using Microsoft.Win32;
+using System.Windows.Media.Imaging;
 using Wpf.Ui.Abstractions.Controls;
 
 namespace CapYap.Views.Pages
@@ -60,7 +60,7 @@ namespace CapYap.Views.Pages
                 {
                     string file = openFileDialog.FileName;
                     string url = await _apiService.UploadCaptureAsync(file);
-                    Clipboard.SetText(url);
+                    ClipboardUtils.SetClipboard(url);
                     toast.SetSuccess("Screen capture uploaded and copied to clipboard");
                     UploadingStatus.Visibility = Visibility.Hidden;
                     UploadSuccess.Visibility = Visibility.Visible;

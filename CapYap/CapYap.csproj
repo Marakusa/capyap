@@ -48,6 +48,7 @@
     <ProjectReference Include="..\CapYap.HotKeys\CapYap.HotKeys.Windows.csproj" />
     <ProjectReference Include="..\CapYap.ScreenCapture\CapYap.ScreenCapture.Windows.csproj" />
     <ProjectReference Include="..\CapYap.Toast\CapYap.Toast.csproj" />
+    <ProjectReference Include="..\CapYap.Utils.Windows\CapYap.Utils.Windows.csproj" />
     <ProjectReference Include="..\CapYap.Utils\CapYap.Utils.csproj" />
   </ItemGroup>
 

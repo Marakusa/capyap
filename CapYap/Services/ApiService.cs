@@ -1,5 +1,4 @@
 ﻿using System.Net.Http;
-using System.Windows.Controls;
 using CapYap.API;
 using CapYap.API.Models;
 using CapYap.API.Models.Appwrite;

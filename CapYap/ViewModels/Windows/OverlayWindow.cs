@@ -5,6 +5,7 @@ using System.Windows.Input;
 using System.Windows.Controls;
 using CapYap.Utils;
 using CapYap.Utils.Models;
+using CapYap.Utils.Windows;
 
 namespace CapYap.ViewModels.Windows
 {

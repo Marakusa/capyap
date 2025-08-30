@@ -1,7 +1,6 @@
 ﻿using CapYap.API;
 using CapYap.API.Models;
 using CapYap.Interfaces;
-using CapYap.Services;
 using CapYap.ViewModels.Pages;
 using Wpf.Ui.Abstractions.Controls;
 
