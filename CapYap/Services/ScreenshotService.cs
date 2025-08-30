@@ -43,21 +43,11 @@ namespace CapYap.Services
                     await UploadImage(tempScreenshotPath);
                 }
             });
-            _hotKeys.HotKey_CloseCropView += CloseCropView;
-            _hotKeys.Rebind(BindingAction.CloseCropView, System.Windows.Input.Key.Escape, KeyModifier.None);
             _overlayWindow.Closed += (_, _) =>
             {
-                _hotKeys.HotKey_CloseCropView -= CloseCropView;
-                _hotKeys.Rebind(BindingAction.CloseCropView, System.Windows.Input.Key.Escape, KeyModifier.None);
                 _overlayWindow = null;
             };
             _overlayWindow.Show();
-        }
-
-        private void CloseCropView(HotKey obj)
-        {
-            _overlayWindow?.Close();
-            _overlayWindow = null;
         }
 
         private async Task UploadImage(string path)

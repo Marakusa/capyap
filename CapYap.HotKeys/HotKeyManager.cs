@@ -6,8 +6,7 @@ namespace CapYap.HotKeys
 {
     public enum BindingAction
     {
-        CaptureScreen,
-        CloseCropView
+        CaptureScreen
     }
 
     public class HotKeyManager : IDisposable
@@ -19,12 +18,10 @@ namespace CapYap.HotKeys
         private SharpDX.DirectInput.Keyboard? _directInputKeyboard;
 
         public event Action<HotKey> HotKey_ScreenCapture;
-        public event Action<HotKey> HotKey_CloseCropView;
 
         public HotKeyManager()
         {
             HotKey_ScreenCapture += DummyCallback;
-            HotKey_CloseCropView += DummyCallback;
 
             InitializeDirectInput();
             StartPollingKeys();
@@ -54,7 +51,6 @@ namespace CapYap.HotKeys
             return action switch
             {
                 BindingAction.CaptureScreen => HotKey_ScreenCapture,
-                BindingAction.CloseCropView => HotKey_CloseCropView,
                 _ => throw new NotImplementedException(),
             };
         }

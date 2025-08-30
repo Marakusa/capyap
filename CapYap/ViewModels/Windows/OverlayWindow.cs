@@ -112,6 +112,14 @@ namespace CapYap.ViewModels.Windows
             Activate();
         }
 
+        protected override void OnKeyDown(KeyEventArgs e)
+        {
+            if (e.Key == Key.Escape)
+            {
+                Close();
+            }
+        }
+
         #region Mouse events
         private bool _mouseDown = false;
         private System.Windows.Point _mouseStartPoint = new();

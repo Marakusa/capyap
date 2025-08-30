@@ -70,10 +70,8 @@ namespace CapYap.Views.Windows
         private void RegisterHotkeys(HotKeyManager hotKeyManager)
         {
             hotKeyManager.HotKey_ScreenCapture += CaptureScreen;
-            _hotKeys.HotKey_CloseCropView += (_) => { ClosePreviewView(); };
 
             hotKeyManager.Bind(BindingAction.CaptureScreen, System.Windows.Input.Key.PrintScreen, KeyModifier.Ctrl);
-            hotKeyManager.Bind(BindingAction.CloseCropView, System.Windows.Input.Key.Escape, KeyModifier.None);
         }
 
         private void CaptureScreen(HotKey key)
