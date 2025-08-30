@@ -15,5 +15,6 @@ Backend runs on my server (https://sc.marakusa.me)
 - [ ] Save and delete functions on image preview
 - [ ] Tray icon + background process
 - [ ] Optimize crop overlay
-- [ ] Update changes
+- [ ] Add implementation for drawing over caps
+- [ ] Update changes (in dashboard and gallery)
 - [ ] Mac + Linux support
