@@ -3,6 +3,7 @@ using CapYap.HotKeys;
 using CapYap.HotKeys.Models;
 using CapYap.Interfaces;
 using CapYap.Properties;
+using CapYap.Tray;
 using CapYap.Utils;
 using CapYap.Utils.Windows;
 using CapYap.ViewModels.Windows;
@@ -30,6 +31,8 @@ namespace CapYap.Views.Windows
         private readonly LoginWindow _loginWindow;
 
         private User? _currentUser;
+
+        private TrayIcon? _trayIcon;
 
         public MainWindow(
             MainWindowViewModel viewModel,
@@ -65,6 +68,18 @@ namespace CapYap.Views.Windows
             {
                 PreviewImage(url);
             };
+
+            _trayIcon = new TrayIcon("CapYap", "Assets/icon.ico", System.Reflection.Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? string.Empty);
+            _trayIcon.OnOpenClicked += (_, _) =>
+            {
+                Show();
+                WindowState = WindowSettings.Default.Maximized ? WindowState.Maximized : WindowState.Normal;
+                Activate();
+                BringIntoView();
+            };
+            _trayIcon.OnCaptureClicked += (_, _) => _screenshotService.CaptureAllScreens();
+            _trayIcon.OnOpenExternalClicked += (_, _) => OpenExternal();
+            _trayIcon.OnExitClicked += (_, _) => Application.Current.Shutdown();
         }
 
         private void RegisterHotkeys(HotKeyManager hotKeyManager)
@@ -126,6 +141,10 @@ namespace CapYap.Views.Windows
 
         private void External_Click(object sender, RoutedEventArgs e)
         {
+            OpenExternal();
+        }
+        private void OpenExternal()
+        {
             AppUtils.OpenUrl("https://sc.marakusa.me/settings");
         }
 
@@ -156,20 +175,22 @@ namespace CapYap.Views.Windows
             }
 
             Show();
-            Hide();
 
             _loginWindow.Owner = this;
             _loginWindow.ShowDialog();
 
-            Show();
+            Activate();
         }
 
-        public void CloseWindow() => Close();
+        public void CloseWindow() => Hide();
 
         #endregion INavigationWindow methods
 
         protected override void OnClosing(CancelEventArgs e)
         {
+            e.Cancel = true;
+            Hide();
+
             if (WindowState == WindowState.Maximized)
             {
                 WindowSettings.Default.Width = RestoreBounds.Width;
@@ -185,7 +206,7 @@ namespace CapYap.Views.Windows
 
             WindowSettings.Default.Save();
 
-            base.OnClosing(e);
+            //base.OnClosing(e);
         }
 
         /// <summary>

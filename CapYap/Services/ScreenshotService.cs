@@ -1,5 +1,4 @@
 ﻿using CapYap.HotKeys;
-using CapYap.HotKeys.Models;
 using CapYap.Interfaces;
 using CapYap.ScreenCapture;
 using CapYap.Utils.Windows;

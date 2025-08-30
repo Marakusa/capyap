@@ -1,20 +1,13 @@
 ﻿using CapYap.HotKeys;
-using CapYap.HotKeys.Models;
-using CapYap.Toast;
 using CapYap.Utils;
 using CapYap.Utils.Models;
 using CapYap.Utils.Windows;
-using System;
-using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Drawing;
 using System.Drawing.Imaging;
-using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 
 namespace CapYap.ViewModels.Windows
 {

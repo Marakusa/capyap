@@ -26,7 +26,7 @@ namespace CapYap.ViewModels.Pages
         private void InitializeViewModel()
         {
             CurrentTheme = ApplicationThemeManager.GetAppTheme();
-            AppVersion = $"UiDesktopApp1 - {GetAssemblyVersion()}";
+            AppVersion = $"CapYap - {GetAssemblyVersion()}";
 
             _isInitialized = true;
         }
