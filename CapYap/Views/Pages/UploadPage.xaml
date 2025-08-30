@@ -29,7 +29,7 @@
             <ui:TextBlock x:Name="UploadSuccess" TextWrapping="Wrap" Text="Screenshot uploaded!" VerticalAlignment="Center" Margin="0,8,0,0" HorizontalAlignment="Center"/>
             <ui:TextBlock x:Name="UploadFail" Foreground="IndianRed" TextWrapping="Wrap" Text="Screenshot upload failed." VerticalAlignment="Center" Margin="0,8,0,0" HorizontalAlignment="Center"/>
             <WrapPanel x:Name="UploadingStatus" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,8,0,0">
-                <ui:ProgressRing IsIndeterminate="True" Height="32" Width="32"/>
+                <ui:ProgressRing IsIndeterminate="True" Height="32" Width="32" Foreground="#5E5EFF"/>
                 <ui:TextBlock TextWrapping="Wrap" Text="Uploading..." VerticalAlignment="Center" Margin="10,0,0,0"/>
             </WrapPanel>
         </StackPanel>

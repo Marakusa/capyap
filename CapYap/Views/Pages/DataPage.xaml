@@ -46,7 +46,7 @@
             Diameter="96"
             IsLoading="true"
             Thickness="12"
-            Color="MediumPurple" 
+            Color="#5E5EFF" 
             VerticalAlignment="Center" 
             HorizontalAlignment="Center"/>
         <ui:TextBlock x:Name="ErrorText" 

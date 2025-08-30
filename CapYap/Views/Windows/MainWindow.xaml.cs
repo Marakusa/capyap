@@ -215,24 +215,34 @@ namespace CapYap.Views.Windows
             SaveButton.Click += SaveButtonClick;
             ShareButton.Click += ShareButtonClick;
             DeleteButton.Click += DeleteButtonClick;
-            /* PreviewPanel.MouseUp += (object sender, MouseButtonEventArgs e) =>
+            PreviewPanel.MouseUp += (object sender, MouseButtonEventArgs e) =>
             {
-                if (e.Source is Wpf.Ui.Controls.Image)
+                if (PreviewPanel.Visibility == Visibility.Hidden)
                 {
                     return;
                 }
 
-                if (e.Source is Grid grid && grid.Name != "PreviewPanel")
+                Point mousePos = e.GetPosition(PreviewImageComponent);
+                if (PreviewImageComponent.RenderSize.Width > mousePos.X && 0 < mousePos.X &&
+                    PreviewImageComponent.RenderSize.Height > mousePos.Y && 0 < mousePos.Y)
                 {
                     return;
                 }
 
-                ClosePreviewView();
-            };*/
+                PreviewImage(null);
+            };
             PreviewPanel.MouseWheel += PreviewPanelMouseWheel;
             PreviewPanel.MouseDown += PreviewPanelMouseDown;
             PreviewPanel.MouseMove += PreviewPanelMouseMove;
             PreviewPanel.MouseUp += PreviewPanelMouseUp;
+
+            KeyUp += (object sender, KeyEventArgs e) =>
+            {
+                if (e.Key == Key.Escape)
+                {
+                    PreviewImage(null);
+                }
+            };
         }
 
         private string? _currentPreviewImage;
@@ -241,6 +251,7 @@ namespace CapYap.Views.Windows
 
         private void PreviewImage(string? url)
         {
+            LoadingRing.Visibility = Visibility.Hidden;
             _currentPreviewImage = url;
             PreviewPanel.Visibility = url == null ? Visibility.Hidden : Visibility.Visible;
 
@@ -251,9 +262,19 @@ namespace CapYap.Views.Windows
                 _currentPreviewImageBitmap.UriSource = new Uri(url);
                 _currentPreviewImageBitmap.CacheOption = BitmapCacheOption.OnLoad;
                 _currentPreviewImageBitmap.EndInit();
-                _currentPreviewImageBitmap.DownloadCompleted += (s, e) => CenterImage(_currentPreviewImageBitmap);
+                _currentPreviewImageBitmap.DownloadProgress += (_, _) =>
+                {
+                    LoadingRing.Visibility = Visibility.Visible;
+                };
+                _currentPreviewImageBitmap.DownloadCompleted += (_, _) =>
+                {
+                    CenterImage(_currentPreviewImageBitmap);
+                    LoadingRing.Visibility = Visibility.Hidden;
+                };
 
                 PreviewImageComponent.Source = _currentPreviewImageBitmap;
+
+                CenterImage(_currentPreviewImageBitmap);
             }
         }
 
@@ -266,6 +287,7 @@ namespace CapYap.Views.Windows
             {
                 previewScale = 1;
             }
+            previewScale *= 0.9;
 
             // Reset zoom & translation
             PreviewImageScale.ScaleX = previewScale;
@@ -284,11 +306,6 @@ namespace CapYap.Views.Windows
 
             Canvas.SetLeft(PreviewImageComponent, left);
             Canvas.SetTop(PreviewImageComponent, top);
-        }
-
-        private void ClosePreviewView()
-        {
-            PreviewImage(null);
         }
 
         private void SaveButtonClick(object sender, RoutedEventArgs e)

@@ -1,76 +1,134 @@
-﻿using System.Drawing.Imaging;
-using System.Drawing;
-using System.Windows.Media;
-using System.Windows.Input;
-using System.Windows.Controls;
+﻿using CapYap.HotKeys;
+using CapYap.HotKeys.Models;
+using CapYap.Toast;
 using CapYap.Utils;
 using CapYap.Utils.Models;
 using CapYap.Utils.Windows;
+using System;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Drawing;
+using System.Drawing.Imaging;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using System.Windows.Shapes;
 
 namespace CapYap.ViewModels.Windows
 {
     public class OverlayWindow : Window
     {
+        //private readonly HotKeyManager _hotKeys;
+
         private readonly string _tempCapturePath;
         private readonly Bitmap _bitmap;
         private readonly Action<string> _uploadCallback;
 
         private readonly Canvas _overlayCanvas;
-        private System.Windows.Shapes.Rectangle drawRectangle;
-        private System.Windows.Shapes.Path _darkOverlay;
-        private RectangleGeometry _selectionRectGeometry;
+        private readonly System.Windows.Shapes.Rectangle _darkOverlay;
+        private readonly System.Windows.Shapes.Rectangle _selectionRectangle;
 
-        public OverlayWindow(Bitmap screenshot, string tempCapturePath, Action<string> uploadCallback)
+        private bool _isMouseDown;
+        private System.Windows.Point _mouseStart;
+        private System.Windows.Point _mouseEnd;
+        private System.Windows.Point _mousePosition;
+
+        private bool _isCtrlDown;
+        private Bounds _monitorBounds = new(0, 0, 0, 0);
+
+        private bool _isShiftDown;
+        private Bounds _windowBounds = new(0, 0, 0, 0);
+        private readonly ICollection<(string title, Bounds bounds)> _windowsOpen;
+
+        public OverlayWindow(Bitmap screenshot, string tempCapturePath, Action<string> uploadCallback, HotKeyManager hotKeys)
         {
             _tempCapturePath = tempCapturePath;
             _bitmap = screenshot;
             _uploadCallback = uploadCallback;
 
-            // Make the window borderless, transparent, topmost
+            ConfigureWindow();
+            _overlayCanvas = CreateCanvas();
+            Content = _overlayCanvas;
+
+            AddScreenshot();
+            _darkOverlay = CreateDarkOverlay();
+            _overlayCanvas.Children.Add(_darkOverlay);
+
+            _selectionRectangle = CreateSelectionRectangle();
+            _overlayCanvas.Children.Add(_selectionRectangle);
+
+            _windowsOpen = NativeUtils.GetOpenWindowsBounds();
+
+            hotKeys.CtrlChanged += OnCtrlChanged;
+            hotKeys.ShiftChanged += OnShiftChanged;
+            hotKeys.EscapeChanged += OnEscapeChanged;
+        }
+
+        #region Window & Canvas Setup
+
+        private void ConfigureWindow()
+        {
             WindowStyle = WindowStyle.None;
-            AllowsTransparency = true;
-            Background = System.Windows.Media.Brushes.Transparent;
+            AllowsTransparency = false; // Keep GPU acceleration
+            Background = System.Windows.Media.Brushes.Black;
             Topmost = true;
+            Focusable = true;
             ShowInTaskbar = true;
             Cursor = Cursors.Cross;
             ResizeMode = ResizeMode.NoResize;
             Title = "CapYap Overlay";
 
-            // Create a Canvas to draw rectangles
-            _overlayCanvas = new Canvas();
-            Content = _overlayCanvas;
-
-            // Get full virtual screen bounds from your helper
             Bounds virtualBounds = NativeUtils.GetFullVirtualBounds();
-
             Left = virtualBounds.Left;
             Top = virtualBounds.Top;
             Width = virtualBounds.Right - virtualBounds.Left;
             Height = virtualBounds.Bottom - virtualBounds.Top;
+        }
 
-            // Convert Bitmap to WPF ImageSource
+        private Canvas CreateCanvas()
+        {
+            var canvas = new Canvas();
+            RenderOptions.SetEdgeMode(canvas, EdgeMode.Aliased);
+            return canvas;
+        }
+
+        private void AddScreenshot()
+        {
             var imageSource = BitmapUtils.BitmapToImageSource(_bitmap);
+            imageSource.Freeze();
 
-            // Display screenshot in an Image control
-            var imageControl = new System.Windows.Controls.Image
+            var screenshot = new System.Windows.Controls.Image
             {
                 Source = imageSource,
-                Stretch = Stretch.Fill
+                Stretch = Stretch.None,
+                Width = Width,
+                Height = Height
             };
 
-            _overlayCanvas.Children.Add(imageControl);
+            RenderOptions.SetBitmapScalingMode(screenshot, BitmapScalingMode.LowQuality);
+            _overlayCanvas.Children.Add(screenshot);
+        }
 
-            // Darkened overlay
-            _selectionRectGeometry = new RectangleGeometry(new Rect(0, 0, 0, 0));
-            _darkOverlay = new System.Windows.Shapes.Path
+        private System.Windows.Shapes.Rectangle CreateDarkOverlay()
+        {
+            var brush = new SolidColorBrush(System.Windows.Media.Color.FromArgb(120, 0, 0, 0));
+            brush.Freeze();
+
+            var overlay = new System.Windows.Shapes.Rectangle
             {
-                Fill = new SolidColorBrush(System.Windows.Media.Color.FromArgb(120, 0, 0, 0)), // semi-transparent black
-                Data = new RectangleGeometry(new Rect(0, 0, Width, Height))
+                Width = Width,
+                Height = Height,
+                Fill = brush,
+                CacheMode = new BitmapCache()
             };
-            _overlayCanvas.Children.Add(_darkOverlay);
+            return overlay;
+        }
 
-            // Draw the default rectangle
-            drawRectangle = new System.Windows.Shapes.Rectangle
+        private System.Windows.Shapes.Rectangle CreateSelectionRectangle()
+        {
+            return new System.Windows.Shapes.Rectangle
             {
                 Width = 0,
                 Height = 0,
@@ -80,8 +138,11 @@ namespace CapYap.ViewModels.Windows
                 StrokeDashOffset = 4,
                 StrokeThickness = 0
             };
-            _overlayCanvas.Children.Add(drawRectangle);
         }
+
+        #endregion
+
+        #region Capture Logic
 
         private void SaveCapture(Rect captureArea)
         {
@@ -97,98 +158,201 @@ namespace CapYap.ViewModels.Windows
             }
         }
 
-        // Dont lose focus
-        protected override void OnDeactivated(EventArgs e)
+        #endregion
+
+        #region Overlay Update
+
+        private void UpdateMask(double x, double y, double width, double height)
         {
-            Topmost = true;
-            Activate();
+            var mask = new DrawingBrush
+            {
+                Drawing = new GeometryDrawing(
+                    System.Windows.Media.Brushes.White,
+                    null,
+                    new GeometryGroup
+                    {
+                        Children =
+                        {
+                            new RectangleGeometry(new Rect(0, 0, Width, Height)),
+                            new RectangleGeometry(new Rect(x, y, width, height))
+                        }
+                    }),
+                Opacity = 1,
+                Stretch = Stretch.None
+            };
+
+            _darkOverlay.OpacityMask = mask;
         }
 
-        // Dont lose focus
+        private void UpdateSelectionRectangle()
+        {
+            double x = Math.Min(_mouseStart.X, _mouseEnd.X);
+            double y = Math.Min(_mouseStart.Y, _mouseEnd.Y);
+            double width = Math.Abs(_mouseEnd.X - _mouseStart.X);
+            double height = Math.Abs(_mouseEnd.Y - _mouseStart.Y);
+
+            _selectionRectangle.StrokeThickness = 2;
+            _selectionRectangle.Width = width;
+            _selectionRectangle.Height = height;
+            _selectionRectangle.RenderTransform = new TranslateTransform(x, y);
+
+            UpdateMask(x, y, width, height);
+        }
+
+        private void UpdateDrawRect()
+        {
+            if (_isCtrlDown)
+            {
+                _monitorBounds = NativeUtils.GetCurrentMonitorBounds((int)_mousePosition.X, (int)_mousePosition.Y);
+
+                _mouseStart = new System.Windows.Point(_monitorBounds.Left, _monitorBounds.Top);
+                _mouseEnd = new System.Windows.Point(_monitorBounds.Right, _monitorBounds.Bottom);
+
+                UpdateSelectionRectangle();
+            }
+            else if (_isShiftDown)
+            {
+                // Default to full monitor bounds
+                _windowBounds = NativeUtils.GetCurrentMonitorBounds((int)_mousePosition.X, (int)_mousePosition.Y);
+
+                foreach (var window in _windowsOpen)
+                {
+                    if (window.bounds.Left < _mousePosition.X && window.bounds.Right > _mousePosition.X &&
+                        window.bounds.Bottom > _mousePosition.Y && window.bounds.Top < _mousePosition.Y)
+                    {
+                        _windowBounds = window.bounds;
+                        break;
+                    }
+                }
+
+                _mouseStart = new System.Windows.Point(_windowBounds.Left, _windowBounds.Top);
+                _mouseEnd = new System.Windows.Point(_windowBounds.Right, _windowBounds.Bottom);
+
+                UpdateSelectionRectangle();
+            }
+            else if (_isMouseDown)
+            {
+                _mouseEnd = _mousePosition;
+
+                UpdateSelectionRectangle();
+            }
+            else
+            {
+                _mouseStart = new();
+                _mouseEnd = new();
+
+                UpdateSelectionRectangle();
+            }
+        }
+
+        #endregion
+
+        #region Event Overrides
+
         protected override void OnInitialized(EventArgs e)
         {
             base.OnInitialized(e);
             Topmost = true;
+            Focusable = true;
             Activate();
+            Focus();
         }
 
-        protected override void OnKeyDown(KeyEventArgs e)
+        protected override void OnDeactivated(EventArgs e)
         {
-            if (e.Key == Key.Escape)
+            base.OnDeactivated(e);
+            Topmost = true;
+            Focusable = true;
+            Activate();
+            Focus();
+        }
+
+        protected override void OnLostFocus(RoutedEventArgs e)
+        {
+            base.OnLostFocus(e);
+            Topmost = true;
+            Focusable = true;
+            Activate();
+            Focus();
+        }
+
+        protected override void OnClosing(CancelEventArgs e)
+        {
+            base.OnClosing(e);
+        }
+
+        private void OnCtrlChanged(bool down)
+        {
+            Dispatcher.Invoke(() =>
             {
-                Close();
-            }
+                _isCtrlDown = down;
+                _isShiftDown = false;
+                UpdateDrawRect();
+            });
         }
 
-        #region Mouse events
-        private bool _mouseDown = false;
-        private System.Windows.Point _mouseStartPoint = new();
-        private System.Windows.Point _mouseEndPoint = new();
-
-        private void DrawRectangle()
+        private void OnShiftChanged(bool down)
         {
-            double x = Math.Min(_mouseStartPoint.X, _mouseEndPoint.X);
-            double y = Math.Min(_mouseStartPoint.Y, _mouseEndPoint.Y);
-            double width = Math.Abs(_mouseEndPoint.X - _mouseStartPoint.X);
-            double height = Math.Abs(_mouseEndPoint.Y - _mouseStartPoint.Y);
+            Dispatcher.Invoke(() =>
+            {
+                _isShiftDown = down;
+                _isCtrlDown = false;
+                UpdateDrawRect();
+            });
+        }
 
-            drawRectangle.StrokeThickness = 2;
-
-            drawRectangle.Width = width;
-            drawRectangle.Height = height;
-
-            Canvas.SetLeft(drawRectangle, x);
-            Canvas.SetTop(drawRectangle, y);
-
-            // Update dark overlay
-            var fullWindow = new RectangleGeometry(new Rect(0, 0, Width, Height));
-            _selectionRectGeometry.Rect = new Rect(x, y, width, height);
-            var combined = new CombinedGeometry(GeometryCombineMode.Exclude, fullWindow, _selectionRectGeometry);
-            _darkOverlay.Data = combined;
+        private void OnEscapeChanged(bool down)
+        {
+            if (down)
+            {
+                Dispatcher.Invoke(() =>
+                {
+                    Close();
+                });
+            }
         }
 
         protected override void OnMouseDown(MouseButtonEventArgs e)
         {
             base.OnMouseDown(e);
 
-            _mouseDown = true;
+            if (_isCtrlDown || _isShiftDown)
+                return;
 
-            _mouseStartPoint = e.GetPosition(this);
-            _mouseEndPoint = _mouseStartPoint;
+            _isMouseDown = true;
+            _mouseStart = _mousePosition;
+            _mouseEnd = _mousePosition;
 
-            DrawRectangle();
+            UpdateDrawRect();
         }
 
         protected override void OnMouseMove(MouseEventArgs e)
         {
             base.OnMouseMove(e);
 
-            if (!_mouseDown)
-            {
-                return;
-            }
+            _mousePosition = e.GetPosition(this);
 
-            _mouseEndPoint = e.GetPosition(this);
-
-            DrawRectangle();
+            UpdateDrawRect();
         }
 
         protected override void OnMouseUp(MouseButtonEventArgs e)
         {
             base.OnMouseUp(e);
 
-            _mouseDown = false;
+            _isCtrlDown = false;
+            _isShiftDown = false;
+            _isMouseDown = false;
 
-            double x = Math.Min(_mouseStartPoint.X, _mouseEndPoint.X);
-            double y = Math.Min(_mouseStartPoint.Y, _mouseEndPoint.Y);
-            double width = Math.Abs(_mouseEndPoint.X - _mouseStartPoint.X);
-            double height = Math.Abs(_mouseEndPoint.Y - _mouseStartPoint.Y);
+            double x = Math.Min(_mouseStart.X, _mouseEnd.X);
+            double y = Math.Min(_mouseStart.Y, _mouseEnd.Y);
+            double width = Math.Abs(_mouseEnd.X - _mouseStart.X);
+            double height = Math.Abs(_mouseEnd.Y - _mouseStart.Y);
 
-            Rect captureArea = new Rect((int)x, (int)y, (int)width, (int)height);
+            var captureArea = new Rect((int)x, (int)y, (int)width, (int)height);
             SaveCapture(captureArea);
-
             Close();
         }
+
         #endregion
     }
 }

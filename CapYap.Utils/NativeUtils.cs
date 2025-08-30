@@ -1,5 +1,6 @@
-﻿using System.Runtime.InteropServices;
-using CapYap.Utils.Models;
+﻿using CapYap.Utils.Models;
+using System.Runtime.InteropServices;
+using System.Text;
 
 namespace CapYap.Utils
 {
@@ -155,6 +156,138 @@ namespace CapYap.Utils
             }
 
             return new Bounds(screenLeft, screenTop, screenRight, screenBottom);
+        }
+
+        public static Bounds GetCurrentMonitorBounds(int mouseX, int mouseY)
+        {
+            int deviceIndex = 0;
+            while (true)
+            {
+                DisplayDevice deviceData = new DisplayDevice
+                { cb = Marshal.SizeOf(typeof(DisplayDevice)) };
+
+                if (EnumDisplayDevices(null, deviceIndex, ref deviceData, 0) == 0)
+                    break; // no more monitors
+
+                DEVMODE devMode = new DEVMODE();
+                if (EnumDisplaySettings(deviceData.DeviceName, ENUM_CURRENT_SETTINGS, ref devMode))
+                {
+                    int left = devMode.dmPositionX;
+                    int top = devMode.dmPositionY;
+                    int right = left + devMode.dmPelsWidth;
+                    int bottom = top + devMode.dmPelsHeight;
+
+                    // Check if the mouse coordinates fall within this monitor
+                    if (mouseX >= left && mouseX < right &&
+                        mouseY >= top && mouseY < bottom)
+                    {
+                        return new Bounds(left, top, right, bottom);
+                    }
+                }
+
+                deviceIndex++;
+            }
+
+            // Fallback: if no match, return full virtual screen
+            return new Bounds(0, 0, 0, 0);
+        }
+
+        // Delegate used by EnumWindows
+        private delegate bool EnumWindowsProc(IntPtr hWnd, IntPtr lParam);
+
+        [DllImport("user32.dll")]
+        private static extern bool EnumWindows(EnumWindowsProc lpEnumFunc, IntPtr lParam);
+
+        [DllImport("user32.dll")]
+        private static extern bool IsWindowVisible(IntPtr hWnd);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        private static extern int GetWindowText(IntPtr hWnd, StringBuilder lpString, int nMaxCount);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        private static extern int GetWindowTextLength(IntPtr hWnd);
+
+        [DllImport("user32.dll")]
+        private static extern IntPtr GetShellWindow();
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct RECT
+        {
+            public int Left;
+            public int Top;
+            public int Right;
+            public int Bottom;
+        }
+
+        [DllImport("user32.dll", SetLastError = true)]
+        private static extern bool GetWindowRect(IntPtr hWnd, out RECT lpRect);
+
+        private enum DWMWINDOWATTRIBUTE
+        {
+            DWMWA_CLOAKED = 14
+        }
+
+        private enum DWM_CLOAKED
+        {
+            DWM_CLOAKED_APP = 1,
+            DWM_CLOAKED_SHELL = 2,
+            DWM_CLOAKED_INHERITED = 4
+        }
+
+        [DllImport("dwmapi.dll", PreserveSig = true)]
+        private static extern int DwmGetWindowAttribute(IntPtr hwnd, DWMWINDOWATTRIBUTE dwAttribute, out int pvAttribute, int cbAttribute);
+
+        private static bool IsWindowCloaked(IntPtr hWnd)
+        {
+            if (DwmGetWindowAttribute(hWnd, DWMWINDOWATTRIBUTE.DWMWA_CLOAKED, out int cloaked, Marshal.SizeOf<int>()) == 0)
+            {
+                return cloaked != 0;
+            }
+            return false;
+        }
+
+        [DllImport("user32.dll")]
+        private static extern bool GetClientRect(IntPtr hWnd, out RECT lpRect);
+
+        [DllImport("user32.dll")]
+        private static extern bool ClientToScreen(IntPtr hWnd, ref POINT lpPoint);
+
+        public static List<(string title, Bounds bounds)> GetOpenWindowsBounds()
+        {
+            IntPtr shellWindow = GetShellWindow();
+            var windows = new List<(string title, Bounds bounds)>();
+
+            EnumWindows(delegate (IntPtr hWnd, IntPtr lParam)
+            {
+                if (hWnd == shellWindow) return true; // skip desktop
+                if (!IsWindowVisible(hWnd)) return true;
+                if (IsWindowCloaked(hWnd)) return true;
+
+                int length = GetWindowTextLength(hWnd);
+                if (length == 0) return true;
+
+                StringBuilder builder = new StringBuilder(length + 1);
+                GetWindowText(hWnd, builder, builder.Capacity);
+                string title = builder.ToString();
+
+                if (GetClientRect(hWnd, out RECT clientRect))
+                {
+                    POINT topLeft = new POINT { x = clientRect.Left, y = clientRect.Top };
+                    ClientToScreen(hWnd, ref topLeft);
+
+                    Bounds bounds = new Bounds(
+                        topLeft.x,
+                        topLeft.y,
+                        clientRect.Right + topLeft.x,
+                        clientRect.Bottom + topLeft.y
+                    );
+                    windows.Add((title, bounds));
+                }
+
+                return true;
+            }, IntPtr.Zero);
+
+            return windows;
         }
     }
 }

@@ -165,7 +165,7 @@ namespace CapYap.Views.Pages
             button.Click += OnPageButton;
             if (currentPage)
             {
-                button.Background = Brushes.MediumPurple;
+                button.Background = (SolidColorBrush?)new BrushConverter().ConvertFrom("#5E5EFF");
             }
             return button;
         }

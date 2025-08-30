@@ -19,9 +19,21 @@ namespace CapYap.HotKeys
 
         public event Action<HotKey> HotKey_ScreenCapture;
 
+        public event Action<bool> CtrlChanged;
+        public event Action<bool> ShiftChanged;
+        public event Action<bool> EscapeChanged;
+
+        private bool _ctrlDown;
+        private bool _shiftDown;
+        private bool _escapeDown;
+
         public HotKeyManager()
         {
             HotKey_ScreenCapture += DummyCallback;
+
+            CtrlChanged += (_) => { };
+            ShiftChanged += (_) => { };
+            EscapeChanged += (_) => { };
 
             InitializeDirectInput();
             StartPollingKeys();
@@ -44,6 +56,16 @@ namespace CapYap.HotKeys
             }
 
             Bind(action, k, keyModifiers);
+        }
+
+        public void Unbind(BindingAction action)
+        {
+            if (hotKeys.ContainsKey(action))
+            {
+                hotKeys[action].Unregister();
+                hotKeys[action].Dispose();
+                hotKeys.Remove(action);
+            }
         }
 
         private Action<HotKey> GetBindingAction(BindingAction action)
@@ -94,6 +116,31 @@ namespace CapYap.HotKeys
 
                 _directInputKeyboard.Poll();
                 var state = _directInputKeyboard.GetCurrentState();
+
+                bool ctrlPressed = state.PressedKeys.Contains(SharpDX.DirectInput.Key.LeftControl) ||
+                                   state.PressedKeys.Contains(SharpDX.DirectInput.Key.RightControl);
+                bool shiftPressed = state.PressedKeys.Contains(SharpDX.DirectInput.Key.LeftShift) ||
+                                    state.PressedKeys.Contains(SharpDX.DirectInput.Key.RightShift);
+                bool escapePressed = state.PressedKeys.Contains(SharpDX.DirectInput.Key.Escape);
+
+                // Fire events only when state changes
+                if (ctrlPressed != _ctrlDown)
+                {
+                    _ctrlDown = ctrlPressed;
+                    CtrlChanged?.Invoke(_ctrlDown);
+                }
+
+                if (shiftPressed != _shiftDown)
+                {
+                    _shiftDown = shiftPressed;
+                    ShiftChanged?.Invoke(_shiftDown);
+                }
+
+                if (escapePressed != _escapeDown)
+                {
+                    _escapeDown = escapePressed;
+                    EscapeChanged?.Invoke(_escapeDown);
+                }
 
                 foreach (var kvp in hotKeys)
                 {

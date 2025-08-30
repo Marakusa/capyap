@@ -4,6 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="clr-namespace:CapYap.Views.Windows"
+    xmlns:custom="clr-namespace:LoadingSpinnerControl;assembly=LoadingSpinnerControl"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
     Title="{Binding ViewModel.ApplicationTitle, Mode=OneWay}"
@@ -124,6 +125,14 @@
                     </StackPanel>
                 </ui:Button>
             </StackPanel>
+            <custom:LoadingSpinner x:Name="LoadingRing"
+                Cap="Round"
+                Diameter="96"
+                IsLoading="true"
+                Thickness="12"
+                Color="#5E5EFF" 
+                VerticalAlignment="Center" 
+                HorizontalAlignment="Center"/>
         </Grid>
     </Grid>
 </ui:FluentWindow>

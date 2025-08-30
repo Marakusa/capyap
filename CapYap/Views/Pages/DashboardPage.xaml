@@ -47,7 +47,7 @@
                 <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
                     <StackPanel VerticalAlignment="Top" HorizontalAlignment="Left">
                         <TextBlock Text="Disk used" FontSize="16" Margin="0,0,0,0" TextAlignment="Left" Width="10000"/>
-                        <ProgressBar x:Name="DiskUsedLoading" IsIndeterminate="True"/>
+                        <ProgressBar x:Name="DiskUsedLoading" IsIndeterminate="True" Foreground="#5E5EFF"/>
                         <TextBlock x:Name="DiskUsed" Text="0 KB" FontSize="32" Margin="0,4,0,0" Opacity="0.5"/>
                     </StackPanel>
                 </Grid>
@@ -57,7 +57,7 @@
                 <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
                     <StackPanel VerticalAlignment="Top" HorizontalAlignment="Left">
                         <TextBlock Text="Total views" FontSize="16" Margin="0,0,0,0" TextAlignment="Left" Width="10000"/>
-                        <ProgressBar x:Name="TotalViewsLoading" IsIndeterminate="True"/>
+                        <ProgressBar x:Name="TotalViewsLoading" IsIndeterminate="True" Foreground="#5E5EFF"/>
                         <TextBlock x:Name="TotalViews" Text="0" FontSize="32" Margin="0,4,0,0" Opacity="0.5"/>
                     </StackPanel>
                 </Grid>
@@ -67,7 +67,7 @@
                 <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
                     <StackPanel VerticalAlignment="Top" HorizontalAlignment="Left">
                         <TextBlock Text="Files (All time)" FontSize="16" Margin="0,0,0,0" TextAlignment="Left" Width="10000"/>
-                        <ProgressBar x:Name="FilesLoading" IsIndeterminate="True"/>
+                        <ProgressBar x:Name="FilesLoading" IsIndeterminate="True" Foreground="#5E5EFF"/>
                         <TextBlock x:Name="Files" Text="0" FontSize="32" Margin="0,4,0,0" Opacity="0.5"/>
                     </StackPanel>
                 </Grid>
@@ -77,7 +77,7 @@
                 <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
                     <StackPanel VerticalAlignment="Top" HorizontalAlignment="Left">
                         <TextBlock Text="Files (7 days)" FontSize="16" Margin="0,0,0,0" TextAlignment="Left" Width="10000"/>
-                        <ProgressBar x:Name="Files7DaysLoading" IsIndeterminate="True"/>
+                        <ProgressBar x:Name="Files7DaysLoading" IsIndeterminate="True" Foreground="#5E5EFF"/>
                         <TextBlock x:Name="Files7Days" Text="0" FontSize="32" Margin="0,4,0,0" Opacity="0.5"/>
                     </StackPanel>
                 </Grid>

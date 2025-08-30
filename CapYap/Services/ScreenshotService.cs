@@ -42,7 +42,7 @@ namespace CapYap.Services
                 {
                     await UploadImage(tempScreenshotPath);
                 }
-            });
+            }, _hotKeys);
             _overlayWindow.Closed += (_, _) =>
             {
                 _overlayWindow = null;
