@@ -117,7 +117,7 @@ namespace CapYap
                 StartupUtils.DisableStartup();
             }
 
-                Version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? string.Empty;
+            Version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? string.Empty;
             if (Version.Split('.').Length > 3)
             {
                 string[] parts = Version.Split(".");
