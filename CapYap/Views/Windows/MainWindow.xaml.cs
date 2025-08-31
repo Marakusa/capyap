@@ -72,7 +72,7 @@ namespace CapYap.Views.Windows
                 PreviewImage(url);
             };
 
-            _trayIcon = new TrayIcon("CapYap", "Assets/icon.ico", System.Reflection.Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? string.Empty);
+            _trayIcon = new TrayIcon("CapYap", "Assets/icon.ico", App.Version);
             _trayIcon.OnOpenClicked += (_, _) =>
             {
                 Show();
