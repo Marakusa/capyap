@@ -3,6 +3,9 @@ using CapYap.HotKeys;
 using CapYap.Interfaces;
 using CapYap.Properties;
 using CapYap.Services;
+#if !DEBUG
+using CapYap.Updater;
+#endif
 using CapYap.Utils.Windows;
 using CapYap.ViewModels.Pages;
 using CapYap.ViewModels.Windows;
