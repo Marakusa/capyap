@@ -1,4 +1,6 @@
-﻿using System.Diagnostics;
+﻿using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
+using System.Diagnostics;
 using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -7,32 +9,34 @@ namespace CapYap.Updater
 {
     public class GitHubRelease
     {
-        [JsonPropertyName("tag_name")]
+        [JsonProperty("tag_name")]
         public string TagName { get; set; } = "";
 
-        [JsonPropertyName("assets")]
+        [JsonProperty("assets")]
         public List<GitHubAsset> Assets { get; set; } = new();
     }
 
     public class GitHubAsset
     {
-        [JsonPropertyName("browser_download_url")]
+        [JsonProperty("browser_download_url")]
         public string BrowserDownloadUrl { get; set; } = "";
 
-        [JsonPropertyName("tag_name")]
+        [JsonProperty("name")]
         public string Name { get; set; } = "";
     }
 
     public class AutoUpdater
     {
+        private readonly ILogger _log;
         private readonly string _repoOwner;
         private readonly string _repoName;
         private readonly string _currentVersion;
 
         private static readonly HttpClient _http = new();
 
-        public AutoUpdater(string repoOwner, string repoName, string currentVersion)
+        public AutoUpdater(ILogger log, string repoOwner, string repoName, string currentVersion)
         {
+            _log = log;
             _repoOwner = repoOwner;
             _repoName = repoName;
             _currentVersion = currentVersion;
@@ -42,12 +46,17 @@ namespace CapYap.Updater
         public async Task<bool> CheckAndUpdateAsync()
         {
             var latest = await GetLatestReleaseAsync();
-            if (latest == null) return false;
+            if (latest == null)
+            {
+                _log.LogError("Latest tag not found...");
+                return false;
+            }
 
             if (!UpToDate(latest.TagName))
             {
-                Console.WriteLine($"New version {latest.TagName} found! Downloading...");
+                _log.LogInformation($"New version {latest.TagName} found! Downloading...");
                 var asset = latest.Assets.FirstOrDefault(a => a.Name.EndsWith(".exe"));
+                _log.LogInformation(JsonConvert.SerializeObject(asset));
                 if (asset != null)
                 {
                     string tempPath = Path.Combine(Path.GetTempPath(), asset.Name);
@@ -56,20 +65,25 @@ namespace CapYap.Updater
                     // If it's a zip, extract and replace
                     if (asset.Name.EndsWith(".exe"))
                     {
-                        Console.WriteLine("Downloaded installer. Run installer...");
+                        _log.LogInformation("Downloaded installer. Run installer...");
                         Process.Start(new ProcessStartInfo(tempPath) { UseShellExecute = true });
                     }
                     else
                     {
-                        Console.WriteLine("No installer found.");
+                        _log.LogError("No installer found.");
                         return false;
                     }
 
                     return true;
                 }
+                else
+                {
+                    _log.LogError("No installer found.");
+                    return false;
+                }
             }
 
-            Console.WriteLine("No updates found.");
+            _log.LogInformation("No updates found.");
             return false;
         }
 
@@ -77,12 +91,12 @@ namespace CapYap.Updater
         {
             string url = $"https://api.github.com/repos/{_repoOwner}/{_repoName}/releases/latest";
             var json = await _http.GetStringAsync(url);
-            return JsonSerializer.Deserialize<GitHubRelease>(json,
-                new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            return JsonConvert.DeserializeObject<GitHubRelease>(json);
         }
 
         private bool UpToDate(string latestTag)
         {
+            _log.LogInformation($"Current version: {_currentVersion} Latest version: {latestTag}");
             return latestTag == _currentVersion;
         }
 
