@@ -2,6 +2,7 @@
 using CapYap.Utils;
 using CapYap.Utils.Models;
 using CapYap.Utils.Windows;
+using Microsoft.Extensions.Logging;
 using System.ComponentModel;
 using System.Drawing;
 using System.Drawing.Imaging;
@@ -13,6 +14,8 @@ namespace CapYap.ViewModels.Windows
 {
     public class OverlayWindow : Window
     {
+        private readonly ILogger<OverlayWindow> _log;
+
         //private readonly HotKeyManager _hotKeys;
 
         private readonly string _tempCapturePath;
@@ -35,8 +38,10 @@ namespace CapYap.ViewModels.Windows
         private Bounds _windowBounds = new(0, 0, 0, 0);
         private readonly ICollection<(string title, Bounds bounds)> _windowsOpen;
 
-        public OverlayWindow(Bitmap screenshot, string tempCapturePath, Action<string> uploadCallback, HotKeyManager hotKeys)
+        public OverlayWindow(ILogger<OverlayWindow> log, Bitmap screenshot, string tempCapturePath, Action<string> uploadCallback, HotKeyManager hotKeys)
         {
+            _log = log;
+
             _tempCapturePath = tempCapturePath;
             _bitmap = screenshot;
             _uploadCallback = uploadCallback;
@@ -146,7 +151,7 @@ namespace CapYap.ViewModels.Windows
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
+                _log.LogError(ex.Message);
                 new Toast.Toast().SetFail(ex.Message);
             }
         }
