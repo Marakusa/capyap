@@ -125,8 +125,11 @@ namespace CapYap
         /// </summary>
         private async void OnStartup(object sender, StartupEventArgs e)
         {
+            var log = _host.Services.GetService<ILogger<App>>();
+
             if (IsAnotherInstanceRunning())
             {
+                log.LogWarning("Another instance running. Shutting down...");
                 Shutdown(); // Exit this instance
                 return;
             }
@@ -149,7 +152,7 @@ namespace CapYap
 
 #if !DEBUG
             // Check for updates
-            var updater = new AutoUpdater("Marakusa", "capyap", Version);
+            var updater = new AutoUpdater(log, "Marakusa", "capyap", Version);
             bool updated = await updater.CheckAndUpdateAsync();
             if (updated)
             {
@@ -158,7 +161,6 @@ namespace CapYap
             }
 #endif
 
-            var log = _host.Services.GetService<ILogger<App>>();
             log.LogInformation("App up to date! Starting...");
 
             await _host.StartAsync();

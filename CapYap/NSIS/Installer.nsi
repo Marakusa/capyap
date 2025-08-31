@@ -24,7 +24,7 @@ InstallDir "$LOCALAPPDATA\CapYap"
 Section "Install"
 
   SetOutPath "$INSTDIR"
-  File /r "${WORKINGDIR}\*.*"
+  File /r /x "publish\*" "${WORKINGDIR}\*.*"
 
   WriteUninstaller "$INSTDIR\uninstall.exe"
 
