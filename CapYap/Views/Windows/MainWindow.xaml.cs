@@ -53,42 +53,51 @@ namespace CapYap.Views.Windows
         {
             _log = log;
 
-            ViewModel = viewModel;
-            DataContext = this;
-
-            _apiService = apiService;
-            _screenshotService = screenshotService;
-
-            _hotKeys = hotKeys;
-            RegisterHotkeys(_hotKeys);
-
-            _loginWindow = loginWindow;
-
-            _apiService.OnUserChanged += OnUserChanged;
-
-            SystemThemeWatcher.Watch(this);
-
-            InitializeComponent();
-            SetPageService(navigationViewPageProvider);
-
-            navigationService.SetNavigationControl(RootNavigation);
-
-            DataPage.ImageClicked += (_, url) =>
+            try
             {
-                PreviewImage(url);
-            };
+                _log.LogInformation("Creating main window...");
 
-            _trayIcon = new TrayIcon("CapYap", "Assets/icon.ico", App.Version);
-            _trayIcon.OnOpenClicked += (_, _) =>
+                ViewModel = viewModel;
+                DataContext = this;
+
+                _apiService = apiService;
+                _screenshotService = screenshotService;
+
+                _hotKeys = hotKeys;
+                RegisterHotkeys(_hotKeys);
+
+                _loginWindow = loginWindow;
+
+                _apiService.OnUserChanged += OnUserChanged;
+
+                SystemThemeWatcher.Watch(this);
+
+                InitializeComponent();
+                SetPageService(navigationViewPageProvider);
+
+                navigationService.SetNavigationControl(RootNavigation);
+
+                DataPage.ImageClicked += (_, url) =>
+                {
+                    PreviewImage(url);
+                };
+
+                _trayIcon = new TrayIcon("CapYap", Path.Combine(AppContext.BaseDirectory, "Assets", "icon.ico"), App.Version);
+                _trayIcon.OnOpenClicked += (_, _) =>
+                {
+                    Show();
+                    WindowState = WindowSettings.Default.Maximized ? WindowState.Maximized : WindowState.Normal;
+                    Activate();
+                    BringIntoView();
+                };
+                _trayIcon.OnCaptureClicked += (_, _) => _screenshotService.CaptureAllScreens();
+                _trayIcon.OnOpenExternalClicked += (_, _) => OpenExternal();
+                _trayIcon.OnExitClicked += (_, _) => Application.Current.Shutdown();
+            }
+            catch (Exception ex)
             {
-                Show();
-                WindowState = WindowSettings.Default.Maximized ? WindowState.Maximized : WindowState.Normal;
-                Activate();
-                BringIntoView();
-            };
-            _trayIcon.OnCaptureClicked += (_, _) => _screenshotService.CaptureAllScreens();
-            _trayIcon.OnOpenExternalClicked += (_, _) => OpenExternal();
-            _trayIcon.OnExitClicked += (_, _) => Application.Current.Shutdown();
+                _log.LogError($"Failed to initialize main window: {ex}");
+            }
         }
 
         private void RegisterHotkeys(HotKeyManager hotKeyManager)
@@ -191,12 +200,18 @@ namespace CapYap.Views.Windows
             Activate();
         }
 
-        public void CloseWindow() => Hide();
+        public void CloseWindow()
+        {
+            _log.LogInformation("CloseWindow called");
+            Hide();
+        }
 
         #endregion INavigationWindow methods
 
         protected override void OnClosing(CancelEventArgs e)
         {
+            _log.LogInformation("Window closing invoked...");
+
             e.Cancel = true;
             Hide();
 
@@ -215,6 +230,8 @@ namespace CapYap.Views.Windows
 
             WindowSettings.Default.Save();
 
+            _log.LogInformation("Window state saved...");
+
             //base.OnClosing(e);
         }
 
@@ -223,7 +240,11 @@ namespace CapYap.Views.Windows
         /// </summary>
         protected override void OnClosed(EventArgs e)
         {
+            _log.LogInformation("Window closed");
+
             base.OnClosed(e);
+
+            _log.LogInformation("App shutting down...");
 
             // Make sure that closing this window will begin the process of closing the application.
             Application.Current.Shutdown();
