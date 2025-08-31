@@ -1,8 +1,9 @@
 ﻿using CapYap.API;
 using CapYap.HotKeys;
 using CapYap.Interfaces;
+using CapYap.Properties;
 using CapYap.Services;
-using CapYap.Updater;
+using CapYap.Utils.Windows;
 using CapYap.ViewModels.Pages;
 using CapYap.ViewModels.Windows;
 using CapYap.Views.Pages;
@@ -104,7 +105,16 @@ namespace CapYap
                 return;
             }
 
-            Version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? string.Empty;
+            if (AppSettings.Default.AutoStart && !StartupUtils.IsStartupEnabled())
+            {
+                StartupUtils.EnableStartup();
+            }
+            else if (!AppSettings.Default.AutoStart && StartupUtils.IsStartupEnabled())
+            {
+                StartupUtils.DisableStartup();
+            }
+
+                Version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? string.Empty;
             if (Version.Split('.').Length > 3)
             {
                 string[] parts = Version.Split(".");

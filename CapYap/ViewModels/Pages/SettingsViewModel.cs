@@ -1,4 +1,6 @@
-﻿using Wpf.Ui.Abstractions.Controls;
+﻿using CapYap.Properties;
+using CapYap.Utils.Windows;
+using Wpf.Ui.Abstractions.Controls;
 using Wpf.Ui.Appearance;
 
 namespace CapYap.ViewModels.Pages
@@ -9,6 +11,9 @@ namespace CapYap.ViewModels.Pages
 
         [ObservableProperty]
         private string _appVersion = string.Empty;
+
+        [ObservableProperty]
+        private bool _autoStart = true;
 
         [ObservableProperty]
         private ApplicationTheme _currentTheme = ApplicationTheme.Unknown;
@@ -25,10 +30,29 @@ namespace CapYap.ViewModels.Pages
 
         private void InitializeViewModel()
         {
+            AutoStart = StartupUtils.IsStartupEnabled();
             CurrentTheme = ApplicationThemeManager.GetAppTheme();
             AppVersion = $"CapYap - {App.Version}";
 
             _isInitialized = true;
+        }
+
+        [RelayCommand]
+        private void OnChangeAutoStart(bool enabled)
+        {
+            AutoStart = enabled;
+
+            if (AutoStart)
+            {
+                StartupUtils.EnableStartup();
+            }
+            else
+            {
+                StartupUtils.DisableStartup();
+            }
+
+            AppSettings.Default.AutoStart = AutoStart;
+            AppSettings.Default.Save();
         }
 
         [RelayCommand]
