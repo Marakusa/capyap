@@ -8,7 +8,10 @@ namespace CapYap.Updater
 {
     public class GitHubRelease
     {
+        [JsonPropertyName("tag_name")]
         public string TagName { get; set; } = "";
+
+        [JsonPropertyName("assets")]
         public List<GitHubAsset> Assets { get; set; } = new();
     }
 
@@ -16,6 +19,8 @@ namespace CapYap.Updater
     {
         [JsonPropertyName("browser_download_url")]
         public string BrowserDownloadUrl { get; set; } = "";
+
+        [JsonPropertyName("tag_name")]
         public string Name { get; set; } = "";
     }
 
