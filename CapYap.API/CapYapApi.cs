@@ -3,7 +3,6 @@ using CapYap.API.Models.Appwrite;
 using CapYap.API.Models.Events;
 using CapYap.Utils;
 using Newtonsoft.Json;
-using System;
 using System.Net;
 using System.Text;
 

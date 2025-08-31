@@ -77,6 +77,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Update="Properties\AppSettings.Designer.cs">
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>AppSettings.settings</DependentUpon>
+    </Compile>
     <Compile Update="Properties\WindowSettings.Designer.cs">
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <AutoGen>True</AutoGen>
@@ -87,6 +92,10 @@
   <ItemGroup>
     <None Update="NSIS\Installer.nsi">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Update="Properties\AppSettings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>AppSettings.Designer.cs</LastGenOutput>
     </None>
     <None Update="Properties\WindowSettings.settings">
       <Generator>PublicSettingsSingleFileGenerator</Generator>
