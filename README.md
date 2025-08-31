@@ -13,6 +13,14 @@ Backend runs on my server (https://sc.marakusa.me)
 ### Web interface repo
 [capyap-web-frontend](https://github.com/Marakusa/capyap-web-frontend)
 
+## Keybinds
+```
+Ctrl + Print Screen        : Take a screenshot
+Escape                     : Close the cropping overlay
+Left Shift                 : (Hold) Crop to a window
+Left Control               : (Hold) Crop to a monitor
+```
+
 ## TODO
 - [x] Fix app blocking ESC key
 - [x] Save and delete functions on image preview
