@@ -8,6 +8,7 @@ using CapYap.Utils;
 using CapYap.Utils.Windows;
 using CapYap.ViewModels.Windows;
 using CapYap.Views.Pages;
+using Microsoft.Extensions.Logging;
 using System.ComponentModel;
 using System.IO;
 using System.Net.Http;
@@ -24,6 +25,8 @@ namespace CapYap.Views.Windows
 {
     public partial class MainWindow : INavigationWindow
     {
+        private ILogger<MainWindow> _log;
+
         public MainWindowViewModel ViewModel { get; }
 
         private readonly HotKeyManager _hotKeys;
@@ -38,6 +41,7 @@ namespace CapYap.Views.Windows
         private TrayIcon? _trayIcon;
 
         public MainWindow(
+            ILogger<MainWindow> log,
             MainWindowViewModel viewModel,
             INavigationViewPageProvider navigationViewPageProvider,
             INavigationService navigationService,
@@ -47,6 +51,8 @@ namespace CapYap.Views.Windows
             HotKeyManager hotKeys
         )
         {
+            _log = log;
+
             ViewModel = viewModel;
             DataContext = this;
 
@@ -365,7 +371,7 @@ namespace CapYap.Views.Windows
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"Failed to save cap: {ex}");
+                    _log.LogError($"Failed to save cap: {ex}");
                     saveToast.SetFail($"Failed to save cap: {ex.Message}");
                 }
             }
@@ -416,7 +422,7 @@ namespace CapYap.Views.Windows
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Failed to delete cap: {ex}");
+                _log.LogError($"Failed to delete cap: {ex}");
                 deleteToast.SetFail($"Failed to delete cap: {ex.Message}");
             }
         }

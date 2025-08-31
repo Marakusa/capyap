@@ -14,6 +14,9 @@ using CapYap.Views.Windows;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Serilog;
+using Serilog.Events;
 using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
@@ -40,6 +43,23 @@ namespace CapYap
 
         private const int SW_RESTORE = 9;
 
+        static App()
+        {
+            var logPath = Path.Combine(AppContext.BaseDirectory, "Logs", "app.log");
+            Directory.CreateDirectory(Path.GetDirectoryName(logPath)!);
+
+            Log.Logger = new LoggerConfiguration()
+                .MinimumLevel.Debug()
+                .WriteTo.File(
+                    logPath,
+                    rollingInterval: RollingInterval.Day,
+                    retainedFileCountLimit: 7,
+                    fileSizeLimitBytes: 10_000_000,
+                    rollOnFileSizeLimit: true)
+                .WriteTo.File("log.txt", LogEventLevel.Information)
+                .CreateLogger();
+        }
+
         // The.NET Generic Host provides dependency injection, configuration, logging, and other services.
         // https://docs.microsoft.com/dotnet/core/extensions/generic-host
         // https://docs.microsoft.com/dotnet/core/extensions/dependency-injection
@@ -47,9 +67,18 @@ namespace CapYap
         // https://docs.microsoft.com/dotnet/core/extensions/logging
         private static readonly IHost _host = Host
             .CreateDefaultBuilder()
-            .ConfigureAppConfiguration(c => { c.SetBasePath(Path.GetDirectoryName(AppContext.BaseDirectory)); })
+            .ConfigureAppConfiguration(c =>
+            {
+                c.SetBasePath(Path.GetDirectoryName(AppContext.BaseDirectory)!);
+                c.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
+            })
+            .UseSerilog()
             .ConfigureServices((context, services) =>
             {
+                var logger = new LoggerConfiguration()
+                    .ReadFrom.Configuration(context.Configuration)
+                    .CreateLogger();
+
                 services.AddNavigationViewPageProvider();
 
                 services.AddHostedService<ApplicationHostService>();
@@ -89,13 +118,7 @@ namespace CapYap
                 services.AddSingleton<SettingsViewModel>();
             }).Build();
 
-        /// <summary>
-        /// Gets services.
-        /// </summary>
-        public static IServiceProvider Services
-        {
-            get { return _host.Services; }
-        }
+        public static IServiceProvider Services => _host.Services;
 
         /// <summary>
         /// Occurs when the application is loading.
@@ -134,6 +157,9 @@ namespace CapYap
                 return;
             }
 #endif
+
+            var log = _host.Services.GetService<ILogger<App>>();
+            log.LogInformation("App up to date! Starting...");
 
             await _host.StartAsync();
         }
