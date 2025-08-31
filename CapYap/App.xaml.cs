@@ -2,6 +2,7 @@
 using CapYap.HotKeys;
 using CapYap.Interfaces;
 using CapYap.Services;
+using CapYap.Updater;
 using CapYap.ViewModels.Pages;
 using CapYap.ViewModels.Windows;
 using CapYap.Views.Pages;
@@ -24,6 +25,8 @@ namespace CapYap
     /// </summary>
     public partial class App
     {
+        public static string Version { get; private set; } = "";
+
         // Windows API imports to focus the existing window
         [DllImport("user32.dll")]
         private static extern bool SetForegroundWindow(IntPtr hWnd);
@@ -100,6 +103,24 @@ namespace CapYap
                 Shutdown(); // Exit this instance
                 return;
             }
+
+            Version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? string.Empty;
+            if (Version.Split('.').Length > 3)
+            {
+                string[] parts = Version.Split(".");
+                Version = $"{parts[0]}.{parts[1]}.{parts[2]}";
+            }
+
+#if !DEBUG
+            // Check for updates
+            var updater = new AutoUpdater("Marakusa", "capyap", Version);
+            bool updated = await updater.CheckAndUpdateAsync();
+            if (updated)
+            {
+                Shutdown();
+                return;
+            }
+#endif
 
             await _host.StartAsync();
         }

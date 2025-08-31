@@ -26,15 +26,9 @@ namespace CapYap.ViewModels.Pages
         private void InitializeViewModel()
         {
             CurrentTheme = ApplicationThemeManager.GetAppTheme();
-            AppVersion = $"CapYap - {GetAssemblyVersion()}";
+            AppVersion = $"CapYap - {App.Version}";
 
             _isInitialized = true;
-        }
-
-        private string GetAssemblyVersion()
-        {
-            return System.Reflection.Assembly.GetExecutingAssembly().GetName().Version?.ToString()
-                ?? string.Empty;
         }
 
         [RelayCommand]
