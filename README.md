@@ -26,6 +26,7 @@ Left Control               : (Hold) Crop to a monitor
 - [x] Save and delete functions on image preview
 - [x] Tray icon + background process
 - [x] Optimize crop overlay
+- [ ] Fix monitor cropping when secondary monitor is on the left
 - [ ] Add implementation for drawing over caps
 - [ ] Update changes (in dashboard and gallery)
 - [ ] Mac + Linux support
