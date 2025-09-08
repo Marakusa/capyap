@@ -16,9 +16,10 @@ Backend runs on my server (https://sc.marakusa.me)
 ## Keybinds
 ```
 Ctrl + Print Screen        : Take a screenshot
-Escape                     : Close the cropping overlay
-Left Shift                 : (Hold) Crop to a window
-Left Control               : (Hold) Crop to a monitor
+Esc                        : Close the cropping overlay
+Shift (Hold)               : Crop to a window
+Ctrl (Hold)                : Crop to a monitor
+Alt (Hold)                 : Show magnifier
 ```
 
 ## TODO
