@@ -21,10 +21,12 @@ namespace CapYap.HotKeys
 
         public event Action<bool> CtrlChanged;
         public event Action<bool> ShiftChanged;
+        public event Action<bool> AltChanged;
         public event Action<bool> EscapeChanged;
 
         private bool _ctrlDown;
         private bool _shiftDown;
+        private bool _altDown;
         private bool _escapeDown;
 
         public HotKeyManager()
@@ -33,6 +35,7 @@ namespace CapYap.HotKeys
 
             CtrlChanged += (_) => { };
             ShiftChanged += (_) => { };
+            AltChanged += (_) => { };
             EscapeChanged += (_) => { };
 
             InitializeDirectInput();
@@ -121,6 +124,8 @@ namespace CapYap.HotKeys
                                    state.PressedKeys.Contains(SharpDX.DirectInput.Key.RightControl);
                 bool shiftPressed = state.PressedKeys.Contains(SharpDX.DirectInput.Key.LeftShift) ||
                                     state.PressedKeys.Contains(SharpDX.DirectInput.Key.RightShift);
+                bool altPressed = state.PressedKeys.Contains(SharpDX.DirectInput.Key.LeftAlt) ||
+                                    state.PressedKeys.Contains(SharpDX.DirectInput.Key.RightAlt);
                 bool escapePressed = state.PressedKeys.Contains(SharpDX.DirectInput.Key.Escape);
 
                 // Fire events only when state changes
@@ -134,6 +139,12 @@ namespace CapYap.HotKeys
                 {
                     _shiftDown = shiftPressed;
                     ShiftChanged?.Invoke(_shiftDown);
+                }
+
+                if (altPressed != _altDown)
+                {
+                    _altDown = altPressed;
+                    AltChanged?.Invoke(_altDown);
                 }
 
                 if (escapePressed != _escapeDown)
