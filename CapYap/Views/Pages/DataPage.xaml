@@ -36,7 +36,8 @@
                             Stretch="UniformToFill"
                             VerticalAlignment="Center"
                             HorizontalAlignment="Center"
-                            MouseLeftButtonUp="OnImageClick"/>
+                            MouseLeftButtonUp="OnImageClick">
+                        </Image>
                     </Border>
                 </DataTemplate>
             </ItemsControl.ItemTemplate>

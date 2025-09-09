@@ -338,7 +338,7 @@ namespace CapYap.API
                 string jwt = await _appwrite.CheckJWT();
 
                 var fileUri = new Uri(url ?? "");
-                string path = fileUri.AbsolutePath.TrimStart('/');
+                string path = fileUri.AbsolutePath.Split('/').Last();
                 if (path.StartsWith("f/"))
                     path = path.Substring(2);
 

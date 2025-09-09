@@ -106,6 +106,7 @@ namespace CapYap
                 services.AddSingleton<HotKeyManager>();
 
                 services.AddSingleton<IApiService, ApiService>();
+                services.AddSingleton<IImageCacheService, ImageCacheService>();
                 services.AddSingleton<IScreenshotService, ScreenshotService>();
 
                 services.AddSingleton<DashboardPage>();

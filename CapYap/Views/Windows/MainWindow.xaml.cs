@@ -32,6 +32,7 @@ namespace CapYap.Views.Windows
         private readonly HotKeyManager _hotKeys;
 
         private readonly IApiService _apiService;
+        private readonly IImageCacheService _imageCache;
         private readonly IScreenshotService _screenshotService;
 
         private readonly LoginWindow _loginWindow;
@@ -48,7 +49,8 @@ namespace CapYap.Views.Windows
             IApiService apiService,
             LoginWindow loginWindow,
             IScreenshotService screenshotService,
-            HotKeyManager hotKeys
+            HotKeyManager hotKeys,
+            IImageCacheService imageCache
         )
         {
             _log = log;
@@ -61,6 +63,7 @@ namespace CapYap.Views.Windows
                 DataContext = this;
 
                 _apiService = apiService;
+                _imageCache = imageCache;
                 _screenshotService = screenshotService;
 
                 _hotKeys = hotKeys;
@@ -312,27 +315,28 @@ namespace CapYap.Views.Windows
             _currentPreviewImage = url;
             PreviewPanel.Visibility = url == null ? Visibility.Hidden : Visibility.Visible;
 
-            if (url != null)
+            if (url == null)
             {
-                _currentPreviewImageBitmap = new BitmapImage();
-                _currentPreviewImageBitmap.BeginInit();
-                _currentPreviewImageBitmap.UriSource = new Uri(url);
-                _currentPreviewImageBitmap.CacheOption = BitmapCacheOption.OnLoad;
-                _currentPreviewImageBitmap.EndInit();
-                _currentPreviewImageBitmap.DownloadProgress += (_, _) =>
-                {
-                    LoadingRing.Visibility = Visibility.Visible;
-                };
-                _currentPreviewImageBitmap.DownloadCompleted += (_, _) =>
-                {
-                    CenterImage(_currentPreviewImageBitmap);
-                    LoadingRing.Visibility = Visibility.Hidden;
-                };
-
-                PreviewImageComponent.Source = _currentPreviewImageBitmap;
-
-                CenterImage(_currentPreviewImageBitmap);
+                return;
             }
+
+            // Reuse from cache
+            var bmp = _imageCache.GetImage(url);
+            _currentPreviewImageBitmap = new BitmapImage();
+            _currentPreviewImageBitmap = bmp;
+            _currentPreviewImageBitmap.DownloadProgress += (_, _) =>
+            {
+                LoadingRing.Visibility = Visibility.Visible;
+            };
+            _currentPreviewImageBitmap.DownloadCompleted += (_, _) =>
+            {
+                CenterImage(_currentPreviewImageBitmap);
+                LoadingRing.Visibility = Visibility.Hidden;
+            };
+
+            PreviewImageComponent.Source = bmp;
+
+            CenterImage(_currentPreviewImageBitmap);
         }
 
         private void CenterImage(BitmapImage bmp)

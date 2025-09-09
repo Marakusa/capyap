@@ -61,5 +61,16 @@
             FontWeight="Medium"
             Text="About CapYap" />
         <TextBlock Margin="0,12,0,0" Text="{Binding ViewModel.AppVersion, Mode=OneWay}" />
+
+        <ui:Button x:Name="QuitButton" Margin="0,32,0,0">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="&#xE8BB;" 
+                           FontFamily="Segoe Fluent Icons"
+                           FontSize="16"
+                           VerticalAlignment="Center"
+                           Margin="0,0,4,0"/>
+                <TextBlock Text="Quit CapYap" VerticalAlignment="Center"/>
+            </StackPanel>
+        </ui:Button>
     </StackPanel>
 </Page>
