@@ -1,5 +1,6 @@
 ﻿using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Imaging;
 using CapYap.API;
 using CapYap.Interfaces;
 using CapYap.Models;
@@ -13,16 +14,19 @@ namespace CapYap.Views.Pages
         public DataViewModel ViewModel { get; }
 
         private readonly IApiService _apiService;
+        private readonly IImageCacheService _imageCache;
 
         public static event EventHandler<string>? ImageClicked;
 
         public DataPage(DataViewModel viewModel,
-            IApiService apiService)
+            IApiService apiService,
+            IImageCacheService imageCache)
         {
             ViewModel = viewModel;
             DataContext = this;
 
             _apiService = apiService;
+            _imageCache = imageCache;
 
             InitializeComponent();
         }
@@ -77,12 +81,14 @@ namespace CapYap.Views.Pages
             }
 
             // Bind the list of URLs to the gallery
-            List<string> urls = new List<string>();
-            foreach (var url in e.Gallery.Documents)
+            List<BitmapImage> images = new();
+            foreach (var doc in e.Gallery.Documents)
             {
-                urls.Add(url.ToString() + "&noView=1");
+                string url = doc.ToString() + "&noView=1";
+                images.Add(_imageCache.GetImage(url));
             }
-            GalleryControl.ItemsSource = urls;
+            GalleryControl.ItemsSource = images;
+
             LoadingRing.Visibility = Visibility.Hidden;
             ErrorText.Visibility = Visibility.Hidden;
             ErrorText.Text = "";

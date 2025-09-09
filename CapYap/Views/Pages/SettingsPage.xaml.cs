@@ -13,6 +13,8 @@ namespace CapYap.Views.Pages
             DataContext = this;
 
             InitializeComponent();
+
+            QuitButton.Click += (_, _) => Application.Current.Shutdown();
         }
     }
 }
