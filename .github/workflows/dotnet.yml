@@ -84,6 +84,9 @@ jobs:
           name: build-output
           path: ./build
 
+      - name: Install NSIS
+        run: choco install nsis -y
+
       - name: Publish
         run: dotnet publish --configuration Release --self-contained true --runtime win-x86 /p:Version=${{ needs.build.outputs.version }} /p:RuntimeIdentifier=win-x86
         env:
