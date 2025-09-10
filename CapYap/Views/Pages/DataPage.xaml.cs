@@ -16,7 +16,7 @@ namespace CapYap.Views.Pages
         private readonly IApiService _apiService;
         private readonly IImageCacheService _imageCache;
 
-        public static event EventHandler<string>? ImageClicked;
+        public static event EventHandler<(string, int, string)>? ImageClicked;
 
         public DataPage(DataViewModel viewModel,
             IApiService apiService,
@@ -85,7 +85,15 @@ namespace CapYap.Views.Pages
             foreach (var doc in e.Gallery.Documents)
             {
                 string url = doc.ToString() + "&noView=1";
-                images.Add(_imageCache.GetImage(url));
+                var image = _imageCache.GetImage(url);
+                if (image != null)
+                {
+                    images.Add(image);
+                }
+                else
+                {
+                    images.Add(new BitmapImage(new Uri(url)));
+                }
             }
             GalleryControl.ItemsSource = images;
 
@@ -121,7 +129,7 @@ namespace CapYap.Views.Pages
                 return;
             }
 
-            ImageClicked?.Invoke(this, url);
+            ImageClicked?.Invoke(this, (url, 0, "0 B"));
         }
 
         #region Page actions

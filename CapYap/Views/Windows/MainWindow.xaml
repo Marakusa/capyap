@@ -79,7 +79,7 @@
         </ui:NavigationView>
 
 
-        <Grid x:Name="PreviewPanel" Background="#CC000000" Visibility="Visible">
+        <Grid x:Name="PreviewPanel" Background="#CC000000" Visibility="Hidden">
             <Canvas x:Name="PreviewCanvas">
                 <ui:Image x:Name="PreviewImageComponent"
                   RenderTransformOrigin="0.5,0.5"
@@ -128,13 +128,13 @@
                     FontSize="16"
                     VerticalAlignment="Center"
                     Margin="12,0,4,0"/>
-                <TextBlock Text="0" VerticalAlignment="Center"/>
+                <TextBlock x:Name="ViewsText" Text="0" VerticalAlignment="Center"/>
                 <TextBlock Text="&#xEA35;" 
                     FontFamily="Segoe Fluent Icons"
                     FontSize="16"
                     VerticalAlignment="Center"
                     Margin="12,0,4,0"/>
-                <TextBlock Text="0 B" VerticalAlignment="Center"/>
+                <TextBlock x:Name="SizeText" Text="0 B" VerticalAlignment="Center"/>
             </StackPanel>
             <custom:LoadingSpinner x:Name="LoadingRing"
                 Cap="Round"

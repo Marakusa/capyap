@@ -251,6 +251,46 @@ namespace CapYap.API
             }
         }
 
+        public async Task<FileStats?> FetchFileStatsAsync(string filePath)
+        {
+            try
+            {
+                string jwt = await _appwrite.CheckJWT();
+
+                MultipartFormDataContent form = new()
+                {
+                    { new StringContent(jwt, Encoding.UTF8, "text/plain"), "sessionKey" },
+                    { new StringContent(filePath, Encoding.UTF8, "text/plain"), "file" }
+                };
+
+                HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, $"{_apiHost}/f/stats")
+                {
+                    Content = form
+                };
+                HttpResponseMessage response = await _httpClient.SendAsync(request);
+                string responseData = await response.Content.ReadAsStringAsync();
+
+                if (response.IsSuccessStatusCode)
+                {
+                    FileStats? stats = JsonConvert.DeserializeObject<FileStats?>(responseData);
+                    if (stats != null)
+                    {
+                        return stats;
+                    }
+                    throw new Exception("Stats was null.");
+                }
+                else
+                {
+                    throw new Exception(responseData);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"FetchFileStatsAsync returned an error: {ex}");
+                return null;
+            }
+        }
+
         public async Task<Gallery?> FetchGalleryAsync(int page)
         {
             try
