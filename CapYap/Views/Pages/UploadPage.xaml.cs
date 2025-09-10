@@ -45,7 +45,7 @@ namespace CapYap.Views.Pages
                 Title = "Upload a screenshot",
                 Multiselect = false
             };
-            openFileDialog.Filter = "Image files (*.jpg, *.jpeg, *.png)|*.jpg;*.jpeg;*.png";
+            openFileDialog.Filter = "Image files (*.jpg, *.jpeg, *.png, *.gif)|*.jpg;*.jpeg;*.png;*.gif";
 
             bool? fileSelected = openFileDialog.ShowDialog();
             if (fileSelected != null && fileSelected == true)
