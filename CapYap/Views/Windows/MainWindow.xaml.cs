@@ -1,4 +1,5 @@
-﻿using CapYap.API.Models.Appwrite;
+﻿using CapYap.API.Models;
+using CapYap.API.Models.Appwrite;
 using CapYap.HotKeys;
 using CapYap.HotKeys.Models;
 using CapYap.Interfaces;
@@ -80,9 +81,12 @@ namespace CapYap.Views.Windows
 
                 navigationService.SetNavigationControl(RootNavigation);
 
-                DataPage.ImageClicked += (_, url) =>
+                DataPage.ImageClicked += async (_, p) =>
                 {
-                    PreviewImage(url);
+                    string url = p.Item1;
+                    int views = p.Item2;
+                    string size = p.Item3;
+                    await PreviewImageAsync(url, views, size);
                 };
 
                 _trayIcon = new TrayIcon("CapYap", Path.Combine(AppContext.BaseDirectory, "Assets", "icon.ico"), App.Version);
@@ -289,7 +293,7 @@ namespace CapYap.Views.Windows
                     return;
                 }
 
-                PreviewImage(null);
+                _ = PreviewImageAsync(null, 0, "0 B");
             };
             PreviewPanel.MouseWheel += PreviewPanelMouseWheel;
             PreviewPanel.MouseDown += PreviewPanelMouseDown;
@@ -300,7 +304,7 @@ namespace CapYap.Views.Windows
             {
                 if (e.Key == Key.Escape)
                 {
-                    PreviewImage(null);
+                    _ = PreviewImageAsync(null, 0, "0 B");
                 }
             };
         }
@@ -309,7 +313,7 @@ namespace CapYap.Views.Windows
         private BitmapImage? _currentPreviewImageBitmap;
         private double previewScale = 1;
 
-        private void PreviewImage(string? url)
+        private async Task PreviewImageAsync(string? url, int views, string size)
         {
             LoadingRing.Visibility = Visibility.Hidden;
             _currentPreviewImage = url;
@@ -337,6 +341,21 @@ namespace CapYap.Views.Windows
             PreviewImageComponent.Source = bmp;
 
             CenterImage(_currentPreviewImageBitmap);
+
+            ViewsText.Text = views.ToString();
+            SizeText.Text = size;
+
+            string filePath = new Uri(url).AbsolutePath;
+            if (filePath.StartsWith("/f/"))
+            {
+                filePath = filePath.Substring(3);
+            }
+            FileStats? fileStats = await _apiService.FetchFileStatsAsync(filePath);
+            if (fileStats != null)
+            {
+                ViewsText.Text = fileStats.Views.ToString();
+                SizeText.Text = fileStats.Size;
+            }
         }
 
         private void CenterImage(BitmapImage bmp)
@@ -443,7 +462,7 @@ namespace CapYap.Views.Windows
                 deleteToast.SetSuccess("Cap deleted successfully!");
 
                 await _apiService.FetchGalleryAsync();
-                PreviewImage(null);
+                _ = PreviewImageAsync(null, 0, "0 B");
             }
             catch (Exception ex)
             {

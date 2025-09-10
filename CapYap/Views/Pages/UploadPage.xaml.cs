@@ -1,4 +1,5 @@
 ﻿using CapYap.Interfaces;
+using CapYap.Properties;
 using CapYap.Utils.Windows;
 using CapYap.ViewModels.Pages;
 using Microsoft.Win32;
@@ -44,7 +45,7 @@ namespace CapYap.Views.Pages
                 Title = "Upload a screenshot",
                 Multiselect = false
             };
-            openFileDialog.Filter = "Image files (*.jpg, *.jpeg, *.png)|*.jpg;*.jpeg;*.png";
+            openFileDialog.Filter = "Image files (*.jpg, *.jpeg, *.png, *.gif)|*.jpg;*.jpeg;*.png;*.gif";
 
             bool? fileSelected = openFileDialog.ShowDialog();
             if (fileSelected != null && fileSelected == true)
@@ -59,7 +60,7 @@ namespace CapYap.Views.Pages
                 try
                 {
                     string file = openFileDialog.FileName;
-                    string url = await _apiService.UploadCaptureAsync(file);
+                    string url = await _apiService.UploadCaptureAsync(file, AppSettings.Default.CompressionQuality, AppSettings.Default.CompressionLevel);
                     ClipboardUtils.SetClipboard(url);
                     toast.SetSuccess("Screen capture uploaded and copied to clipboard");
                     UploadingStatus.Visibility = Visibility.Hidden;

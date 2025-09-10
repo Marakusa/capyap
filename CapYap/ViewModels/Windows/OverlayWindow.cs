@@ -1,4 +1,5 @@
 ﻿using CapYap.HotKeys;
+using CapYap.Properties;
 using CapYap.Utils;
 using CapYap.Utils.Models;
 using CapYap.Utils.Windows;
@@ -259,7 +260,23 @@ namespace CapYap.ViewModels.Windows
         {
             try
             {
-                BitmapUtils.Crop(_bitmap, captureArea).Save(_tempCapturePath, ImageFormat.Jpeg);
+                ImageFormat format = ImageFormat.Jpeg;
+
+                switch (AppSettings.Default.UploadFormat)
+                {
+                    default:
+                    case 0:
+                        format = ImageFormat.Jpeg;
+                        break;
+                    case 1:
+                        format = ImageFormat.Png;
+                        break;
+                    case 2:
+                        format = ImageFormat.Gif;
+                        break;
+                }
+
+                BitmapUtils.Crop(_bitmap, captureArea).Save(_tempCapturePath, format);
                 _uploadCallback.Invoke(_tempCapturePath);
             }
             catch (Exception ex)

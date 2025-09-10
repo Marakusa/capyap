@@ -123,6 +123,18 @@
                         <TextBlock Text="Delete" VerticalAlignment="Center"/>
                     </StackPanel>
                 </ui:Button>
+                <TextBlock Text="&#xE052;" 
+                    FontFamily="Segoe Fluent Icons"
+                    FontSize="16"
+                    VerticalAlignment="Center"
+                    Margin="12,0,4,0"/>
+                <TextBlock x:Name="ViewsText" Text="0" VerticalAlignment="Center"/>
+                <TextBlock Text="&#xEA35;" 
+                    FontFamily="Segoe Fluent Icons"
+                    FontSize="16"
+                    VerticalAlignment="Center"
+                    Margin="12,0,4,0"/>
+                <TextBlock x:Name="SizeText" Text="0 B" VerticalAlignment="Center"/>
             </StackPanel>
             <custom:LoadingSpinner x:Name="LoadingRing"
                 Cap="Round"

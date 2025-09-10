@@ -167,15 +167,30 @@ namespace CapYap.Services
             }
             catch (Exception ex)
             {
-                _log.LogError($"Failed to fetch gallery: {ex}");
+                _log.LogError($"Failed to fetch stats: {ex}");
                 OnStatsChanged?.Invoke(this, new StatsChangedEventArgs(null, true, ex.Message));
                 return null;
             }
         }
 
-        public async Task<string> UploadCaptureAsync(string path)
+        public async Task<FileStats?> FetchFileStatsAsync(string filePath)
         {
-            return await _api.UploadCaptureAsync(path);
+            try
+            {
+                FileStats? stats = await _api.FetchFileStatsAsync(filePath);
+                return stats;
+            }
+            catch (Exception ex)
+            {
+                _log.LogError($"Failed to fetch file stats: {ex}");
+                new Toast.Toast().SetFail($"Failed to fetch file stats: {ex}");
+                return null;
+            }
+        }
+
+        public async Task<string> UploadCaptureAsync(string path, int quality = -1, int level = -1)
+        {
+            return await _api.UploadCaptureAsync(path, quality, level);
         }
 
         public async Task DeleteCaptureAsync(string? url)

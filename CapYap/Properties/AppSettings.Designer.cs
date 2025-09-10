@@ -34,5 +34,53 @@ namespace CapYap.Properties {
                 this["AutoStart"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("92")]
+        public int CompressionQuality {
+            get {
+                return ((int)(this["CompressionQuality"]));
+            }
+            set {
+                this["CompressionQuality"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("70")]
+        public int AnimCompressionQuality {
+            get {
+                return ((int)(this["AnimCompressionQuality"]));
+            }
+            set {
+                this["AnimCompressionQuality"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("6")]
+        public int CompressionLevel {
+            get {
+                return ((int)(this["CompressionLevel"]));
+            }
+            set {
+                this["CompressionLevel"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int UploadFormat {
+            get {
+                return ((int)(this["UploadFormat"]));
+            }
+            set {
+                this["UploadFormat"] = value;
+            }
+        }
     }
 }
