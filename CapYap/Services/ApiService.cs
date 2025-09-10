@@ -173,9 +173,9 @@ namespace CapYap.Services
             }
         }
 
-        public async Task<string> UploadCaptureAsync(string path)
+        public async Task<string> UploadCaptureAsync(string path, int quality = -1, int level = -1)
         {
-            return await _api.UploadCaptureAsync(path);
+            return await _api.UploadCaptureAsync(path, quality, level);
         }
 
         public async Task DeleteCaptureAsync(string? url)

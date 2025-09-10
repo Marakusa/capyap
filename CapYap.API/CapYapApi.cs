@@ -288,7 +288,7 @@ namespace CapYap.API
             }
         }
 
-        public async Task<string> UploadCaptureAsync(string filePath)
+        public async Task<string> UploadCaptureAsync(string filePath, int quality, int level)
         {
             try
             {
@@ -302,7 +302,9 @@ namespace CapYap.API
                 var capContent = new ByteArrayContent(await File.ReadAllBytesAsync(filePath));
                 form.Add(capContent, "file", Path.GetFileName(filePath));
 
-                HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, $"{_apiHost}/f/upload")
+                HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, $"{_apiHost}/f/upload?" + 
+                                                                                        (quality > 0 ? $"quality={quality}&" : "") + 
+                                                                                        (quality > 0 ? $"compressionLevel={level}&" : ""))
                 {
                     Content = form
                 };

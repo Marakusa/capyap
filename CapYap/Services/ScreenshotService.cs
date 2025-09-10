@@ -1,10 +1,12 @@
 ﻿using CapYap.HotKeys;
 using CapYap.Interfaces;
+using CapYap.Properties;
 using CapYap.ScreenCapture;
 using CapYap.Utils.Windows;
 using CapYap.ViewModels.Windows;
 using Microsoft.Extensions.Logging;
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
 
 namespace CapYap.Services
@@ -15,8 +17,6 @@ namespace CapYap.Services
         private readonly IApiService _apiService;
         private readonly ILogger<OverlayWindow> _overlayLogger;
 
-        private readonly string tempScreenshotPath;
-
         private OverlayWindow? _overlayWindow;
 
         public ScreenshotService(HotKeyManager hotKeys, IApiService apiService, ILogger<OverlayWindow> overlayLogger)
@@ -24,8 +24,6 @@ namespace CapYap.Services
             _hotKeys = hotKeys;
             _apiService = apiService;
             _overlayLogger = overlayLogger;
-
-            tempScreenshotPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "CapYap", "screenshot-temp.jpg");
         }
 
         public void CaptureAllScreens()
@@ -37,6 +35,24 @@ namespace CapYap.Services
 
             var screenshotService = new Screenshot();
             Bitmap screenshot = screenshotService.CaptureAllMonitors();
+
+            string format = "jpg";
+
+            switch (AppSettings.Default.UploadFormat)
+            {
+                default:
+                case 0:
+                    format = "jpg";
+                    break;
+                case 1:
+                    format = "png";
+                    break;
+                case 2:
+                    format = "gif";
+                    break;
+            }
+
+            string tempScreenshotPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "CapYap", "screenshot-temp." + format);
 
             _overlayWindow = new OverlayWindow(_overlayLogger, screenshot, tempScreenshotPath, async (path) =>
             {
@@ -58,7 +74,7 @@ namespace CapYap.Services
             toast.SetWait("Uploading screen capture...");
             try
             {
-                string url = await _apiService.UploadCaptureAsync(path);
+                string url = await _apiService.UploadCaptureAsync(path, AppSettings.Default.CompressionQuality, AppSettings.Default.CompressionLevel);
                 ClipboardUtils.SetClipboard(url);
                 toast.SetSuccess("Screen capture uploaded and copied to clipboard");
             }
