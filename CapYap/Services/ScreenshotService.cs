@@ -6,7 +6,6 @@ using CapYap.Utils.Windows;
 using CapYap.ViewModels.Windows;
 using Microsoft.Extensions.Logging;
 using System.Drawing;
-using System.Drawing.Imaging;
 using System.IO;
 
 namespace CapYap.Services

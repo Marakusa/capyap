@@ -197,5 +197,11 @@ namespace CapYap.Services
         {
             await _api.DeleteCaptureAsync(url);
         }
+
+        public async Task UpdateAvatarAsync(string? url)
+        {
+            User? user = await _api.UpdateUserAvatarAsync(url);
+            OnUserChanged?.Invoke(this, user);
+        }
     }
 }

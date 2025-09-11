@@ -25,10 +25,12 @@
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.1" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0 " />
     <PackageReference Include="WPF-UI.Tray" Version="4.0.3" />
+    <PackageReference Include="WpfAnimatedGif" Version="2.0.2" />
   </ItemGroup>
 
   <ItemGroup>
     <None Remove="appsettings.json" />
+    <None Remove="Assets\avatar.png" />
     <None Remove="Assets\icon.ico" />
     <None Remove="Assets\icon.png" />
     <None Remove="Assets\icon.svg" />
@@ -63,6 +65,9 @@
 
   <ItemGroup>
 	<Content Include="appsettings.json">
+	  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	</Content>
+	<Content Include="Assets\avatar.png">
 	  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	</Content>
 	<Content Include="Assets\icon.ico">

@@ -33,6 +33,6 @@
                 <ui:TextBlock TextWrapping="Wrap" Text="Uploading..." VerticalAlignment="Center" Margin="10,0,0,0"/>
             </WrapPanel>
         </StackPanel>
-        <ui:Image x:Name="UploadedImage" Source="/Assets/icons/1024x1024.png" Margin="16,84,16,16" VerticalAlignment="Top" Height="350"/>
+        <Image x:Name="UploadedImage" Source="/Assets/icons/1024x1024.png" Margin="16,84,16,16" VerticalAlignment="Top" Height="350"/>
     </Grid>
 </Page>

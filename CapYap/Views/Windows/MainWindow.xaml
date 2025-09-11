@@ -40,10 +40,18 @@
                 <ui:ImageIcon Source="/Views/Windows/icon.png" />
             </ui:TitleBar.Icon>
             <ui:TitleBar.TrailingContent>
-                <!-- Place Account Button Here -->
-                <Button x:Name="AccountButton" Content="Account"
-                        Padding="8,4"
-                        HorizontalAlignment="Right" Margin="0,0,12,0"/>
+                <ui:Image 
+                    x:Name="AccountButton" 
+                    HorizontalAlignment="Right" 
+                    Margin="0,0,12,0"
+                    Width="38" 
+                    Height="38"
+                    Source="/Assets/avatar.png" 
+                    Stretch="UniformToFill">
+                    <ui:Image.Clip>
+                        <EllipseGeometry Center="19,19" RadiusX="19" RadiusY="19"/>
+                    </ui:Image.Clip>
+                </ui:Image>
             </ui:TitleBar.TrailingContent>
         </ui:TitleBar>
 
@@ -62,15 +70,6 @@
             <ui:NavigationView.Header>
                 <ui:BreadcrumbBar x:Name="BreadcrumbBar" Margin="42,32,42,20" />
             </ui:NavigationView.Header>
-            <ui:NavigationView.AutoSuggestBox>
-                <ui:AutoSuggestBox x:Name="AutoSuggestBox" PlaceholderText="Search">
-                    <ui:AutoSuggestBox.Icon>
-                        <ui:IconSourceElement>
-                            <ui:SymbolIconSource Symbol="Search24" />
-                        </ui:IconSourceElement>
-                    </ui:AutoSuggestBox.Icon>
-                </ui:AutoSuggestBox>
-            </ui:NavigationView.AutoSuggestBox>
             <ui:NavigationView.ContentOverlay>
                 <Grid>
                     <ui:SnackbarPresenter x:Name="SnackbarPresenter" />
@@ -81,16 +80,16 @@
 
         <Grid x:Name="PreviewPanel" Background="#CC000000" Visibility="Hidden">
             <Canvas x:Name="PreviewCanvas">
-                <ui:Image x:Name="PreviewImageComponent"
-                  RenderTransformOrigin="0.5,0.5"
-                  Stretch="Uniform">
-                    <ui:Image.RenderTransform>
+                <Image x:Name="PreviewImageComponent"
+                    RenderTransformOrigin="0.5,0.5"
+                    Stretch="Uniform">
+                    <Image.RenderTransform>
                         <TransformGroup>
                             <ScaleTransform x:Name="PreviewImageScale" ScaleX="1" ScaleY="1"/>
                             <TranslateTransform x:Name="PreviewImageTranslate" X="0" Y="0"/>
                         </TransformGroup>
-                    </ui:Image.RenderTransform>
-                </ui:Image>
+                    </Image.RenderTransform>
+                </Image>
             </Canvas>
             <StackPanel Margin="0,408,0,8" Orientation="Horizontal" VerticalAlignment="Bottom" HorizontalAlignment="Center" Height="36">
                 <ui:Button x:Name="SaveButton" Margin="2">
@@ -135,6 +134,16 @@
                     VerticalAlignment="Center"
                     Margin="12,0,4,0"/>
                 <TextBlock x:Name="SizeText" Text="0 B" VerticalAlignment="Center"/>
+                <ui:Button x:Name="SetAsAvatarButton" Margin="14,2,2,2">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="&#xE13D;" 
+                           FontFamily="Segoe Fluent Icons"
+                           FontSize="16"
+                           VerticalAlignment="Center"
+                           Margin="0,0,4,0"/>
+                        <TextBlock Text="Set as Avatar" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </ui:Button>
             </StackPanel>
             <custom:LoadingSpinner x:Name="LoadingRing"
                 Cap="Round"

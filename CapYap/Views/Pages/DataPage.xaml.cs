@@ -1,11 +1,14 @@
-﻿using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using CapYap.API;
+﻿using CapYap.API;
 using CapYap.Interfaces;
 using CapYap.Models;
 using CapYap.ViewModels.Pages;
+using System.IO;
+using System.Net.Http;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
 using Wpf.Ui.Abstractions.Controls;
+using WpfAnimatedGif;
 
 namespace CapYap.Views.Pages
 {
@@ -81,6 +84,9 @@ namespace CapYap.Views.Pages
             }
 
             // Bind the list of URLs to the gallery
+            GalleryControl.ItemsSource = e.Gallery.Documents.Select(d => d.ToString() + "&noView=1").ToList();
+            //GalleryControl.ItemsSource = e.Gallery.Documents;
+            /*
             List<BitmapImage> images = new();
             foreach (var doc in e.Gallery.Documents)
             {
@@ -95,7 +101,7 @@ namespace CapYap.Views.Pages
                     images.Add(new BitmapImage(new Uri(url)));
                 }
             }
-            GalleryControl.ItemsSource = images;
+            GalleryControl.ItemsSource = images;*/
 
             LoadingRing.Visibility = Visibility.Hidden;
             ErrorText.Visibility = Visibility.Hidden;
@@ -130,6 +136,33 @@ namespace CapYap.Views.Pages
             }
 
             ImageClicked?.Invoke(this, (url, 0, "0 B"));
+        }
+
+        private async void OnGalleryImageLoaded(object sender, RoutedEventArgs e)
+        {
+            if (sender is not System.Windows.Controls.Image img || img.DataContext is not string url)
+                return;
+
+            string extension = Path.GetExtension(new Uri(url).AbsolutePath).ToLowerInvariant();
+            bool isGif = extension == ".gif";
+
+            if (isGif)
+            {
+                var gif = await _imageCache.GetGifImageAsync(url);
+                if (gif != null)
+                {
+                    ImageBehavior.SetAnimatedSource(img, gif);
+                }
+                else
+                {
+                    img.Source = null;
+                }
+            }
+            else
+            {
+                var bmp = _imageCache.GetImage(url) ?? new BitmapImage(new Uri(url));
+                img.Source = bmp;
+            }
         }
 
         #region Page actions
