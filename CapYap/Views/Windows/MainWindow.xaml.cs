@@ -21,6 +21,7 @@ using Wpf.Ui.Abstractions;
 using Wpf.Ui.Appearance;
 using Wpf.Ui.Controls;
 using Wpf.Ui.Extensions;
+using WpfAnimatedGif;
 
 namespace CapYap.Views.Windows
 {
@@ -89,7 +90,11 @@ namespace CapYap.Views.Windows
                     await PreviewImageAsync(url, views, size);
                 };
 
-                _trayIcon = new TrayIcon("CapYap", Path.Combine(AppContext.BaseDirectory, "Assets", "icon.ico"), App.Version);
+                _trayIcon = new TrayIcon("CapYap", Path.Combine(AppContext.BaseDirectory, "Assets", "icon.ico"), App.Version
+#if DEBUG
+                + " (DEBUG BUILD)"
+#endif
+                );
                 _trayIcon.OnOpenClicked += (_, _) =>
                 {
                     Show();
@@ -138,24 +143,64 @@ namespace CapYap.Views.Windows
 
             _currentUser = user;
 
-            AccountButton.Content = _currentUser.Name;
+            if (user.Prefs != null && user.Prefs.ContainsKey("photoURL") && !string.IsNullOrEmpty(user.Prefs?["photoURL"]))
+            {
+                UpdateAvatar(user.Prefs["photoURL"]);
+            }
 
             AccountButton.ContextMenu = new ContextMenu();
+
+            Wpf.Ui.Controls.MenuItem username = new();
+            username.Header = _currentUser.Name;
+            username.IsEnabled = false;
+            AccountButton.ContextMenu.Items.Add(username);
+
+            Wpf.Ui.Controls.MenuItem email = new();
+            email.Header = _currentUser.Email;
+            email.IsEnabled = false;
+            AccountButton.ContextMenu.Items.Add(email);
+
+            Separator separator = new Separator();
+            AccountButton.ContextMenu.Items.Add(separator);
 
             Wpf.Ui.Controls.MenuItem external = new();
             external.Header = "Open in browser";
             external.Click += External_Click;
             AccountButton.ContextMenu.Items.Add(external);
-            AccountButton.Click += AccountButton_Click;
 
-            Separator separator = new Separator();
-            AccountButton.ContextMenu.Items.Add(separator);
+            Separator separator2 = new Separator();
+            AccountButton.ContextMenu.Items.Add(separator2);
 
             Wpf.Ui.Controls.MenuItem logOut = new();
             logOut.Header = "Log Out";
             logOut.Click += LogOut_Click;
             AccountButton.ContextMenu.Items.Add(logOut);
-            AccountButton.Click += AccountButton_Click;
+
+            Wpf.Ui.Controls.MenuItem quitApp = new();
+            quitApp.Header = "Quit CapYap";
+            quitApp.Click += (_, _) => Application.Current.Shutdown();
+            AccountButton.ContextMenu.Items.Add(quitApp);
+
+            AccountButton.MouseUp += AccountButton_Click;
+        }
+
+        private void UpdateAvatar(string url)
+        {
+            var bmp = _imageCache.GetImage(url);
+            if (bmp != null)
+            {
+                if (bmp.IsDownloading)
+                {
+                    bmp.DownloadCompleted += (_, _) =>
+                    {
+                        AccountButton.Source = bmp;
+                    };
+                }
+                else
+                {
+                    AccountButton.Source = bmp;
+                }
+            }
         }
 
         private void AccountButton_Click(object sender, RoutedEventArgs e)
@@ -279,6 +324,10 @@ namespace CapYap.Views.Windows
             {
                 await DeleteButtonClickAsync(sender, e);
             };
+            SetAsAvatarButton.Click += async (sender, e) =>
+            {
+                await SetAsAvatarButtonClickAsync(sender, e);
+            };
             PreviewPanel.MouseUp += (object sender, MouseButtonEventArgs e) =>
             {
                 if (PreviewPanel.Visibility == Visibility.Hidden)
@@ -311,6 +360,7 @@ namespace CapYap.Views.Windows
 
         private string? _currentPreviewImage;
         private BitmapImage? _currentPreviewImageBitmap;
+        private BitmapImage? _currentAnimatedPreviewImageBitmap;
         private double previewScale = 1;
 
         private async Task PreviewImageAsync(string? url, int views, string size)
@@ -319,37 +369,80 @@ namespace CapYap.Views.Windows
             _currentPreviewImage = url;
             PreviewPanel.Visibility = url == null ? Visibility.Hidden : Visibility.Visible;
 
-            if (url == null)
+            if (url == null) return;
+
+            string extension = Path.GetExtension(new Uri(url).AbsolutePath).ToLowerInvariant();
+            bool isGif = extension == ".gif";
+
+            // Reset previous image
+            if (PreviewImageComponent.Source != null)
             {
-                return;
+                ImageBehavior.SetAnimatedSource(PreviewImageComponent, null);
+                PreviewImageComponent.Source = null;
             }
+            _currentAnimatedPreviewImageBitmap = null;
+            _currentPreviewImageBitmap = null;
 
-            // Reuse from cache
-            var bmp = _imageCache.GetImage(url);
-            _currentPreviewImageBitmap = new BitmapImage();
-            _currentPreviewImageBitmap = bmp;
-            _currentPreviewImageBitmap.DownloadProgress += (_, _) =>
+            if (isGif)
             {
-                LoadingRing.Visibility = Visibility.Visible;
-            };
-            _currentPreviewImageBitmap.DownloadCompleted += (_, _) =>
+                try
+                {
+                    // Use cache service for GIFs
+                    _currentAnimatedPreviewImageBitmap = await _imageCache.GetGifImageAsync(url);
+
+                    if (_currentAnimatedPreviewImageBitmap != null)
+                    {
+                        ImageBehavior.SetAnimatedSource(PreviewImageComponent, _currentAnimatedPreviewImageBitmap);
+                        CenterImage();
+                        LoadingRing.Visibility = Visibility.Hidden;
+                    }
+                    else
+                    {
+                        throw new Exception("Failed to load GIF from cache.");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    LoadingRing.Visibility = Visibility.Hidden;
+                    new Toast.Toast().SetFail($"Failed to load GIF: {ex.Message}");
+                }
+            }
+            else
             {
-                CenterImage(_currentPreviewImageBitmap);
-                LoadingRing.Visibility = Visibility.Hidden;
-            };
+                try
+                {
+                    // Use cache service for static images
+                    _currentPreviewImageBitmap = _imageCache.GetImage(url) ?? new BitmapImage(new Uri(url));
 
-            PreviewImageComponent.Source = bmp;
+                    _currentPreviewImageBitmap.DownloadProgress += (_, _) => LoadingRing.Visibility = Visibility.Visible;
+                    _currentPreviewImageBitmap.DownloadCompleted += (_, _) =>
+                    {
+                        CenterImage();
+                        LoadingRing.Visibility = Visibility.Hidden;
+                    };
+                    _currentPreviewImageBitmap.DownloadFailed += (_, _) =>
+                    {
+                        LoadingRing.Visibility = Visibility.Hidden;
+                        new Toast.Toast().SetFail("Failed to load image.");
+                    };
 
-            CenterImage(_currentPreviewImageBitmap);
+                    ImageBehavior.SetAnimatedSource(PreviewImageComponent, null);
+                    PreviewImageComponent.Source = _currentPreviewImageBitmap;
+                    CenterImage();
+                }
+                catch
+                {
+                    LoadingRing.Visibility = Visibility.Hidden;
+                }
+            }
 
             ViewsText.Text = views.ToString();
             SizeText.Text = size;
 
             string filePath = new Uri(url).AbsolutePath;
             if (filePath.StartsWith("/f/"))
-            {
                 filePath = filePath.Substring(3);
-            }
+
             FileStats? fileStats = await _apiService.FetchFileStatsAsync(filePath);
             if (fileStats != null)
             {
@@ -358,9 +451,27 @@ namespace CapYap.Views.Windows
             }
         }
 
-        private void CenterImage(BitmapImage bmp)
+        private void CenterImage()
         {
             PreviewPanel.UpdateLayout();
+
+            BitmapSource? bmp = null;
+
+            // Check if it's a static image
+            if (PreviewImageComponent.Source is BitmapSource staticBmp)
+            {
+                bmp = staticBmp;
+            }
+            // Check if we have an animated GIF loaded
+            else if (_currentAnimatedPreviewImageBitmap != null)
+            {
+                bmp = _currentAnimatedPreviewImageBitmap;
+            }
+
+            if (bmp == null || bmp.PixelWidth == 0 || bmp.PixelHeight == 0)
+            {
+                return;
+            }
 
             previewScale = Math.Min(Width / bmp.Width, Height / bmp.Height);
             if (previewScale > 1)
@@ -469,6 +580,28 @@ namespace CapYap.Views.Windows
                 _log.LogError($"Failed to delete cap: {ex}");
                 deleteToast.SetFail($"Failed to delete cap: {ex.Message}");
             }
+        }
+
+        private Task SetAsAvatarButtonClickAsync(object sender, RoutedEventArgs e)
+        {
+            if (_currentUser == null || _currentPreviewImage == null)
+            {
+                new Toast.Toast().SetFail("You must be logged in and have a cap selected to set as avatar.");
+                return Task.CompletedTask;
+            }
+            Toast.Toast avatarToast = new();
+            try
+            {
+                avatarToast.SetWait("Setting avatar...");
+                _apiService.UpdateAvatarAsync(_currentPreviewImage);
+                avatarToast.SetSuccess("Avatar set successfully!");
+            }
+            catch (Exception ex)
+            {
+                _log.LogError($"Failed to set avatar: {ex}");
+                avatarToast.SetFail($"Failed to set avatar: {ex.Message}");
+            }
+            return Task.CompletedTask;
         }
 
         private void PreviewPanelMouseWheel(object sender, MouseWheelEventArgs e)

@@ -3,8 +3,10 @@ using CapYap.Properties;
 using CapYap.Utils.Windows;
 using CapYap.ViewModels.Pages;
 using Microsoft.Win32;
+using System.IO;
 using System.Windows.Media.Imaging;
 using Wpf.Ui.Abstractions.Controls;
+using WpfAnimatedGif;
 
 namespace CapYap.Views.Pages
 {
@@ -13,16 +15,19 @@ namespace CapYap.Views.Pages
         public UploadViewModel ViewModel { get; }
 
         private IApiService _apiService;
+        private readonly IImageCacheService _imageCache;
 
         public UploadPage(
             UploadViewModel viewModel,
-            IApiService apiService
+            IApiService apiService,
+            IImageCacheService imageCache
         )
         {
             ViewModel = viewModel;
             DataContext = this;
 
             _apiService = apiService;
+            _imageCache = imageCache;
 
             InitializeComponent();
         }
@@ -63,11 +68,32 @@ namespace CapYap.Views.Pages
                     string url = await _apiService.UploadCaptureAsync(file, AppSettings.Default.CompressionQuality, AppSettings.Default.CompressionLevel);
                     ClipboardUtils.SetClipboard(url);
                     toast.SetSuccess("Screen capture uploaded and copied to clipboard");
+
+                    string extension = Path.GetExtension(new Uri(url).AbsolutePath).ToLowerInvariant();
+                    bool isGif = extension == ".gif";
+
+                    if (isGif)
+                    {
+                        var gif = await _imageCache.GetGifImageAsync(url);
+                        if (gif != null)
+                        {
+                            ImageBehavior.SetAnimatedSource(UploadedImage, gif);
+                        }
+                        else
+                        {
+                            UploadedImage.Source = null;
+                        }
+                    }
+                    else
+                    {
+                        var bmp = _imageCache.GetImage(url) ?? new BitmapImage(new Uri(url));
+                        UploadedImage.Source = bmp;
+                    }
+
                     UploadingStatus.Visibility = Visibility.Hidden;
                     UploadSuccess.Visibility = Visibility.Visible;
                     UploadFail.Visibility = Visibility.Hidden;
                     UploadedImage.Visibility = Visibility.Visible;
-                    UploadedImage.Source = new BitmapImage(new Uri(url));
                     UploadButton.IsEnabled = true;
                 }
                 catch (Exception ex)

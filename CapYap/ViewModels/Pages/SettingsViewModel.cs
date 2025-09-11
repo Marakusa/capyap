@@ -32,7 +32,12 @@ namespace CapYap.ViewModels.Pages
         {
             AutoStart = StartupUtils.IsStartupEnabled();
             CurrentTheme = ApplicationThemeManager.GetAppTheme();
+
+#if DEBUG
+            AppVersion = $"CapYap - {App.Version} (DEBUG BUILD)";
+#else
             AppVersion = $"CapYap - {App.Version}";
+#endif
 
             _isInitialized = true;
         }

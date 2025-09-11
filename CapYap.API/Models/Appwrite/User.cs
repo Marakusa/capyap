@@ -6,10 +6,6 @@ namespace CapYap.API.Models.Appwrite
     {
     }
 
-    public class UserPrefs
-    {
-    }
-
     public class User
     {
         [JsonProperty("$id")]
@@ -61,7 +57,7 @@ namespace CapYap.API.Models.Appwrite
         public bool? Mfa { get; set; }
 
         [JsonProperty("prefs")]
-        public UserPrefs? Prefs { get; set; }
+        public Dictionary<string, string>? Prefs { get; set; }
 
         [JsonProperty("targets")]
         public List<object>? Targets { get; set; }

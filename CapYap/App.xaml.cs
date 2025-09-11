@@ -144,12 +144,22 @@ namespace CapYap
                 StartupUtils.DisableStartup();
             }
 
+#if DEBUG
+            DateTime now = DateTime.Now;
+            string year = now.Year.ToString().Substring(2);
+            string month = now.Month.ToString("D1");
+            string day = now.Day.ToString("D2");
+            string hour = now.Hour.ToString("D2");
+            string minute = now.Minute.ToString("D2");
+            Version = $"{year}.{month}{day}.{hour}{minute}";
+#else
             Version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? string.Empty;
             if (Version.Split('.').Length > 3)
             {
                 string[] parts = Version.Split(".");
                 Version = $"{parts[0]}.{parts[1]}.{parts[2]}";
             }
+#endif
 
 #if !DEBUG
             // Check for updates
