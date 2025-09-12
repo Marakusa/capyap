@@ -2,7 +2,6 @@
 using System.IO;
 using System.Net.Http;
 using System.Windows.Media.Imaging;
-using Wpf.Ui.Extensions;
 
 namespace CapYap.Services
 {

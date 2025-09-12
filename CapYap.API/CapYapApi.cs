@@ -291,12 +291,12 @@ namespace CapYap.API
             }
         }
 
-        public async Task<Gallery?> FetchGalleryAsync(int page)
+        public async Task<Gallery?> FetchGalleryAsync(int page, int limit)
         {
             try
             {
                 string jwt = await _appwrite.CheckJWT();
-                HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, $"{_apiHost}/f/fetchGallery?limit=24&page={page}")
+                HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, $"{_apiHost}/f/fetchGallery?limit={limit}&page={page}")
                 {
                     Content = new StringContent(
                         JsonConvert.SerializeObject(new CapYapApiJwtRequest(jwt)),

@@ -1,5 +1,6 @@
 ﻿using CapYap.Properties;
 using CapYap.Utils.Windows;
+using CapYap.Views.Pages;
 using Wpf.Ui.Abstractions.Controls;
 using Wpf.Ui.Appearance;
 

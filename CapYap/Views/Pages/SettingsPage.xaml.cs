@@ -11,6 +11,8 @@ namespace CapYap.Views.Pages
 
         private string _selectedFormat = "jpg";
 
+        public static event Action? ShowRecentFilesDashboardChanged;
+
         public SettingsPage(SettingsViewModel viewModel)
         {
             ViewModel = viewModel;
@@ -19,12 +21,26 @@ namespace CapYap.Views.Pages
             InitializeComponent();
 
             // Load settings
+            ShowRecentFilesDashboardToggle.IsChecked = AppSettings.Default.ShowRecentFilesDashboard;
             OnCompressionQualityChanged(AppSettings.Default.CompressionQuality);
             OnAnimCompressionQualityChanged(AppSettings.Default.AnimCompressionQuality);
             OnCompressionLevelChanged(AppSettings.Default.CompressionLevel);
             FormatComboBox.SelectedIndex = AppSettings.Default.UploadFormat;
 
             // Event handlers
+            ShowRecentFilesDashboardToggle.Checked += (_, _) =>
+            {
+                AppSettings.Default.ShowRecentFilesDashboard = true;
+                AppSettings.Default.Save();
+                ShowRecentFilesDashboardChanged?.Invoke();
+            };
+            ShowRecentFilesDashboardToggle.Unchecked += (_, _) =>
+            {
+                AppSettings.Default.ShowRecentFilesDashboard = false;
+                AppSettings.Default.Save();
+                ShowRecentFilesDashboardChanged?.Invoke();
+            };
+
             QuitButton.Click += (_, _) => Application.Current.Shutdown();
 
             FormatComboBox.SelectionChanged += (_, _) => OnFormatChanged();

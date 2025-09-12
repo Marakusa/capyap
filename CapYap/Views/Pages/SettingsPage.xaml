@@ -30,6 +30,9 @@
             CommandParameter="{Binding IsChecked,RelativeSource={RelativeSource Self}}"
             Content="Open CapYap on startup"
             IsChecked="{Binding ViewModel.AutoStart, Mode=OneWay}" />
+        <ui:ToggleSwitch x:Name="ShowRecentFilesDashboardToggle"
+            Margin="0,12,0,0"
+            Content="Show Recent Files on Dashboard"/>
 
         <TextBlock Margin="0,12,0,0" Text="Theme" />
         <RadioButton
