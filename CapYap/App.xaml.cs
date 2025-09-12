@@ -151,7 +151,7 @@ namespace CapYap
             string year = now.Year.ToString().Substring(2);
             string month = now.Month.ToString("D1");
             string day = now.Day.ToString("D2");
-            string hour = now.Hour.ToString("D2");
+            string hour = now.Hour.ToString("D1");
             string minute = now.Minute.ToString("D2");
             Version = $"{year}.{month}{day}.{hour}{minute}";
 #else
@@ -162,18 +162,6 @@ namespace CapYap
                 Version = $"{parts[0]}.{parts[1]}.{parts[2]}";
             }
 #endif
-
-            // Ensure the version has three parts, padding the last part with zeros if necessary
-            if (Version.Split('.').Length > 2)
-            {
-                string[] parts = Version.Split(".");
-                string lastPart = parts[2];
-                if (lastPart.Length < 4)
-                {
-                    lastPart = lastPart.PadLeft(4, '0');
-                }
-                Version = $"{parts[0]}.{parts[1]}.{parts[2]}";
-            }
 
 #if !DEBUG
             // Check for updates
