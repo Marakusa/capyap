@@ -163,6 +163,18 @@ namespace CapYap
             }
 #endif
 
+            // Ensure the version has three parts, padding the last part with zeros if necessary
+            if (Version.Split('.').Length > 2)
+            {
+                string[] parts = Version.Split(".");
+                string lastPart = parts[2];
+                if (lastPart.Length < 4)
+                {
+                    lastPart = lastPart.PadLeft(4, '0');
+                }
+                Version = $"{parts[0]}.{parts[1]}.{parts[2]}";
+            }
+
 #if !DEBUG
             // Check for updates
             var updater = new AutoUpdater(log, "Marakusa", "capyap", Version);
