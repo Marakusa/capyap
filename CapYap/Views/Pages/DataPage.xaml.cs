@@ -3,7 +3,6 @@ using CapYap.Interfaces;
 using CapYap.Models;
 using CapYap.ViewModels.Pages;
 using System.IO;
-using System.Net.Http;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -85,23 +84,6 @@ namespace CapYap.Views.Pages
 
             // Bind the list of URLs to the gallery
             GalleryControl.ItemsSource = e.Gallery.Documents.Select(d => d.ToString() + "&noView=1").ToList();
-            //GalleryControl.ItemsSource = e.Gallery.Documents;
-            /*
-            List<BitmapImage> images = new();
-            foreach (var doc in e.Gallery.Documents)
-            {
-                string url = doc.ToString() + "&noView=1";
-                var image = _imageCache.GetImage(url);
-                if (image != null)
-                {
-                    images.Add(image);
-                }
-                else
-                {
-                    images.Add(new BitmapImage(new Uri(url)));
-                }
-            }
-            GalleryControl.ItemsSource = images;*/
 
             LoadingRing.Visibility = Visibility.Hidden;
             ErrorText.Visibility = Visibility.Hidden;
@@ -233,32 +215,71 @@ namespace CapYap.Views.Pages
 
             PageBar.Children.Add(UiPrevButton(currentPage > 1));
 
+            int pagesShown = 6; // Number of page buttons to show around the current page
+
             for (int i = 1; i <= totalPages; i++)
             {
-                if (i <= currentPage - 2)
+                // If there are fewer pages, show all page buttons
+                if (totalPages <= pagesShown)
                 {
-                    if (i == 2 && i <= totalPages - 8)
-                    {
-                        PageBar.Children.Add(UiPageButton(1, i == currentPage));
-                        PageBar.Children.Add(UiMiddleDots());
-                    }
-                    else if (i > totalPages - 8)
+                    PageBar.Children.Add(UiPageButton(i, i == currentPage));
+                    continue;
+                }
+
+                // If the current page is 1–4, show the first 6 pages and the last page
+                if (currentPage <= 4)
+                {
+                    if (i <= pagesShown)
                     {
                         PageBar.Children.Add(UiPageButton(i, i == currentPage));
                     }
-                }
-                if (i > currentPage - 2 && i < currentPage + 7)
-                {
-                    PageBar.Children.Add(UiPageButton(i, i == currentPage));
-                }
-                if (i == currentPage + 7)
-                {
-                    if (i != totalPages)
+                    if (i == pagesShown + 1)
                     {
                         PageBar.Children.Add(UiMiddleDots());
                     }
-                    PageBar.Children.Add(UiPageButton(totalPages, i == currentPage));
-                    break;
+                    if (i == totalPages)
+                    {
+                        PageBar.Children.Add(UiPageButton(totalPages, i == currentPage));
+                    }
+                    continue;
+                }
+
+                // If the current page is in the middle
+                if (currentPage > 4 && currentPage < totalPages - 3)
+                {
+                    if (i == 1)
+                    {
+                        PageBar.Children.Add(UiPageButton(1, i == currentPage));
+                        PageBar.Children.Add(UiMiddleDots());
+                        continue;
+                    }
+                    if (i > currentPage - 3 && i < currentPage + 3)
+                    {
+                        PageBar.Children.Add(UiPageButton(i, i == currentPage));
+                        continue;
+                    }
+                    if (i == totalPages)
+                    {
+                        PageBar.Children.Add(UiMiddleDots());
+                        PageBar.Children.Add(UiPageButton(totalPages, i == currentPage));
+                        continue;
+                    }
+                }
+
+                // If the current page is near the end
+                if (currentPage >= totalPages - 3)
+                {
+                    if (i == 1)
+                    {
+                        PageBar.Children.Add(UiPageButton(1, i == currentPage));
+                        PageBar.Children.Add(UiMiddleDots());
+                        continue;
+                    }
+                    if (i >= totalPages - pagesShown + 1)
+                    {
+                        PageBar.Children.Add(UiPageButton(i, i == currentPage));
+                        continue;
+                    }
                 }
             }
 

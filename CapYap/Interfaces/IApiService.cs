@@ -29,6 +29,8 @@ namespace CapYap.Interfaces
 
         public Task<Gallery?> FetchGalleryAsync(int page);
 
+        public Task<Gallery?> FetchGalleryAsync(int page, int limit);
+
         public Task<Stats?> FetchStatsAsync();
 
         public Task<FileStats?> FetchFileStatsAsync(string filePath);

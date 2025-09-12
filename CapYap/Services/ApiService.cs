@@ -144,7 +144,25 @@ namespace CapYap.Services
             {
                 OnGalleryFetching?.Invoke(EventArgs.Empty);
                 _currentPage = page;
-                Gallery? gallery = await _api.FetchGalleryAsync(_currentPage);
+                Gallery? gallery = await _api.FetchGalleryAsync(_currentPage, 24);
+                OnGalleryChanged?.Invoke(this, new GalleryChangedEventArgs(gallery));
+                return gallery;
+            }
+            catch (Exception ex)
+            {
+                _log.LogError($"Failed to fetch gallery: {ex}");
+                OnGalleryChanged?.Invoke(this, new GalleryChangedEventArgs(null, true, ex.Message));
+                return null;
+            }
+        }
+
+        public async Task<Gallery?> FetchGalleryAsync(int page, int limit)
+        {
+            try
+            {
+                OnGalleryFetching?.Invoke(EventArgs.Empty);
+                _currentPage = page;
+                Gallery? gallery = await _api.FetchGalleryAsync(_currentPage, limit);
                 OnGalleryChanged?.Invoke(this, new GalleryChangedEventArgs(gallery));
                 return gallery;
             }
