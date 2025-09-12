@@ -12,7 +12,7 @@ namespace CapYap.API
     {
         private readonly Appwrite _appwrite;
         private readonly HttpClient _httpClient;
-        private readonly string _apiHost = "https://sc.marakusa.me";
+        private readonly string _apiHost;
 
         private Session? _currentSession;
 
@@ -61,7 +61,7 @@ namespace CapYap.API
         }
         #endregion
 
-        public CapYapApi(HttpClient httpClient)
+        public CapYapApi(string apiHost, HttpClient httpClient)
         {
             _cookieContainer = new CookieContainer();
 
@@ -79,7 +79,7 @@ namespace CapYap.API
             };
             _httpClient = new HttpClient(clientHandler);
             _appwrite = new Appwrite(_httpClient, SaveCookies);
-            _apiHost = "https://sc.marakusa.me";
+            _apiHost = apiHost;
 
             OnClientAuthorizedAsync += ApiOnClientAuthorized;
         }

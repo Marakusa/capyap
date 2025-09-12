@@ -25,7 +25,7 @@ namespace CapYap.Services
         public ApiService(ILogger<ApiService> log, HttpClient client)
         {
             _log = log;
-            _api = new CapYapApi(client);
+            _api = new CapYapApi(App.ApiHost, client);
             _currentPage = 1;
         }
 

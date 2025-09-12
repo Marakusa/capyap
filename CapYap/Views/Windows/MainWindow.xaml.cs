@@ -215,7 +215,7 @@ namespace CapYap.Views.Windows
         }
         private void OpenExternal()
         {
-            AppUtils.OpenUrl("https://sc.marakusa.me/settings");
+            AppUtils.OpenUrl(App.WebSiteHost + "/settings");
         }
 
         private void LogOut_Click(object sender, RoutedEventArgs e)
