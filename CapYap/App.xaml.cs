@@ -32,6 +32,8 @@ namespace CapYap
     /// </summary>
     public partial class App
     {
+        public static string ApiHost { get; } = "https://capyap.marakusa.me";
+        public static string WebSiteHost { get; } = "https://capyap.marakusa.me";
         public static string Version { get; private set; } = "";
 
         // Windows API imports to focus the existing window
