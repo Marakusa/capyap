@@ -18,7 +18,7 @@ jobs:
         id: version
         shell: bash
         run: |
-          VERSION=$(date +"%y.%-m%d.%H%M")
+          VERSION=$(date +"%y.%-m%d.%h%M")
           echo "VERSION=$VERSION" >> $GITHUB_ENV
           echo "Version: $VERSION"
           echo "::set-output name=version::$VERSION"
