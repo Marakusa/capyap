@@ -45,12 +45,17 @@
 
         public void Close()
         {
-            _toastWindow.Close();
+            _toastWindow.CloseWindow();
         }
 
         internal void SetToastOrder(int order = 0)
         {
             _toastWindow.SetToastOrder(order);
+        }
+
+        internal ToastWindow GetWindow()
+        {
+            return _toastWindow;
         }
     }
 }

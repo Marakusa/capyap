@@ -46,6 +46,8 @@
     <None Remove="Assets\icons\96x96.png" />
     <None Remove="Assets\icon_capyap.svg" />
     <None Remove="Assets\loader.png" />
+    <None Remove="Assets\sounds\cap.wav" />
+    <None Remove="Assets\sounds\complete.wav" />
     <None Remove="Assets\wpfui-icon-256.png" />
     <None Remove="Assets\wpfui-icon-1024.png" />
     <None Remove="Views\Windows\icon.ico" />
@@ -55,6 +57,7 @@
   <ItemGroup>
     <ProjectReference Include="..\CapYap.API\CapYap.API.csproj" />
     <ProjectReference Include="..\CapYap.HotKeys\CapYap.HotKeys.Windows.csproj" />
+    <ProjectReference Include="..\CapYap.ResultPopUp\CapYap.ResultPopUp.csproj" />
     <ProjectReference Include="..\CapYap.ScreenCapture\CapYap.ScreenCapture.Windows.csproj" />
     <ProjectReference Include="..\CapYap.Toast\CapYap.Toast.csproj" />
     <ProjectReference Include="..\CapYap.Tray\CapYap.Tray.csproj" />
@@ -87,6 +90,9 @@
 	<Resource Include="Assets\icons\96x96.png" />
 	<Resource Include="Assets\icon_capyap.svg" />
 	<Resource Include="Assets\loader.png" />
+	<Content Include="Assets\sounds\**">
+	  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	</Content>
     <Resource Include="Assets\wpfui-icon-256.png" />
     <Resource Include="Assets\wpfui-icon-1024.png" />
     <Resource Include="Views\Windows\icon.ico" />

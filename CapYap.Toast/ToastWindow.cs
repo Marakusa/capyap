@@ -1,4 +1,5 @@
-﻿using System.Runtime.InteropServices;
+﻿using System.ComponentModel;
+using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -31,9 +32,9 @@ namespace CapYap.Toast
         private Border timeoutBar;
 
         private DispatcherTimer? closeTimer;
-        private double closeDuration;
 
         private bool isDone = false;
+        private bool canClose = false;
 
         public ToastWindow()
         {
@@ -167,6 +168,17 @@ namespace CapYap.Toast
             DwmSetWindowAttribute(hwnd, DWMWA_WINDOW_CORNER_PREFERENCE, ref preference, sizeof(int));
         }
 
+        protected override void OnClosing(CancelEventArgs e)
+        {
+            if (!canClose)
+            {
+                e.Cancel = true;
+                return;
+            }
+
+            base.OnClosing(e);
+        }
+
         internal void SetToastOrder(int order = 0)
         {
             var workingArea = SystemParameters.WorkArea;
@@ -179,11 +191,9 @@ namespace CapYap.Toast
 
             if (closeTimeout <= 0)
             {
-                Close();
+                CloseWindow();
                 return;
             }
-
-            closeDuration = closeTimeout;
 
             timeoutBar.Width = WindowWidth;
 
@@ -202,7 +212,7 @@ namespace CapYap.Toast
             closeTimer.Tick += (s, e) =>
             {
                 closeTimer.Stop();
-                Close();
+                CloseWindow();
             };
             closeTimer.Start();
         }
@@ -214,6 +224,12 @@ namespace CapYap.Toast
                 return;
             }
 
+            CloseWindow();
+        }
+
+        internal void CloseWindow()
+        {
+            canClose = true;
             Close();
         }
     }

@@ -96,11 +96,7 @@ namespace CapYap.ViewModels.Windows
             WindowStyle = WindowStyle.None;
             AllowsTransparency = false; // Keep GPU acceleration
             Background = System.Windows.Media.Brushes.Black;
-#if DEBUG
-            Topmost = false;
-#else
             Topmost = true;
-#endif
             Focusable = true;
             ShowInTaskbar = true;
             Cursor = Cursors.Cross;
