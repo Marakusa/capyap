@@ -9,7 +9,7 @@ namespace CapYap.ResultPopUp
     internal class PopUpWindow : Window
     {
         private readonly int _maxWidth = 400;
-        private readonly int _maxHeight = 200;
+        private readonly int _maxHeight = 300;
 
         public PopUpWindow(Bitmap bitmap)
         {
