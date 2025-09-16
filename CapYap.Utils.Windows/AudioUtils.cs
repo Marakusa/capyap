@@ -2,7 +2,7 @@
 using System.Reflection;
 using System.Windows.Media;
 
-namespace CapYap.Utils
+namespace CapYap.Utils.Windows
 {
     public enum AudioClip
     {
@@ -12,35 +12,45 @@ namespace CapYap.Utils
 
     public class AudioUtils
     {
-        private readonly MediaPlayer[] _players;
-        private readonly string[] _audioFiles = [
-            "cap.wav",
-            "complete.wav",
-        ];
+        private readonly Dictionary<AudioClip, string> _fileMap = new();
+        private readonly Dictionary<AudioClip, MediaPlayer> _players = new();
 
         public AudioUtils()
         {
-            List<MediaPlayer> players = new List<MediaPlayer>();
+            string assemblyDirectory =
+                new FileInfo(Assembly.GetExecutingAssembly().Location).Directory?.FullName ?? ".";
 
-            string assemblyDirectory = new FileInfo(Assembly.GetExecutingAssembly().Location).Directory?.FullName ?? ".";
+            string soundsDirectory = Path.Combine(assemblyDirectory, "Assets", "sounds");
 
-            foreach (var file in _audioFiles)
+            var defaultMap = new Dictionary<AudioClip, string>
             {
-                Uri uri = new Uri(Path.Join(assemblyDirectory, "Assets", "sounds", file));
-                MediaPlayer player = new MediaPlayer();
-                player.Open(uri);
-                player.Stop();
-                players.Add(player);
-            }
+                { AudioClip.Capture, "cap.wav" },
+                { AudioClip.Complete, "complete.wav" },
+            };
 
-            _players = players.ToArray();
+            foreach ((AudioClip id, string file) in defaultMap)
+            {
+                string fullPath = Path.Combine(soundsDirectory, file);
+                _fileMap[id] = fullPath;
+            }
         }
 
         public void PlayAudioClip(AudioClip clip)
         {
-            var player = _players[(int)clip];
+            if (!_fileMap.TryGetValue(clip, out var path) || !File.Exists(path))
+            {
+                return;
+            }
+
+            if (!_players.TryGetValue(clip, out var player))
+            {
+                player = new MediaPlayer();
+                player.Open(new Uri(path));
+                _players[clip] = player;
+            }
+
             player.Stop();
-            player.Position = new TimeSpan(0);
+            player.Position = TimeSpan.Zero;
             player.Play();
         }
     }

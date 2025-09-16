@@ -3,7 +3,6 @@ using CapYap.HotKeys;
 using CapYap.Interfaces;
 using CapYap.Properties;
 using CapYap.Services;
-using CapYap.Utils;
 
 #if !DEBUG
 using CapYap.Updater;

@@ -12,7 +12,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Shapes;
 
-namespace CapYap.ViewModels.Windows
+namespace CapYap.Windows
 {
     public class OverlayWindow : Window
     {
@@ -40,6 +40,8 @@ namespace CapYap.ViewModels.Windows
 
         private bool _useMagnifier = false;
         private readonly Canvas? _magnifyingGlass;
+
+        private readonly Grid _toolbar;
 
         private bool _isCtrlDown;
         private Bounds _monitorBounds = new(0, 0, 0, 0);
@@ -80,6 +82,10 @@ namespace CapYap.ViewModels.Windows
             // Position label
             _positionLabel = CreatePositionLabel();
             _overlayCanvas.Children.Add(_positionLabel);
+
+            // Toolbar
+            _toolbar = CreateToolbar();
+            _overlayCanvas.Children.Add(_toolbar);
 
             _windowsOpen = NativeUtils.GetOpenWindowsBounds();
 
@@ -248,6 +254,89 @@ namespace CapYap.ViewModels.Windows
             return magnifier;
         }
 
+        private Button CreateToolbarButton(string glyph, Action? action = null)
+        {
+            var button = new Button
+            {
+                Content = new TextBlock
+                {
+                    Text = glyph,
+                    FontFamily = new System.Windows.Media.FontFamily("Segoe Fluent Icons"),
+                    FontSize = 16,
+                    Foreground = System.Windows.Media.Brushes.White,
+                    TextAlignment = TextAlignment.Center,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                },
+                Padding = new Thickness(0),
+                Margin = new Thickness(4),
+                Width = 32,
+                Height = 32,
+            };
+            button.Click += (_, _) => action?.Invoke();
+            return button;
+        }
+        private Grid CreateToolbar()
+        {
+            Grid toolbar = new()
+            {
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center,
+                Margin = new Thickness(8),
+            };
+
+            // Background container with rounded corners and border
+            Border background = new()
+            {
+                Background = new SolidColorBrush(System.Windows.Media.Color.FromRgb(40, 40, 40)),
+                BorderBrush = new SolidColorBrush(System.Windows.Media.Color.FromRgb(67, 67, 67)),
+                BorderThickness = new Thickness(1),
+                CornerRadius = new CornerRadius(12),
+                Padding = new Thickness(4),
+            };
+
+            // Button layout (4 buttons horizontally)
+            StackPanel buttonPanel = new()
+            {
+                Orientation = Orientation.Horizontal,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center,
+                Margin = new Thickness(2)
+            };
+
+            // Draw button
+            //buttonPanel.Children.Add(CreateToolbarButton("\uE932"));
+
+            // Rect select button
+            buttonPanel.Children.Add(CreateToolbarButton("\uEF20", () => {
+                _isCtrlDown = false;
+                _isShiftDown = false;
+                UpdateDrawRect();
+            }));
+
+            // Monitor select button
+            buttonPanel.Children.Add(CreateToolbarButton("\uF7ED", () => {
+                _isCtrlDown = true;
+                _isShiftDown = false;
+                UpdateDrawRect();
+            }));
+
+            // Window select button
+            buttonPanel.Children.Add(CreateToolbarButton("\uE7C4", () => {
+                _isCtrlDown = false;
+                _isShiftDown = true;
+                UpdateDrawRect();
+            }));
+
+            // Put buttons inside the border
+            background.Child = buttonPanel;
+
+            // Add to grid
+            toolbar.Children.Add(background);
+
+            return toolbar;
+        }
+
         #endregion
 
         #region Capture Logic
@@ -323,12 +412,29 @@ namespace CapYap.ViewModels.Windows
             UpdateMask(x, y, width, height);
         }
 
+        private void UpdateToolbar(Bounds monitorBounds)
+        {
+            int width = monitorBounds.Right - monitorBounds.Left;
+            _toolbar.Margin = new Thickness(
+                monitorBounds.Left + (width / 2) - (_toolbar.ActualWidth / 2), 
+                monitorBounds.Top + 12, 
+                0, 
+                0);
+        }
+
         private void UpdateDrawRect()
         {
+            _monitorBounds = NativeUtils.GetCurrentMonitorBounds((int)_mousePosition.X, (int)_mousePosition.Y);
+
+            UpdateToolbar(
+                new Bounds(
+                    _monitorBounds.Left - _fullBounds.Left,
+                    _monitorBounds.Top - _fullBounds.Top,
+                    _monitorBounds.Right - _fullBounds.Left,
+                    _monitorBounds.Bottom - _fullBounds.Top));
+
             if (!_isMouseDown && _isCtrlDown)
             {
-                _monitorBounds = NativeUtils.GetCurrentMonitorBounds((int)_mousePosition.X, (int)_mousePosition.Y);
-
                 _mouseStart = new System.Windows.Point(_monitorBounds.Left - _fullBounds.Left, _monitorBounds.Top - _fullBounds.Top);
                 _mouseEnd = new System.Windows.Point(_monitorBounds.Right - _fullBounds.Left, _monitorBounds.Bottom - _fullBounds.Top);
 

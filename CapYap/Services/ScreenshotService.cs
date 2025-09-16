@@ -4,9 +4,8 @@ using CapYap.Properties;
 using CapYap.ResultPopUp;
 using CapYap.ScreenCapture;
 using CapYap.Toast;
-using CapYap.Utils;
 using CapYap.Utils.Windows;
-using CapYap.ViewModels.Windows;
+using CapYap.Windows;
 using Microsoft.Extensions.Logging;
 using System.Drawing;
 using System.IO;
@@ -32,6 +31,8 @@ namespace CapYap.Services
             _apiService = apiService;
             _overlayLogger = overlayLogger;
             _audioUtils = audioUtils;
+
+            Capture();
         }
 
         public void Capture()
