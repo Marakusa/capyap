@@ -21,6 +21,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CapYap.Tray", "CapYap.Tray\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CapYap.Updater", "CapYap.Updater\CapYap.Updater.csproj", "{076E6220-FE0B-4298-A082-38C63BEE8DFD}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CapYap.ResultPopUp", "CapYap.ResultPopUp\CapYap.ResultPopUp.csproj", "{0D6E296A-558D-435F-AB4E-BF2034A9EB36}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -63,6 +65,10 @@ Global
 		{076E6220-FE0B-4298-A082-38C63BEE8DFD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{076E6220-FE0B-4298-A082-38C63BEE8DFD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{076E6220-FE0B-4298-A082-38C63BEE8DFD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0D6E296A-558D-435F-AB4E-BF2034A9EB36}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0D6E296A-558D-435F-AB4E-BF2034A9EB36}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0D6E296A-558D-435F-AB4E-BF2034A9EB36}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0D6E296A-558D-435F-AB4E-BF2034A9EB36}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

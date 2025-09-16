@@ -3,6 +3,7 @@ using CapYap.HotKeys;
 using CapYap.Interfaces;
 using CapYap.Properties;
 using CapYap.Services;
+
 #if !DEBUG
 using CapYap.Updater;
 #endif
@@ -119,6 +120,8 @@ namespace CapYap
                 services.AddSingleton<UploadViewModel>();
                 services.AddSingleton<SettingsPage>();
                 services.AddSingleton<SettingsViewModel>();
+
+                services.AddSingleton<AudioUtils>();
             }).Build();
 
         public static IServiceProvider Services => _host.Services;

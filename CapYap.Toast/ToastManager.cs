@@ -1,7 +1,7 @@
 ﻿
 namespace CapYap.Toast
 {
-    internal static class ToastManager
+    public static class ToastManager
     {
         private static List<Toast> _toasts = new();
 
@@ -30,6 +30,22 @@ namespace CapYap.Toast
             {
                 var toast = _toasts[index];
                 toast.SetToastOrder(_toasts.Count - index - 1);
+            }
+        }
+
+        public static void HideAllToasts()
+        {
+            foreach (var toast in _toasts)
+            {
+                toast.GetWindow().Topmost = false;
+            }
+        }
+
+        public static void ShowAllToasts()
+        {
+            foreach (var toast in _toasts)
+            {
+                toast.GetWindow().Topmost = true;
             }
         }
     }

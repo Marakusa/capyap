@@ -109,7 +109,7 @@ namespace CapYap.Views.Windows
                     Activate();
                     BringIntoView();
                 };
-                _trayIcon.OnCaptureClicked += (_, _) => _screenshotService.CaptureAllScreens();
+                _trayIcon.OnCaptureClicked += (_, _) => _screenshotService.Capture();
                 _trayIcon.OnOpenExternalClicked += (_, _) => OpenExternal();
                 _trayIcon.OnExitClicked += (_, _) => Application.Current.Shutdown();
             }
@@ -133,7 +133,7 @@ namespace CapYap.Views.Windows
                 return;
             }
 
-            _screenshotService.CaptureAllScreens();
+            _screenshotService.Capture();
         }
 
         private void OnUserChanged(object? sender, User? user)

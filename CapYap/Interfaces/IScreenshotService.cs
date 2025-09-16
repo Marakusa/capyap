@@ -2,6 +2,6 @@
 {
     public interface IScreenshotService
     {
-        public void CaptureAllScreens();
+        public void Capture();
     }
 }
