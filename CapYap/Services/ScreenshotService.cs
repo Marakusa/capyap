@@ -31,8 +31,6 @@ namespace CapYap.Services
             _apiService = apiService;
             _overlayLogger = overlayLogger;
             _audioUtils = audioUtils;
-
-            Capture();
         }
 
         public void Capture()
