@@ -156,8 +156,6 @@ namespace CapYap
                 StartupUtils.DisableStartup();
             }
 
-            throw new Exception("This is a test error");
-
 #if DEBUG
             DateTime now = DateTime.Now;
             string year = now.Year.ToString().Substring(2);
