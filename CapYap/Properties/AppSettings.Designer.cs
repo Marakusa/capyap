@@ -82,17 +82,5 @@ namespace CapYap.Properties {
                 this["UploadFormat"] = value;
             }
         }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool ShowRecentFilesDashboard {
-            get {
-                return ((bool)(this["ShowRecentFilesDashboard"]));
-            }
-            set {
-                this["ShowRecentFilesDashboard"] = value;
-            }
-        }
     }
 }

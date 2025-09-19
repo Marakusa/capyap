@@ -126,11 +126,18 @@ namespace CapYap
 
         public static IServiceProvider Services => _host.Services;
 
+        public static void OnDispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
+        {
+            MessageBox.Show($"Unhandled exception occurred:\n{e.Exception.Message}\nStack trace:\n{e.Exception.StackTrace}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+
         /// <summary>
         /// Occurs when the application is loading.
         /// </summary>
         private async void OnStartup(object sender, StartupEventArgs e)
         {
+            Current.Dispatcher.UnhandledException += OnDispatcherUnhandledException;
+
             var log = _host.Services.GetService<ILogger<App>>();
 
             if (IsAnotherInstanceRunning())
@@ -148,6 +155,8 @@ namespace CapYap
             {
                 StartupUtils.DisableStartup();
             }
+
+            throw new Exception("This is a test error");
 
 #if DEBUG
             DateTime now = DateTime.Now;
@@ -190,14 +199,6 @@ namespace CapYap
             await _host.StopAsync();
 
             _host.Dispose();
-        }
-
-        /// <summary>
-        /// Occurs when an exception is thrown by an application but not handled.
-        /// </summary>
-        private void OnDispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
-        {
-            // For more info see https://docs.microsoft.com/en-us/dotnet/api/system.windows.application.dispatcherunhandledexception?view=windowsdesktop-6.0
         }
 
         private bool IsAnotherInstanceRunning()

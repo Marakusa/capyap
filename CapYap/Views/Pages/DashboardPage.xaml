@@ -18,60 +18,6 @@
     mc:Ignorable="d">
 
     <Grid>
-        <StackPanel x:Name="RecentFiles" VerticalAlignment="Center" Margin="16,16,16,120">
-            <TextBlock x:Name="RecentFilesTitle"
-        Grid.Column="1"
-        HorizontalAlignment="Stretch"
-        VerticalAlignment="Top"
-        TextAlignment="Center"
-        Text="Recent files" FontSize="24" Margin="0,0,-1,0"
-        />
-            <ui:VirtualizingItemsControl x:Name="GalleryControl"
-                VirtualizingPanel.IsVirtualizing="False" 
-                VirtualizingPanel.CacheLengthUnit="Item" 
-                Margin="0,16,0,54"
-                HorizontalContentAlignment="Center">
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                        <Border Width="200"
-                            Height="200"
-                            Margin="4"
-                            BorderBrush="Gray"
-                            BorderThickness="1"
-                            CornerRadius="10"
-                            ClipToBounds="True">
-                            <Image
-                        Width="200"
-                        Height="200"
-                        Loaded="OnGalleryImageLoaded"
-                        VerticalAlignment="Center"
-                        HorizontalAlignment="Center"
-                        Stretch="UniformToFill"
-                        MouseLeftButtonUp="OnImageClick">
-                                <Image.Clip>
-                                    <RectangleGeometry Rect="0,0,200,200" RadiusX="14" RadiusY="14"/>
-                                </Image.Clip>
-                            </Image>
-                        </Border>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ui:VirtualizingItemsControl>
-            <custom:LoadingSpinner x:Name="LoadingRing"
-        Cap="Round"
-        Diameter="96"
-        IsLoading="true"
-        Thickness="12"
-        Color="#5E5EFF" 
-        VerticalAlignment="Center" 
-        HorizontalAlignment="Center"/>
-            <ui:TextBlock x:Name="ErrorText" 
-        MaxWidth="500"
-        TextWrapping="Wrap" 
-        Text=""
-        TextAlignment="Center"
-        VerticalAlignment="Center" 
-        HorizontalAlignment="Center"/>
-        </StackPanel>
         <StackPanel x:Name="KeyGuide" Margin="16,12,16,120" MaxWidth="400" VerticalAlignment="Center">
             <TextBlock
                 Grid.Column="1"
