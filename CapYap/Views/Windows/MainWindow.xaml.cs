@@ -89,13 +89,6 @@ namespace CapYap.Views.Windows
                     string size = p.Item3;
                     await PreviewImageAsync(url, views, size);
                 };
-                DashboardPage.ImageClicked += async (_, p) =>
-                {
-                    string url = p.Item1;
-                    int views = p.Item2;
-                    string size = p.Item3;
-                    await PreviewImageAsync(url, views, size);
-                };
 
                 _trayIcon = new TrayIcon("CapYap", Path.Combine(AppContext.BaseDirectory, "Assets", "icon.ico"), App.Version
 #if DEBUG
@@ -130,6 +123,7 @@ namespace CapYap.Views.Windows
         {
             if (_currentUser == null)
             {
+                _log.LogError("User not logged in.");
                 return;
             }
 
