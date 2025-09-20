@@ -11,8 +11,6 @@ namespace CapYap.Views.Pages
 
         private string _selectedFormat = "jpg";
 
-        public static event Action? ShowRecentFilesDashboardChanged;
-
         public SettingsPage(SettingsViewModel viewModel)
         {
             ViewModel = viewModel;

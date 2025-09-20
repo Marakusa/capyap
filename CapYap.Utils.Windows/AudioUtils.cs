@@ -37,21 +37,28 @@ namespace CapYap.Utils.Windows
 
         public void PlayAudioClip(AudioClip clip)
         {
-            if (!_fileMap.TryGetValue(clip, out var path) || !File.Exists(path))
+            try
+            {
+                if (!_fileMap.TryGetValue(clip, out var path) || !File.Exists(path))
+                {
+                    return;
+                }
+
+                if (!_players.TryGetValue(clip, out var player))
+                {
+                    player = new MediaPlayer();
+                    player.Open(new Uri(path));
+                    _players[clip] = player;
+                }
+
+                player.Stop();
+                player.Position = TimeSpan.Zero;
+                player.Play();
+            }
+            catch
             {
                 return;
             }
-
-            if (!_players.TryGetValue(clip, out var player))
-            {
-                player = new MediaPlayer();
-                player.Open(new Uri(path));
-                _players[clip] = player;
-            }
-
-            player.Stop();
-            player.Position = TimeSpan.Zero;
-            player.Play();
         }
     }
 }

@@ -54,45 +54,53 @@ namespace CapYap.Windows
         {
             _log = log;
 
-            _tempCapturePath = tempCapturePath;
-            _bitmap = screenshot;
-            _uploadCallback = uploadCallback;
+            try
+            {
+                _tempCapturePath = tempCapturePath;
+                _bitmap = screenshot;
+                _uploadCallback = uploadCallback;
 
-            _fullBounds = NativeUtils.GetFullVirtualBounds();
+                _fullBounds = NativeUtils.GetFullVirtualBounds();
 
-            // Configure window
-            ConfigureWindow();
-            _overlayCanvas = CreateCanvas();
-            Content = _overlayCanvas;
+                // Configure window
+                ConfigureWindow();
+                _overlayCanvas = CreateCanvas();
+                Content = _overlayCanvas;
 
-            // Add screenshot and darken overlay
-            AddScreenshot();
-            _darkOverlay = CreateDarkOverlay();
-            _overlayCanvas.Children.Add(_darkOverlay);
+                // Add screenshot and darken overlay
+                AddScreenshot();
+                _darkOverlay = CreateDarkOverlay();
+                _overlayCanvas.Children.Add(_darkOverlay);
 
-            // Selection rectangle
-            _selectionRectangle = CreateSelectionRectangle();
-            _overlayCanvas.Children.Add(_selectionRectangle);
+                // Selection rectangle
+                _selectionRectangle = CreateSelectionRectangle();
+                _overlayCanvas.Children.Add(_selectionRectangle);
 
-            // Magnifying glass
-            _magnifyingGlass = CreateMagnifyingGlass();
-            _magnifyingGlass.Visibility = _useMagnifier ? Visibility.Visible : Visibility.Hidden;
-            _overlayCanvas.Children.Add(_magnifyingGlass);
+                // Magnifying glass
+                _magnifyingGlass = CreateMagnifyingGlass();
+                _magnifyingGlass.Visibility = _useMagnifier ? Visibility.Visible : Visibility.Hidden;
+                _overlayCanvas.Children.Add(_magnifyingGlass);
 
-            // Position label
-            _positionLabel = CreatePositionLabel();
-            _overlayCanvas.Children.Add(_positionLabel);
+                // Position label
+                _positionLabel = CreatePositionLabel();
+                _overlayCanvas.Children.Add(_positionLabel);
 
-            // Toolbar
-            _toolbar = CreateToolbar();
-            _overlayCanvas.Children.Add(_toolbar);
+                // Toolbar
+                _toolbar = CreateToolbar();
+                _overlayCanvas.Children.Add(_toolbar);
 
-            _windowsOpen = NativeUtils.GetOpenWindowsBounds();
+                _windowsOpen = NativeUtils.GetOpenWindowsBounds();
 
-            hotKeys.CtrlChanged += OnCtrlChanged;
-            hotKeys.ShiftChanged += OnShiftChanged;
-            hotKeys.AltChanged += OnAltChanged;
-            hotKeys.EscapeChanged += OnEscapeChanged;
+                hotKeys.CtrlChanged += OnCtrlChanged;
+                hotKeys.ShiftChanged += OnShiftChanged;
+                hotKeys.AltChanged += OnAltChanged;
+                hotKeys.EscapeChanged += OnEscapeChanged;
+            }
+            catch (Exception ex)
+            {
+                _log.LogError("Failed to initialize screen capture overlay: {Exception}", ex);
+                throw new Exception($"Failed to initialize screen capture overlay: {ex.Message}", ex);
+            }
         }
 
         #region Window & Canvas Setup

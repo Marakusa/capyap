@@ -61,7 +61,13 @@ namespace CapYap.ResultPopUp
             grid.Children.Add(image);
 
             System.Timers.Timer timer = new(5000);
-            timer.Elapsed += (_, _) => Application.Current.Dispatcher.Invoke(Close);
+            timer.Elapsed += (_, _) =>
+            {
+                if (timer.Enabled)
+                {
+                    Application.Current.Dispatcher.Invoke(Close);
+                }
+            };
             timer.Start();
         }
 

@@ -11,9 +11,6 @@ namespace CapYap.Views.Pages
         public DashboardViewModel ViewModel { get; }
 
         private readonly IApiService _apiService;
-        private readonly IImageCacheService _imageCache;
-
-        public static event EventHandler<(string, int, string)>? ImageClicked;
 
         public DashboardPage(
             DashboardViewModel viewModel,
@@ -25,7 +22,6 @@ namespace CapYap.Views.Pages
             DataContext = this;
 
             _apiService = apiService;
-            _imageCache = imageCache;
 
             InitializeComponent();
         }
