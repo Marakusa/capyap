@@ -1,8 +1,9 @@
 ﻿using System.Runtime.InteropServices;
 using System.Windows.Input;
 using System.Windows.Interop;
+using CapYap.Utils.Windows;
 
-namespace CapYap.HotKeys.Models
+namespace CapYap.HotKeys.Windows.Models
 {
     public class HotKey : IDisposable
     {
@@ -18,13 +19,13 @@ namespace CapYap.HotKeys.Models
 
         private bool _disposed = false;
 
-        public Key Key { get; private set; }
+        public SharpDX.DirectInput.Key Key { get; private set; }
         public KeyModifier KeyModifiers { get; private set; }
         public Action<HotKey> Action { get; private set; }
         public int Id { get; set; }
 
         // ******************************************************************
-        public HotKey(Key k, KeyModifier keyModifiers, Action<HotKey> action, bool register = true)
+        public HotKey(SharpDX.DirectInput.Key k, KeyModifier keyModifiers, Action<HotKey> action, bool register = true)
         {
             Key = k;
             KeyModifiers = keyModifiers;
@@ -38,7 +39,8 @@ namespace CapYap.HotKeys.Models
         // ******************************************************************
         public bool Register()
         {
-            int virtualKeyCode = KeyInterop.VirtualKeyFromKey(Key);
+            Key windowsKey = InputUtils.ToWpfKey(Key);
+            int virtualKeyCode = KeyInterop.VirtualKeyFromKey(windowsKey);
             Id = virtualKeyCode + ((int)KeyModifiers * 0x10000);
             bool result = RegisterHotKey(IntPtr.Zero, Id, (uint)KeyModifiers, (uint)virtualKeyCode);
 

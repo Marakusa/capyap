@@ -1,4 +1,4 @@
-﻿using CapYap.HotKeys;
+﻿using CapYap.HotKeys.Windows;
 using CapYap.Properties;
 using CapYap.Utils;
 using CapYap.Utils.Models;

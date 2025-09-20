@@ -1,4 +1,4 @@
-﻿using CapYap.HotKeys;
+﻿using CapYap.HotKeys.Windows;
 using CapYap.Interfaces;
 using CapYap.Properties;
 using CapYap.ResultPopUp;
@@ -37,70 +37,72 @@ namespace CapYap.Services
 
         public void Capture()
         {
-            if (_overlayWindow != null)
+            try
             {
-                _log.LogError("Overlay is already open.");
-                return;
-            }
-
-            _log.LogInformation("Playing capture sound...");
-
-            _audioUtils.PlayAudioClip(AudioClip.Capture);
-
-            _log.LogInformation("Capturing screen...");
-
-            var screenshotService = new Screenshot();
-            Bitmap screenshot = screenshotService.CaptureAllMonitors();
-
-            string format = "jpg";
-
-            switch (AppSettings.Default.UploadFormat)
-            {
-                default:
-                case 0:
-                    format = "jpg";
-                    break;
-                case 1:
-                    format = "png";
-                    break;
-                case 2:
-                    format = "gif";
-                    break;
-            }
-
-            _log.LogInformation("Screen captured in format: {Format}", format);
-
-            string tempScreenshotPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "CapYap", "screenshot-temp." + format);
-
-            _log.LogInformation("Screen capture saved to: {Path}", tempScreenshotPath);
-
-            _log.LogInformation("Opening overlay window...");
-
-            OverlayWindowOpening?.Invoke(this, EventArgs.Empty);
-            ToastManager.HideAllToasts();
-            ResultPopUpWindow.Close();
-
-            _overlayWindow = new OverlayWindow(_overlayLogger, screenshot, tempScreenshotPath, async (path) =>
-            {
-                if (path != null)
+                if (_overlayWindow != null)
                 {
-                    await UploadImage(tempScreenshotPath);
+                    _log.LogError("Overlay is already open.");
+                    return;
                 }
-            }, _hotKeys);
 
-            _overlayWindow.Closed += (_, _) =>
+                _audioUtils.PlayAudioClip(AudioClip.Capture);
+
+                _log.LogInformation("Capturing screen...");
+
+                var screenshotService = new Screenshot();
+                Bitmap screenshot = screenshotService.CaptureAllMonitors();
+
+                string format = "jpg";
+
+                switch (AppSettings.Default.UploadFormat)
+                {
+                    default:
+                    case 0:
+                        format = "jpg";
+                        break;
+                    case 1:
+                        format = "png";
+                        break;
+                    case 2:
+                        format = "gif";
+                        break;
+                }
+
+                _log.LogInformation("Screen captured in format: {Format}", format);
+
+                string tempScreenshotPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "CapYap", "screenshot-temp." + format);
+
+                _log.LogInformation("Screen capture saved to: {Path}", tempScreenshotPath);
+
+                OverlayWindowOpening?.Invoke(this, EventArgs.Empty);
+                ToastManager.HideAllToasts();
+                ResultPopUpWindow.Close();
+
+                _overlayWindow = new OverlayWindow(_overlayLogger, screenshot, tempScreenshotPath, async (path) =>
+                {
+                    if (path != null)
+                    {
+                        await UploadImage(tempScreenshotPath);
+                    }
+                }, _hotKeys);
+
+                _overlayWindow.Closed += (_, _) =>
+                {
+                    _overlayWindow = null;
+
+                    OverlayWindowClosed?.Invoke(this, EventArgs.Empty);
+
+                    ToastManager.ShowAllToasts();
+                };
+
+                _overlayWindow.Show();
+                OverlayWindowOpened?.Invoke(this, EventArgs.Empty);
+            }
+            catch (Exception ex)
             {
-                _overlayWindow = null;
-                
-                OverlayWindowClosed?.Invoke(this, EventArgs.Empty);
-
-                ToastManager.ShowAllToasts();
-            };
-
-            _log.LogInformation("Showing overlay window...");
-
-            _overlayWindow.Show();
-            OverlayWindowOpened?.Invoke(this, EventArgs.Empty);
+                _log.LogError("Failed to capture the screen and to open the overlay: {Ex}", ex);
+                new Toast.Toast().SetFail(ex.ToString());
+            }
         }
 
         private async Task UploadImage(string path)

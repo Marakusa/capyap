@@ -1,8 +1,7 @@
-﻿using System.Windows.Input;
-using CapYap.HotKeys.Models;
+﻿using CapYap.HotKeys.Windows.Models;
 using SharpDX.DirectInput;
 
-namespace CapYap.HotKeys
+namespace CapYap.HotKeys.Windows
 {
     public enum BindingAction
     {
@@ -15,7 +14,7 @@ namespace CapYap.HotKeys
         private CancellationTokenSource? _pollingTokenSource;
 
         private DirectInput? _directInput;
-        private SharpDX.DirectInput.Keyboard? _directInputKeyboard;
+        private Keyboard? _directInputKeyboard;
 
         public event Action<HotKey> HotKey_ScreenCapture;
 
@@ -44,13 +43,13 @@ namespace CapYap.HotKeys
 
         #region HotKey Registration (Windows)
 
-        public void Bind(BindingAction action, System.Windows.Input.Key k, KeyModifier keyModifiers)
+        public void Bind(BindingAction action, Key k, KeyModifier keyModifiers)
         {
             HotKey hotKey = new(k, keyModifiers, GetBindingAction(action), true);
             hotKeys.Add(action, hotKey);
         }
 
-        public void Rebind(BindingAction action, System.Windows.Input.Key k, KeyModifier keyModifiers)
+        public void Rebind(BindingAction action, Key k, KeyModifier keyModifiers)
         {
             if (hotKeys.ContainsKey(action))
             {
@@ -89,7 +88,7 @@ namespace CapYap.HotKeys
         private void InitializeDirectInput()
         {
             _directInput = new DirectInput();
-            _directInputKeyboard = new SharpDX.DirectInput.Keyboard(_directInput);
+            _directInputKeyboard = new Keyboard(_directInput);
             _directInputKeyboard.Acquire();
         }
 
@@ -170,8 +169,26 @@ namespace CapYap.HotKeys
 
         private bool IsPressed(KeyboardState state, HotKey hotKey)
         {
-            int virtualKey = KeyInterop.VirtualKeyFromKey(hotKey.Key);
-            return state.PressedKeys.Contains((SharpDX.DirectInput.Key)virtualKey);
+            // Check main key
+            bool mainKeyPressed = state.PressedKeys.Contains(hotKey.Key);
+
+            // Check modifiers
+            bool ctrlRequired = (hotKey.KeyModifiers & KeyModifier.Ctrl) != 0;
+            bool shiftRequired = (hotKey.KeyModifiers & KeyModifier.Shift) != 0;
+            bool altRequired = (hotKey.KeyModifiers & KeyModifier.Alt) != 0;
+
+            bool ctrlDown = state.PressedKeys.Contains(SharpDX.DirectInput.Key.LeftControl) ||
+                            state.PressedKeys.Contains(SharpDX.DirectInput.Key.RightControl);
+            bool shiftDown = state.PressedKeys.Contains(SharpDX.DirectInput.Key.LeftShift) ||
+                             state.PressedKeys.Contains(SharpDX.DirectInput.Key.RightShift);
+            bool altDown = state.PressedKeys.Contains(SharpDX.DirectInput.Key.LeftAlt) ||
+                           state.PressedKeys.Contains(SharpDX.DirectInput.Key.RightAlt);
+
+            if (ctrlRequired && !ctrlDown) return false;
+            if (shiftRequired && !shiftDown) return false;
+            if (altRequired && !altDown) return false;
+
+            return mainKeyPressed;
         }
 
         #endregion
@@ -188,6 +205,21 @@ namespace CapYap.HotKeys
             _directInputKeyboard?.Unacquire();
             _directInputKeyboard?.Dispose();
             _directInput?.Dispose();
+        }
+
+        public void SetCtrlDown(bool v)
+        {
+            _ctrlDown = v;
+        }
+
+        public void SetShiftDown(bool v)
+        {
+            _shiftDown = v;
+        }
+
+        public void SetAltDown(bool v)
+        {
+            _altDown = v;
         }
     }
 }
