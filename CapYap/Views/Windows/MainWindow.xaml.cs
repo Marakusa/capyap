@@ -1,7 +1,7 @@
 ﻿using CapYap.API.Models;
 using CapYap.API.Models.Appwrite;
-using CapYap.HotKeys;
-using CapYap.HotKeys.Models;
+using CapYap.HotKeys.Windows;
+using CapYap.HotKeys.Windows.Models;
 using CapYap.Interfaces;
 using CapYap.Properties;
 using CapYap.Tray;
@@ -116,7 +116,7 @@ namespace CapYap.Views.Windows
         {
             hotKeyManager.HotKey_ScreenCapture += CaptureScreen;
 
-            hotKeyManager.Bind(BindingAction.CaptureScreen, Key.PrintScreen, KeyModifier.Ctrl);
+            hotKeyManager.Bind(BindingAction.CaptureScreen, SharpDX.DirectInput.Key.PrintScreen, KeyModifier.Ctrl);
         }
 
         private void CaptureScreen(HotKey key)
@@ -350,7 +350,7 @@ namespace CapYap.Views.Windows
             PreviewPanel.MouseMove += PreviewPanelMouseMove;
             PreviewPanel.MouseUp += PreviewPanelMouseUp;
 
-            KeyUp += (object sender, System.Windows.Input.KeyEventArgs e) =>
+            KeyUp += (object sender, KeyEventArgs e) =>
             {
                 if (e.Key == Key.Escape)
                 {
@@ -652,7 +652,7 @@ namespace CapYap.Views.Windows
             PreviewPanel.ReleaseMouseCapture();
         }
 
-        private void PreviewPanelMouseMove(object sender, System.Windows.Input.MouseEventArgs e)
+        private void PreviewPanelMouseMove(object sender, MouseEventArgs e)
         {
             if (!_mouseDownPreview)
                 return;

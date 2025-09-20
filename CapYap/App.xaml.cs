@@ -1,5 +1,5 @@
 ﻿using CapYap.API;
-using CapYap.HotKeys;
+using CapYap.HotKeys.Windows;
 using CapYap.Interfaces;
 using CapYap.Properties;
 using CapYap.Services;
