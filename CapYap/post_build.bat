@@ -1,8 +1,8 @@
 @echo off
 SET workindir=%~2
-IF %workindir:~-1%==\ SET workindir=%workindir:~0,-1%
+IF %workindir:~-1%==\ SET workindir=%workindir:~0,-1%\publish
 echo %1%
-echo %2%
+echo %2%-1%publish
 echo %3%
 echo %4%
 echo %5%
