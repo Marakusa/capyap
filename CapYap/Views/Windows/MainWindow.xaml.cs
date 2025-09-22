@@ -9,7 +9,7 @@ using CapYap.Utils;
 using CapYap.Utils.Windows;
 using CapYap.ViewModels.Windows;
 using CapYap.Views.Pages;
-using Microsoft.Extensions.Logging;
+using Serilog;
 using System.ComponentModel;
 using System.IO;
 using System.Net.Http;
@@ -27,7 +27,7 @@ namespace CapYap.Views.Windows
 {
     public partial class MainWindow : INavigationWindow
     {
-        private ILogger<MainWindow> _log;
+        private ILogger _log;
 
         public MainWindowViewModel ViewModel { get; }
 
@@ -44,7 +44,7 @@ namespace CapYap.Views.Windows
         private TrayIcon? _trayIcon;
 
         public MainWindow(
-            ILogger<MainWindow> log,
+            ILogger log,
             MainWindowViewModel viewModel,
             INavigationViewPageProvider navigationViewPageProvider,
             INavigationService navigationService,
@@ -59,7 +59,7 @@ namespace CapYap.Views.Windows
 
             try
             {
-                _log.LogInformation("Creating main window...");
+                _log.Information("Creating main window...");
 
                 ViewModel = viewModel;
                 DataContext = this;
@@ -108,7 +108,7 @@ namespace CapYap.Views.Windows
             }
             catch (Exception ex)
             {
-                _log.LogError($"Failed to initialize main window: {ex}");
+                _log.Error($"Failed to initialize main window: {ex}");
             }
         }
 
@@ -123,7 +123,7 @@ namespace CapYap.Views.Windows
         {
             if (_currentUser == null)
             {
-                _log.LogError("User not logged in.");
+                _log.Error("User not logged in.");
                 return;
             }
 
@@ -255,7 +255,7 @@ namespace CapYap.Views.Windows
 
         public void CloseWindow()
         {
-            _log.LogInformation("CloseWindow called");
+            _log.Information("CloseWindow called");
             Hide();
         }
 
@@ -263,7 +263,7 @@ namespace CapYap.Views.Windows
 
         protected override void OnClosing(CancelEventArgs e)
         {
-            _log.LogInformation("Window closing invoked...");
+            _log.Information("Window closing invoked...");
 
             e.Cancel = true;
             Hide();
@@ -283,7 +283,7 @@ namespace CapYap.Views.Windows
 
             WindowSettings.Default.Save();
 
-            _log.LogInformation("Window state saved...");
+            _log.Information("Window state saved...");
 
             //base.OnClosing(e);
         }
@@ -293,11 +293,11 @@ namespace CapYap.Views.Windows
         /// </summary>
         protected override void OnClosed(EventArgs e)
         {
-            _log.LogInformation("Window closed");
+            _log.Information("Window closed");
 
             base.OnClosed(e);
 
-            _log.LogInformation("App shutting down...");
+            _log.Information("App shutting down...");
 
             // Make sure that closing this window will begin the process of closing the application.
             Application.Current.Shutdown();
@@ -527,7 +527,7 @@ namespace CapYap.Views.Windows
                 }
                 catch (Exception ex)
                 {
-                    _log.LogError($"Failed to save cap: {ex}");
+                    _log.Error($"Failed to save cap: {ex}");
                     saveToast.SetFail($"Failed to save cap: {ex.Message}");
                 }
             }
@@ -578,7 +578,7 @@ namespace CapYap.Views.Windows
             }
             catch (Exception ex)
             {
-                _log.LogError($"Failed to delete cap: {ex}");
+                _log.Error($"Failed to delete cap: {ex}");
                 deleteToast.SetFail($"Failed to delete cap: {ex.Message}");
             }
         }
@@ -599,7 +599,7 @@ namespace CapYap.Views.Windows
             }
             catch (Exception ex)
             {
-                _log.LogError($"Failed to set avatar: {ex}");
+                _log.Error($"Failed to set avatar: {ex}");
                 avatarToast.SetFail($"Failed to set avatar: {ex.Message}");
             }
             return Task.CompletedTask;

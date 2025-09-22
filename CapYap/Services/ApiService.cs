@@ -4,14 +4,14 @@ using CapYap.API.Models.Appwrite;
 using CapYap.API.Models.Events;
 using CapYap.Interfaces;
 using CapYap.Models;
-using Microsoft.Extensions.Logging;
+using Serilog;
 using System.Net.Http;
 
 namespace CapYap.Services
 {
     public class ApiService : IApiService
     {
-        private readonly ILogger<ApiService> _log;
+        private readonly ILogger _log;
         private readonly CapYapApi _api;
 
         public event EventHandler<GalleryChangedEventArgs>? OnGalleryChanged;
@@ -22,7 +22,7 @@ namespace CapYap.Services
 
         private int _currentPage = 1;
 
-        public ApiService(ILogger<ApiService> log, HttpClient client)
+        public ApiService(ILogger log, HttpClient client)
         {
             _log = log;
             _api = new CapYapApi(App.ApiHost, client);
@@ -84,7 +84,7 @@ namespace CapYap.Services
             }
             catch (Exception ex)
             {
-                _log.LogError($"Failed to authorize user: {ex}");
+                _log.Error($"Failed to authorize user: {ex}");
                 return false;
             }
         }
@@ -99,7 +99,7 @@ namespace CapYap.Services
             }
             catch (Exception ex)
             {
-                _log.LogError($"Failed to fetch user: {ex}");
+                _log.Error($"Failed to fetch user: {ex}");
                 return null;
             }
         }
@@ -113,7 +113,7 @@ namespace CapYap.Services
             }
             catch (Exception ex)
             {
-                _log.LogError($"Failed to log user out: {ex}");
+                _log.Error($"Failed to log user out: {ex}");
             }
         }
 
@@ -150,7 +150,7 @@ namespace CapYap.Services
             }
             catch (Exception ex)
             {
-                _log.LogError($"Failed to fetch gallery: {ex}");
+                _log.Error($"Failed to fetch gallery: {ex}");
                 OnGalleryChanged?.Invoke(this, new GalleryChangedEventArgs(null, true, ex.Message));
                 return null;
             }
@@ -168,7 +168,7 @@ namespace CapYap.Services
             }
             catch (Exception ex)
             {
-                _log.LogError($"Failed to fetch gallery: {ex}");
+                _log.Error($"Failed to fetch gallery: {ex}");
                 OnGalleryChanged?.Invoke(this, new GalleryChangedEventArgs(null, true, ex.Message));
                 return null;
             }
@@ -185,7 +185,7 @@ namespace CapYap.Services
             }
             catch (Exception ex)
             {
-                _log.LogError($"Failed to fetch stats: {ex}");
+                _log.Error($"Failed to fetch stats: {ex}");
                 OnStatsChanged?.Invoke(this, new StatsChangedEventArgs(null, true, ex.Message));
                 return null;
             }
@@ -200,7 +200,7 @@ namespace CapYap.Services
             }
             catch (Exception ex)
             {
-                _log.LogError($"Failed to fetch file stats: {ex}");
+                _log.Error($"Failed to fetch file stats: {ex}");
                 new Toast.Toast().SetFail($"Failed to fetch file stats: {ex}");
                 return null;
             }

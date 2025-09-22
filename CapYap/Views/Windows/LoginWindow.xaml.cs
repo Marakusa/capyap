@@ -1,13 +1,13 @@
 ﻿using CapYap.API.Models.Events;
 using CapYap.Interfaces;
 using CapYap.ViewModels.Windows;
-using Microsoft.Extensions.Logging;
+using Serilog;
 
 namespace CapYap.Views.Windows
 {
     public partial class LoginWindow
     {
-        private readonly ILogger<LoginWindow> _log;
+        private readonly ILogger _log;
 
         public LoginWindowViewModel ViewModel { get; }
 
@@ -21,7 +21,7 @@ namespace CapYap.Views.Windows
         public event EventHandler<AuthorizedUserEventArgs?>? OnAuthorizedUser;
 
         public LoginWindow(
-            ILogger<LoginWindow> log,
+            ILogger log,
             LoginWindowViewModel viewModel,
             IApiService authorizationService
         )
@@ -30,7 +30,7 @@ namespace CapYap.Views.Windows
 
             try
             {
-                _log.LogInformation("Creating login window...");
+                _log.Information("Creating login window...");
 
                 ViewModel = viewModel;
 
@@ -40,7 +40,7 @@ namespace CapYap.Views.Windows
             }
             catch (Exception ex)
             {
-                _log.LogError($"Failed to initialize login window: {ex}");
+                _log.Error($"Failed to initialize login window: {ex}");
             }
         }
 

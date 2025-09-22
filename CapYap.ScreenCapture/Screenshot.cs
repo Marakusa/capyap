@@ -2,11 +2,19 @@
 using System.Runtime.InteropServices;
 using CapYap.Utils;
 using CapYap.Utils.Models;
+using Serilog;
 
-namespace CapYap.ScreenCapture
+namespace CapYap.ScreenCapture.Windows
 {
     public class Screenshot
     {
+        private readonly ILogger _log;
+
+        public Screenshot(ILogger log)
+        {
+            _log = log;
+        }
+
         public bool CaptureCursor { get; set; } = false;
 
         public Bitmap CaptureAllMonitors()
@@ -47,6 +55,8 @@ namespace CapYap.ScreenCapture
 
             // Draw the screen-shot into our bitmap.
             using Graphics graphics = Graphics.FromImage(bmp);
+            _log.Information("Bounds: {Left}, {Top}, {Right}, {Bottom}", left, top, right, bottom);
+            _log.Information("Bmp Size: {Size} (x 2)", bmp.Size);
             graphics.CopyFromScreen(bounds.Left, bounds.Top, 0, 0, bmp.Size * 2);
 
             // Capture cursor

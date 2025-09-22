@@ -13,6 +13,10 @@ Backend runs on my server (https://capyap.marakusa.me)
 ### Web interface repo
 [capyap-web-frontend](https://github.com/Marakusa/capyap-web-frontend)
 
+### Screenshots
+
+![62dec8dc-1a11-401c-b371-2cf585e3dffb](https://github.com/user-attachments/assets/5715f93d-0f44-44ba-af8f-862a8d80f795)
+
 ## Keybinds
 ```
 Ctrl + Print Screen        : Take a screenshot
