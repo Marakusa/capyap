@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Serilog;
 using Newtonsoft.Json;
 using System.Diagnostics;
 using System.Net.Http.Headers;
@@ -47,15 +47,15 @@ namespace CapYap.Updater
             var latest = await GetLatestReleaseAsync();
             if (latest == null)
             {
-                _log.LogError("Latest tag not found...");
+                _log.Error("Latest tag not found...");
                 return false;
             }
 
             if (!UpToDate(latest.TagName))
             {
-                _log.LogInformation($"New version {latest.TagName} found! Downloading...");
+                _log.Information($"New version {latest.TagName} found! Downloading...");
                 var asset = latest.Assets.FirstOrDefault(a => a.Name.EndsWith(".exe"));
-                _log.LogInformation(JsonConvert.SerializeObject(asset));
+                _log.Information(JsonConvert.SerializeObject(asset));
                 if (asset != null)
                 {
                     string tempPath = Path.Combine(Path.GetTempPath(), asset.Name);
@@ -64,12 +64,12 @@ namespace CapYap.Updater
                     // If it's a zip, extract and replace
                     if (asset.Name.EndsWith(".exe"))
                     {
-                        _log.LogInformation("Downloaded installer. Run installer...");
+                        _log.Information("Downloaded installer. Run installer...");
                         Process.Start(new ProcessStartInfo(tempPath) { UseShellExecute = true });
                     }
                     else
                     {
-                        _log.LogError("No installer found.");
+                        _log.Error("No installer found.");
                         return false;
                     }
 
@@ -77,12 +77,12 @@ namespace CapYap.Updater
                 }
                 else
                 {
-                    _log.LogError("No installer found.");
+                    _log.Error("No installer found.");
                     return false;
                 }
             }
 
-            _log.LogInformation("No updates found.");
+            _log.Information("No updates found.");
             return false;
         }
 
@@ -95,7 +95,7 @@ namespace CapYap.Updater
 
         private bool UpToDate(string latestTag)
         {
-            _log.LogInformation($"Current version: {_currentVersion} Latest version: {latestTag}");
+            _log.Information($"Current version: {_currentVersion} Latest version: {latestTag}");
             return latestTag == _currentVersion;
         }
 

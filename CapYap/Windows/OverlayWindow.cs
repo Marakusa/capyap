@@ -3,7 +3,7 @@ using CapYap.Properties;
 using CapYap.Utils;
 using CapYap.Utils.Models;
 using CapYap.Utils.Windows;
-using Microsoft.Extensions.Logging;
+using Serilog;
 using System.ComponentModel;
 using System.Drawing;
 using System.Drawing.Imaging;
@@ -16,7 +16,7 @@ namespace CapYap.Windows
 {
     public class OverlayWindow : Window
     {
-        private readonly ILogger<OverlayWindow> _log;
+        private readonly ILogger _log;
 
         //private readonly HotKeyManager _hotKeys;
         private readonly int _zoom = 12;
@@ -50,7 +50,7 @@ namespace CapYap.Windows
         private Bounds _windowBounds = new(0, 0, 0, 0);
         private readonly ICollection<(string title, Bounds bounds)> _windowsOpen;
 
-        public OverlayWindow(ILogger<OverlayWindow> log, Bitmap screenshot, string tempCapturePath, Action<string> uploadCallback, HotKeyManager hotKeys)
+        public OverlayWindow(ILogger log, Bitmap screenshot, string tempCapturePath, Action<string> uploadCallback, HotKeyManager hotKeys)
         {
             _log = log;
 
@@ -98,7 +98,7 @@ namespace CapYap.Windows
             }
             catch (Exception ex)
             {
-                _log.LogError("Failed to initialize screen capture overlay: {Exception}", ex);
+                _log.Error("Failed to initialize screen capture overlay: {Exception}", ex);
                 throw new Exception($"Failed to initialize screen capture overlay: {ex.Message}", ex);
             }
         }
@@ -374,7 +374,7 @@ namespace CapYap.Windows
             }
             catch (Exception ex)
             {
-                _log.LogError(ex.Message);
+                _log.Error(ex.Message);
                 new Toast.Toast().SetFail(ex.Message);
             }
         }

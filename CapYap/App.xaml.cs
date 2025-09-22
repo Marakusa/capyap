@@ -15,7 +15,6 @@ using CapYap.Views.Windows;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Serilog;
 using Serilog.Events;
 using System.Diagnostics;
@@ -82,6 +81,8 @@ namespace CapYap
                     .ReadFrom.Configuration(context.Configuration)
                     .CreateLogger();
 
+                services.AddSerilog(logger);
+
                 services.AddNavigationViewPageProvider();
 
                 services.AddHostedService<ApplicationHostService>();
@@ -138,11 +139,11 @@ namespace CapYap
         {
             Current.Dispatcher.UnhandledException += OnDispatcherUnhandledException;
 
-            var log = _host.Services.GetService<ILogger<App>>();
+            var log = _host.Services.GetService<ILogger>();
 
             if (IsAnotherInstanceRunning())
             {
-                log.LogWarning("Another instance running. Shutting down...");
+                log?.Warning("Another instance running. Shutting down...");
                 Shutdown(); // Exit this instance
                 return;
             }
@@ -184,7 +185,7 @@ namespace CapYap
             }
 #endif
 
-            log.LogInformation("App up to date! Starting...");
+            log?.Information("App up to date! Starting...");
 
             await _host.StartAsync();
         }
