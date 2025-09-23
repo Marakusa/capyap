@@ -33,7 +33,7 @@ namespace CapYap.Services
         {
             if (successCallback != null)
             {
-                _api.OnClientAuthorizationFinished += (object? sender, AuthorizedUserEventArgs e) =>
+                _api.OnClientAuthorizationFinished += (sender, e) =>
                 {
                     OnUserChanged?.Invoke(this, e.Data);
                     successCallback.Invoke(null, e);
@@ -42,7 +42,7 @@ namespace CapYap.Services
 
             if (failedCallback != null)
             {
-                _api.OnClientAuthorizationFailed += (object? sender, OnAuthorizationFailedEventArgs e) =>
+                _api.OnClientAuthorizationFailed += (sender, e) =>
                 {
                     failedCallback.Invoke(null, e);
                 };

@@ -1,7 +1,7 @@
-﻿using System.Runtime.InteropServices;
+﻿using CapYap.Utils.Windows;
+using System.Runtime.InteropServices;
 using System.Windows.Input;
 using System.Windows.Interop;
-using CapYap.Utils.Windows;
 
 namespace CapYap.HotKeys.Windows.Models
 {
@@ -46,7 +46,7 @@ namespace CapYap.HotKeys.Windows.Models
 
             if (_dictHotKeyToCalBackProc == null)
             {
-                _dictHotKeyToCalBackProc = new Dictionary<int, HotKey>();
+                _dictHotKeyToCalBackProc = [];
                 ComponentDispatcher.ThreadFilterMessage += new ThreadMessageEventHandler(ComponentDispatcherThreadFilterMessage);
             }
 
@@ -72,14 +72,10 @@ namespace CapYap.HotKeys.Windows.Models
             {
                 if (msg.message == WmHotKey)
                 {
-                    HotKey? hotKey;
 
-                    if (_dictHotKeyToCalBackProc != null && _dictHotKeyToCalBackProc.TryGetValue((int)msg.wParam, out hotKey))
+                    if (_dictHotKeyToCalBackProc != null && _dictHotKeyToCalBackProc.TryGetValue((int)msg.wParam, out HotKey? hotKey))
                     {
-                        if (hotKey.Action != null)
-                        {
-                            hotKey.Action.Invoke(hotKey);
-                        }
+                        hotKey.Action?.Invoke(hotKey);
                         handled = true;
                     }
                 }

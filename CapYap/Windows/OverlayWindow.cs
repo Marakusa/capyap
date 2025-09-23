@@ -3,7 +3,6 @@ using CapYap.Settings;
 using CapYap.Utils;
 using CapYap.Utils.Models;
 using CapYap.Utils.Windows;
-using Newtonsoft.Json;
 using Serilog;
 using System.ComponentModel;
 using System.Drawing;
@@ -19,7 +18,7 @@ namespace CapYap.Windows
     {
         private readonly ILogger _log;
 
-        //private readonly HotKeyManager _hotKeys;
+        private readonly HotKeyManager _hotKeys;
         private readonly int _zoom = 12;
 
         private readonly string _tempCapturePath;
@@ -49,7 +48,7 @@ namespace CapYap.Windows
 
         private bool _isShiftDown;
         private Bounds _windowBounds = new(0, 0, 0, 0);
-        private readonly ICollection<(string title, Bounds bounds)> _windowsOpen;
+        private readonly List<(string title, Bounds bounds)> _windowsOpen;
 
         public OverlayWindow(ILogger log, Bitmap screenshot, string tempCapturePath, Action<string> uploadCallback, HotKeyManager hotKeys)
         {
@@ -81,6 +80,8 @@ namespace CapYap.Windows
                 _darkOverlay = CreateDarkOverlay();
                 _overlayCanvas.Children.Add(_darkOverlay);
 
+                _overlayCanvas.InvalidateVisual();
+
                 _log.Information("Screenshot and darkened overlay initialized.");
 
                 // Selection rectangle
@@ -108,14 +109,21 @@ namespace CapYap.Windows
 
                 _log.Information("Toolbar initialized.");
 
+                // Set render options
+                RenderOptions.SetBitmapScalingMode(_overlayCanvas, BitmapScalingMode.LowQuality);
+                RenderOptions.SetEdgeMode(_overlayCanvas, EdgeMode.Aliased);
+
+                _log.Information("Set render options.");
+
                 _windowsOpen = NativeUtils.GetOpenWindowsBounds();
 
                 _log.Information("Window bounds fetched.");
 
-                hotKeys.CtrlChanged += OnCtrlChanged;
-                hotKeys.ShiftChanged += OnShiftChanged;
-                hotKeys.AltChanged += OnAltChanged;
-                hotKeys.EscapeChanged += OnEscapeChanged;
+                _hotKeys = hotKeys;
+                _hotKeys.CtrlChanged += OnCtrlChanged;
+                _hotKeys.ShiftChanged += OnShiftChanged;
+                _hotKeys.AltChanged += OnAltChanged;
+                _hotKeys.EscapeChanged += OnEscapeChanged;
 
                 _log.Information("Hotkeys initialized.");
 
@@ -144,7 +152,7 @@ namespace CapYap.Windows
         private void ConfigureWindow()
         {
             WindowStyle = WindowStyle.None;
-            AllowsTransparency = false; // Keep GPU acceleration
+            AllowsTransparency = false;
             Background = System.Windows.Media.Brushes.Black;
             Topmost = true;
             Focusable = true;
@@ -159,17 +167,16 @@ namespace CapYap.Windows
             Height = _fullBounds.Bottom - _fullBounds.Top;
         }
 
-        private Canvas CreateCanvas()
+        private static Canvas CreateCanvas()
         {
             var canvas = new Canvas();
             RenderOptions.SetEdgeMode(canvas, EdgeMode.Aliased);
             return canvas;
         }
 
-        private Label CreatePositionLabel()
+        private static Label CreatePositionLabel()
         {
-            var label = new Label();
-            label = new Label()
+            var label = new Label()
             {
                 Content = "0, 0",
                 Foreground = System.Windows.Media.Brushes.White,
@@ -217,14 +224,14 @@ namespace CapYap.Windows
             return overlay;
         }
 
-        private System.Windows.Shapes.Rectangle CreateSelectionRectangle()
+        private static System.Windows.Shapes.Rectangle CreateSelectionRectangle()
         {
             return new System.Windows.Shapes.Rectangle
             {
                 Width = 0,
                 Height = 0,
                 Stroke = System.Windows.Media.Brushes.White,
-                StrokeDashArray = new DoubleCollection { 4, 4 },
+                StrokeDashArray = [4, 4],
                 StrokeDashCap = PenLineCap.Round,
                 StrokeDashOffset = 4,
                 StrokeThickness = 0
@@ -298,7 +305,7 @@ namespace CapYap.Windows
             return magnifier;
         }
 
-        private Button CreateToolbarButton(string glyph, Action? action = null)
+        private static Button CreateToolbarButton(string glyph, Action? action = null)
         {
             var button = new Button
             {
@@ -352,21 +359,24 @@ namespace CapYap.Windows
             //buttonPanel.Children.Add(CreateToolbarButton("\uE932"));
 
             // Rect select button
-            buttonPanel.Children.Add(CreateToolbarButton("\uEF20", () => {
+            buttonPanel.Children.Add(CreateToolbarButton("\uEF20", () =>
+            {
                 _isCtrlDown = false;
                 _isShiftDown = false;
                 UpdateDrawRect();
             }));
 
             // Monitor select button
-            buttonPanel.Children.Add(CreateToolbarButton("\uF7ED", () => {
+            buttonPanel.Children.Add(CreateToolbarButton("\uF7ED", () =>
+            {
                 _isCtrlDown = true;
                 _isShiftDown = false;
                 UpdateDrawRect();
             }));
 
             // Window select button
-            buttonPanel.Children.Add(CreateToolbarButton("\uE7C4", () => {
+            buttonPanel.Children.Add(CreateToolbarButton("\uE7C4", () =>
+            {
                 _isCtrlDown = false;
                 _isShiftDown = true;
                 UpdateDrawRect();
@@ -391,20 +401,12 @@ namespace CapYap.Windows
             {
                 ImageFormat format = ImageFormat.Jpeg;
 
-                switch (UserSettingsManager.Current.UploadSettings.UploadFormat)
+                format = UserSettingsManager.Current.UploadSettings.UploadFormat switch
                 {
-                    default:
-                    case 0:
-                        format = ImageFormat.Jpeg;
-                        break;
-                    case 1:
-                        format = ImageFormat.Png;
-                        break;
-                    case 2:
-                        format = ImageFormat.Gif;
-                        break;
-                }
-
+                    1 => ImageFormat.Png,
+                    2 => ImageFormat.Gif,
+                    _ => ImageFormat.Jpeg,
+                };
                 BitmapUtils.Crop(_bitmap, captureArea).Save(_tempCapturePath, format);
                 _uploadCallback.Invoke(_tempCapturePath);
             }
@@ -460,9 +462,9 @@ namespace CapYap.Windows
         {
             int width = monitorBounds.Right - monitorBounds.Left;
             _toolbar.Margin = new Thickness(
-                monitorBounds.Left + (width / 2) - (_toolbar.ActualWidth / 2), 
-                monitorBounds.Top + 12, 
-                0, 
+                monitorBounds.Left + (width / 2) - (_toolbar.ActualWidth / 2),
+                monitorBounds.Top + 12,
+                0,
                 0);
         }
 
@@ -489,12 +491,12 @@ namespace CapYap.Windows
                 // Default to full monitor bounds
                 _windowBounds = NativeUtils.GetCurrentMonitorBounds((int)_mousePosition.X, (int)_mousePosition.Y);
 
-                foreach (var window in _windowsOpen)
+                foreach (var (_, bounds) in _windowsOpen)
                 {
-                    if (window.bounds.Left < _mousePosition.X && window.bounds.Right > _mousePosition.X &&
-                        window.bounds.Bottom > _mousePosition.Y && window.bounds.Top < _mousePosition.Y)
+                    if (bounds.Left < _mousePosition.X && bounds.Right > _mousePosition.X &&
+                        bounds.Bottom > _mousePosition.Y && bounds.Top < _mousePosition.Y)
                     {
-                        _windowBounds = window.bounds;
+                        _windowBounds = bounds;
                         break;
                     }
                 }
@@ -584,6 +586,20 @@ namespace CapYap.Windows
         protected override void OnClosing(CancelEventArgs e)
         {
             base.OnClosing(e);
+        }
+
+        protected override void OnClosed(EventArgs e)
+        {
+            base.OnClosed(e);
+            _bitmap?.Dispose();
+            _imageSource = null;
+
+            _hotKeys.CtrlChanged -= OnCtrlChanged;
+            _hotKeys.ShiftChanged -= OnShiftChanged;
+            _hotKeys.AltChanged -= OnAltChanged;
+            _hotKeys.EscapeChanged -= OnEscapeChanged;
+
+            _overlayCanvas.Children.Clear();
         }
 
         private void OnCtrlChanged(bool down)

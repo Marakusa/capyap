@@ -3,7 +3,7 @@ namespace CapYap.Toast
 {
     public static class ToastManager
     {
-        private static List<Toast> _toasts = new();
+        private static readonly List<Toast> _toasts = [];
 
         internal static void Add(Toast toast)
         {

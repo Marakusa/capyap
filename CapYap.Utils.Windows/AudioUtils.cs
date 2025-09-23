@@ -12,8 +12,8 @@ namespace CapYap.Utils.Windows
 
     public class AudioUtils
     {
-        private readonly Dictionary<AudioClip, string> _fileMap = new();
-        private readonly Dictionary<AudioClip, MediaPlayer> _players = new();
+        private readonly Dictionary<AudioClip, string> _fileMap = [];
+        private readonly Dictionary<AudioClip, MediaPlayer> _players = [];
 
         public AudioUtils()
         {

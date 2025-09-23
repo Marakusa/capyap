@@ -98,7 +98,7 @@ namespace CapYap.Views.Pages
             ErrorText.Text = "";
             PageBar.IsEnabled = false;
         }
-        
+
         private void OnImageClick(object sender, MouseButtonEventArgs e)
         {
             System.Windows.Controls.Image img;
@@ -170,27 +170,33 @@ namespace CapYap.Views.Pages
         #region Components
         private Wpf.Ui.Controls.Button UiPrevButton(bool active)
         {
-            Wpf.Ui.Controls.Button button = new();
-            button.Margin = new Thickness(2);
-            button.Content = "<";
+            Wpf.Ui.Controls.Button button = new()
+            {
+                Margin = new Thickness(2),
+                Content = "<"
+            };
             button.Click += (_, _) => OnPrevButton();
             button.IsEnabled = active;
             return button;
         }
         private Wpf.Ui.Controls.Button UiNextButton(bool active)
         {
-            Wpf.Ui.Controls.Button button = new();
-            button.Margin = new Thickness(2);
-            button.Content = ">";
+            Wpf.Ui.Controls.Button button = new()
+            {
+                Margin = new Thickness(2),
+                Content = ">"
+            };
             button.Click += (_, _) => OnNextButton();
             button.IsEnabled = active;
             return button;
         }
         private Wpf.Ui.Controls.Button UiPageButton(int page, bool currentPage)
         {
-            Wpf.Ui.Controls.Button button = new();
-            button.Margin = new Thickness(2);
-            button.Content = page;
+            Wpf.Ui.Controls.Button button = new()
+            {
+                Margin = new Thickness(2),
+                Content = page
+            };
             button.Click += OnPageButton;
             if (currentPage)
             {
@@ -198,13 +204,15 @@ namespace CapYap.Views.Pages
             }
             return button;
         }
-        private Wpf.Ui.Controls.TextBlock UiMiddleDots()
+        private static Wpf.Ui.Controls.TextBlock UiMiddleDots()
         {
-            Wpf.Ui.Controls.TextBlock text = new();
-            text.TextWrapping = TextWrapping.NoWrap;
-            text.Text = "...";
-            text.Margin = new Thickness(4, 4, 4, 0);
-            text.FontSize = 22;
+            Wpf.Ui.Controls.TextBlock text = new()
+            {
+                TextWrapping = TextWrapping.NoWrap,
+                Text = "...",
+                Margin = new Thickness(4, 4, 4, 0),
+                FontSize = 22
+            };
             return text;
         }
         #endregion

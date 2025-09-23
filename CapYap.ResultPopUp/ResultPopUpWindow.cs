@@ -20,6 +20,7 @@ namespace CapYap.ResultPopUp
                 _popUpWindow = null;
             };
             _popUpWindow.Show();
+            bitmap.Dispose();
         }
 
         public static void Close()

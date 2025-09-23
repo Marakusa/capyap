@@ -68,10 +68,7 @@ namespace CapYap.Settings
         {
             get
             {
-                if (_currentUserSettings == null)
-                {
-                    _currentUserSettings = Load();
-                }
+                _currentUserSettings ??= Load();
 
                 return _currentUserSettings;
             }

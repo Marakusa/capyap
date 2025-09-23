@@ -5,7 +5,7 @@ namespace CapYap.Utils.Windows
     public static class InputUtils
     {
         private static readonly Dictionary<SharpDX.DirectInput.Key, Key> keyMap =
-            new Dictionary<SharpDX.DirectInput.Key, Key>
+            new()
             {
             { SharpDX.DirectInput.Key.Unknown, Key.None },
             { SharpDX.DirectInput.Key.Escape, Key.Escape },

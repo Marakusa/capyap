@@ -1,9 +1,9 @@
 ﻿using System.Drawing;
-using System.IO;
-using System.Windows.Media.Imaging;
-using System.Windows.Media;
 using System.Drawing.Imaging;
+using System.IO;
 using System.Windows;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
 
 namespace CapYap.Utils.Windows
 {
@@ -24,7 +24,7 @@ namespace CapYap.Utils.Windows
                     [brightness, brightness, brightness, 1, 1]
                 ];
 
-                ColorMatrix colorMatrix = new ColorMatrix(matrix);
+                ColorMatrix colorMatrix = new(matrix);
                 attributes.SetColorMatrix(colorMatrix);
                 g.DrawImage(image, new Rectangle(0, 0, bitmap.Width, bitmap.Height),
                     0, 0, bitmap.Width, bitmap.Height, GraphicsUnit.Pixel, attributes);
@@ -35,7 +35,7 @@ namespace CapYap.Utils.Windows
 
         public static ImageSource BitmapToImageSource(Bitmap bmp)
         {
-            using (MemoryStream ms = new MemoryStream())
+            using (MemoryStream ms = new())
             {
                 bmp.Save(ms, ImageFormat.Png);
                 ms.Seek(0, SeekOrigin.Begin);
@@ -69,7 +69,7 @@ namespace CapYap.Utils.Windows
             }
 
             // Create a new bitmap for the cropped area
-            Rectangle rect = new Rectangle(x, y, width, height);
+            Rectangle rect = new(x, y, width, height);
             return bitmap.Clone(rect, bitmap.PixelFormat);
         }
     }
