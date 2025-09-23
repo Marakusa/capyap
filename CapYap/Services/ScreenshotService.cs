@@ -1,8 +1,8 @@
 ﻿using CapYap.HotKeys.Windows;
 using CapYap.Interfaces;
-using CapYap.Properties;
 using CapYap.ResultPopUp;
 using CapYap.ScreenCapture.Windows;
+using CapYap.Settings;
 using CapYap.Toast;
 using CapYap.Utils.Windows;
 using CapYap.Windows;
@@ -52,7 +52,7 @@ namespace CapYap.Services
 
                 string format = "jpg";
 
-                switch (AppSettings.Default.UploadFormat)
+                switch (UserSettingsManager.Current.UploadSettings.UploadFormat)
                 {
                     default:
                     case 0:
@@ -113,7 +113,7 @@ namespace CapYap.Services
             {
                 Bitmap image = new(path);
 
-                string url = await _apiService.UploadCaptureAsync(path, AppSettings.Default.CompressionQuality, AppSettings.Default.CompressionLevel);
+                string url = await _apiService.UploadCaptureAsync(path, UserSettingsManager.Current.UploadSettings.CompressionQuality, UserSettingsManager.Current.UploadSettings.CompressionLevel);
                 _log.Information("Screen capture uploaded to: {Url}", url);
                 ClipboardUtils.SetClipboard(url);
                 //toast.SetSuccess("Screen capture uploaded and copied to clipboard");

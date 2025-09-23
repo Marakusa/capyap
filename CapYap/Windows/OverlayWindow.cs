@@ -1,5 +1,5 @@
 ﻿using CapYap.HotKeys.Windows;
-using CapYap.Properties;
+using CapYap.Settings;
 using CapYap.Utils;
 using CapYap.Utils.Models;
 using CapYap.Utils.Windows;
@@ -355,7 +355,7 @@ namespace CapYap.Windows
             {
                 ImageFormat format = ImageFormat.Jpeg;
 
-                switch (AppSettings.Default.UploadFormat)
+                switch (UserSettingsManager.Current.UploadSettings.UploadFormat)
                 {
                     default:
                     case 0:
