@@ -59,6 +59,7 @@
     <ProjectReference Include="..\CapYap.HotKeys\CapYap.HotKeys.Windows.csproj" />
     <ProjectReference Include="..\CapYap.ResultPopUp\CapYap.ResultPopUp.csproj" />
     <ProjectReference Include="..\CapYap.ScreenCapture\CapYap.ScreenCapture.Windows.csproj" />
+    <ProjectReference Include="..\CapYap.Settings\CapYap.Settings.csproj" />
     <ProjectReference Include="..\CapYap.Toast\CapYap.Toast.csproj" />
     <ProjectReference Include="..\CapYap.Tray\CapYap.Tray.csproj" />
     <ProjectReference Include="..\CapYap.Updater\CapYap.Updater.csproj" />
@@ -100,29 +101,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Update="Properties\AppSettings.Designer.cs">
-      <DesignTimeSharedInput>True</DesignTimeSharedInput>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>AppSettings.settings</DependentUpon>
-    </Compile>
-    <Compile Update="Properties\WindowSettings.Designer.cs">
-      <DesignTimeSharedInput>True</DesignTimeSharedInput>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>WindowSettings.settings</DependentUpon>
-    </Compile>
-  </ItemGroup>
-
-  <ItemGroup>
     <None Update="NSIS\Installer.nsi">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </None>
-    <None Update="Properties\AppSettings.settings">
-      <Generator>SettingsSingleFileGenerator</Generator>
-      <LastGenOutput>AppSettings.Designer.cs</LastGenOutput>
-    </None>
-    <None Update="Properties\WindowSettings.settings">
-      <Generator>PublicSettingsSingleFileGenerator</Generator>
-      <LastGenOutput>WindowSettings.Designer.cs</LastGenOutput>
     </None>
   </ItemGroup>
 

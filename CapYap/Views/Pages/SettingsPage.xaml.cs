@@ -1,4 +1,4 @@
-﻿using CapYap.Properties;
+﻿using CapYap.Settings;
 using CapYap.ViewModels.Pages;
 using System.Windows.Controls;
 using Wpf.Ui.Abstractions.Controls;
@@ -19,10 +19,10 @@ namespace CapYap.Views.Pages
             InitializeComponent();
 
             // Load settings
-            OnCompressionQualityChanged(AppSettings.Default.CompressionQuality);
-            OnAnimCompressionQualityChanged(AppSettings.Default.AnimCompressionQuality);
-            OnCompressionLevelChanged(AppSettings.Default.CompressionLevel);
-            FormatComboBox.SelectedIndex = AppSettings.Default.UploadFormat;
+            OnCompressionQualityChanged(UserSettingsManager.Current.UploadSettings.CompressionQuality);
+            OnAnimCompressionQualityChanged(UserSettingsManager.Current.UploadSettings.AnimCompressionQuality);
+            OnCompressionLevelChanged(UserSettingsManager.Current.UploadSettings.CompressionLevel);
+            FormatComboBox.SelectedIndex = UserSettingsManager.Current.UploadSettings.UploadFormat;
 
             QuitButton.Click += (_, _) => Application.Current.Shutdown();
 
@@ -46,8 +46,8 @@ namespace CapYap.Views.Pages
             int roundedValue = (int)Math.Round((decimal)(value ?? 92));
             CompressionQualityNumber.Value = roundedValue;
             CompressionQualitySlider.Value = roundedValue;
-            AppSettings.Default.CompressionQuality = roundedValue;
-            AppSettings.Default.Save();
+            UserSettingsManager.Current.UploadSettings.CompressionQuality = roundedValue;
+            UserSettingsManager.Current.Save();
         }
 
         private void OnAnimCompressionQualityChanged(double? value)
@@ -55,8 +55,8 @@ namespace CapYap.Views.Pages
             int roundedValue = (int)Math.Round((decimal)(value ?? 70));
             AnimCompressionQualityNumber.Value = roundedValue;
             AnimCompressionQualitySlider.Value = roundedValue;
-            AppSettings.Default.AnimCompressionQuality = roundedValue;
-            AppSettings.Default.Save();
+            UserSettingsManager.Current.UploadSettings.AnimCompressionQuality = roundedValue;
+            UserSettingsManager.Current.Save();
         }
 
         private void OnCompressionLevelChanged(double? value)
@@ -64,8 +64,8 @@ namespace CapYap.Views.Pages
             int roundedValue = (int)Math.Round((decimal)(value ?? 6));
             CompressionLevelNumber.Value = roundedValue;
             CompressionLevelSlider.Value = roundedValue;
-            AppSettings.Default.CompressionLevel = roundedValue;
-            AppSettings.Default.Save();
+            UserSettingsManager.Current.UploadSettings.CompressionLevel = roundedValue;
+            UserSettingsManager.Current.Save();
         }
 
         private void OnFormatChanged()
@@ -106,8 +106,8 @@ namespace CapYap.Views.Pages
                     break;
             }
 
-            AppSettings.Default.UploadFormat = FormatComboBox.SelectedIndex;
-            AppSettings.Default.Save();
+            UserSettingsManager.Current.UploadSettings.UploadFormat = FormatComboBox.SelectedIndex;
+            UserSettingsManager.Current.Save();
         }
     }
 }

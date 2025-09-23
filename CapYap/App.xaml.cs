@@ -1,8 +1,9 @@
 ﻿using CapYap.API;
 using CapYap.HotKeys.Windows;
 using CapYap.Interfaces;
-using CapYap.Properties;
 using CapYap.Services;
+using CapYap.Settings;
+
 
 #if !DEBUG
 using CapYap.Updater;
@@ -23,6 +24,7 @@ using System.Net.Http;
 using System.Runtime.InteropServices;
 using System.Windows.Threading;
 using Wpf.Ui;
+using Wpf.Ui.Appearance;
 using Wpf.Ui.DependencyInjection;
 
 namespace CapYap
@@ -73,6 +75,7 @@ namespace CapYap
             {
                 c.SetBasePath(Path.GetDirectoryName(AppContext.BaseDirectory)!);
                 c.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
+                c.AddEnvironmentVariables();
             })
             .UseSerilog()
             .ConfigureServices((context, services) =>
@@ -148,11 +151,11 @@ namespace CapYap
                 return;
             }
 
-            if (AppSettings.Default.AutoStart && !StartupUtils.IsStartupEnabled())
+            if (UserSettingsManager.Current.AppSettings.AutoStart && !StartupUtils.IsStartupEnabled())
             {
                 StartupUtils.EnableStartup();
             }
-            else if (!AppSettings.Default.AutoStart && StartupUtils.IsStartupEnabled())
+            else if (!UserSettingsManager.Current.AppSettings.AutoStart && StartupUtils.IsStartupEnabled())
             {
                 StartupUtils.DisableStartup();
             }

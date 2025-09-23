@@ -1,4 +1,4 @@
-﻿using CapYap.Properties;
+﻿using CapYap.Settings;
 using CapYap.Utils.Windows;
 using Wpf.Ui.Abstractions.Controls;
 using Wpf.Ui.Appearance;
@@ -56,8 +56,8 @@ namespace CapYap.ViewModels.Pages
                 StartupUtils.DisableStartup();
             }
 
-            AppSettings.Default.AutoStart = AutoStart;
-            AppSettings.Default.Save();
+            UserSettingsManager.Current.AppSettings.AutoStart = AutoStart;
+            UserSettingsManager.Current.Save();
         }
 
         [RelayCommand]
@@ -83,6 +83,9 @@ namespace CapYap.ViewModels.Pages
 
                     break;
             }
+
+            UserSettingsManager.Current.AppSettings.Theme = parameter;
+            UserSettingsManager.Current.Save();
         }
     }
 }

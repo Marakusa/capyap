@@ -3,7 +3,7 @@ using CapYap.API.Models.Appwrite;
 using CapYap.HotKeys.Windows;
 using CapYap.HotKeys.Windows.Models;
 using CapYap.Interfaces;
-using CapYap.Properties;
+using CapYap.Settings;
 using CapYap.Tray;
 using CapYap.Utils;
 using CapYap.Utils.Windows;
@@ -98,13 +98,22 @@ namespace CapYap.Views.Windows
                 _trayIcon.OnOpenClicked += (_, _) =>
                 {
                     Show();
-                    WindowState = WindowSettings.Default.Maximized ? WindowState.Maximized : WindowState.Normal;
+                    WindowState = UserSettingsManager.Current.WindowSettings.Maximized ? WindowState.Maximized : WindowState.Normal;
                     Activate();
                     BringIntoView();
                 };
                 _trayIcon.OnCaptureClicked += (_, _) => _screenshotService.Capture();
                 _trayIcon.OnOpenExternalClicked += (_, _) => OpenExternal();
                 _trayIcon.OnExitClicked += (_, _) => Application.Current.Shutdown();
+
+                if (UserSettingsManager.Current.AppSettings.Theme == "theme_light")
+                {
+                    ApplicationThemeManager.Apply(ApplicationTheme.Light);
+                }
+                else
+                {
+                    ApplicationThemeManager.Apply(ApplicationTheme.Dark);
+                }
             }
             catch (Exception ex)
             {
@@ -237,10 +246,10 @@ namespace CapYap.Views.Windows
 
         public void ShowWindow()
         {
-            Width = WindowSettings.Default.Width;
-            Height = WindowSettings.Default.Height;
+            Width = UserSettingsManager.Current.WindowSettings.Width;
+            Height = UserSettingsManager.Current.WindowSettings.Height;
 
-            if (WindowSettings.Default.Maximized)
+            if (UserSettingsManager.Current.WindowSettings.Maximized)
             {
                 WindowState = WindowState.Maximized;
             }
@@ -270,18 +279,18 @@ namespace CapYap.Views.Windows
 
             if (WindowState == WindowState.Maximized)
             {
-                WindowSettings.Default.Width = RestoreBounds.Width;
-                WindowSettings.Default.Height = RestoreBounds.Height;
-                WindowSettings.Default.Maximized = true;
+                UserSettingsManager.Current.WindowSettings.Width = (int)RestoreBounds.Width;
+                UserSettingsManager.Current.WindowSettings.Height = (int)RestoreBounds.Height;
+                UserSettingsManager.Current.WindowSettings.Maximized = true;
             }
             else
             {
-                WindowSettings.Default.Width = Width;
-                WindowSettings.Default.Height = Height;
-                WindowSettings.Default.Maximized = false;
+                UserSettingsManager.Current.WindowSettings.Width = (int)Width;
+                UserSettingsManager.Current.WindowSettings.Height = (int)Height;
+                UserSettingsManager.Current.WindowSettings.Maximized = false;
             }
 
-            WindowSettings.Default.Save();
+            UserSettingsManager.Current.Save();
 
             _log.Information("Window state saved...");
 
