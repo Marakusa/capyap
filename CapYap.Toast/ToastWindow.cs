@@ -209,12 +209,14 @@ namespace CapYap.Toast
             {
                 Interval = TimeSpan.FromMilliseconds(closeTimeout)
             };
-            closeTimer.Tick += (s, e) =>
-            {
-                closeTimer.Stop();
-                CloseWindow();
-            };
+            closeTimer.Tick += CloseTimer_Tick;
             closeTimer.Start();
+        }
+
+        private void CloseTimer_Tick(object? sender, EventArgs e)
+        {
+            closeTimer?.Stop();
+            CloseWindow();
         }
 
         private void OnClickWindow(object sender, MouseButtonEventArgs e)
@@ -230,6 +232,15 @@ namespace CapYap.Toast
         internal void CloseWindow()
         {
             canClose = true;
+
+            loader.RenderTransform.BeginAnimation(RotateTransform.AngleProperty, null);
+
+            if (closeTimer != null)
+            {
+                closeTimer.Tick -= CloseTimer_Tick;
+                closeTimer = null;
+            }
+
             Close();
         }
     }

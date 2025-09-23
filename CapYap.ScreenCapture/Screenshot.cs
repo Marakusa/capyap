@@ -57,7 +57,7 @@ namespace CapYap.ScreenCapture.Windows
             using Graphics graphics = Graphics.FromImage(bmp);
             _log.Information("Bounds: {Left}, {Top}, {Right}, {Bottom}", left, top, right, bottom);
             _log.Information("Bmp Size: {Size} (x 2)", bmp.Size);
-            graphics.CopyFromScreen(bounds.Left, bounds.Top, 0, 0, bmp.Size * 2);
+            graphics.CopyFromScreen(bounds.Left, bounds.Top, 0, 0, bmp.Size);
 
             // Capture cursor
             if (CaptureCursor)

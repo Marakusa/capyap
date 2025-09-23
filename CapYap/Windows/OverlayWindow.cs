@@ -1,4 +1,5 @@
 ﻿using CapYap.HotKeys.Windows;
+using CapYap.HotKeys.Windows.Models;
 using CapYap.Settings;
 using CapYap.Utils;
 using CapYap.Utils.Models;
@@ -19,7 +20,7 @@ namespace CapYap.Windows
     {
         private readonly ILogger _log;
 
-        //private readonly HotKeyManager _hotKeys;
+        private readonly HotKeyManager _hotKeys;
         private readonly int _zoom = 12;
 
         private readonly string _tempCapturePath;
@@ -81,6 +82,8 @@ namespace CapYap.Windows
                 _darkOverlay = CreateDarkOverlay();
                 _overlayCanvas.Children.Add(_darkOverlay);
 
+                _overlayCanvas.InvalidateVisual();
+
                 _log.Information("Screenshot and darkened overlay initialized.");
 
                 // Selection rectangle
@@ -108,14 +111,21 @@ namespace CapYap.Windows
 
                 _log.Information("Toolbar initialized.");
 
+                // Set render options
+                RenderOptions.SetBitmapScalingMode(_overlayCanvas, BitmapScalingMode.LowQuality);
+                RenderOptions.SetEdgeMode(_overlayCanvas, EdgeMode.Aliased);
+
+                _log.Information("Set render options.");
+
                 _windowsOpen = NativeUtils.GetOpenWindowsBounds();
 
                 _log.Information("Window bounds fetched.");
 
-                hotKeys.CtrlChanged += OnCtrlChanged;
-                hotKeys.ShiftChanged += OnShiftChanged;
-                hotKeys.AltChanged += OnAltChanged;
-                hotKeys.EscapeChanged += OnEscapeChanged;
+                _hotKeys = hotKeys;
+                _hotKeys.CtrlChanged += OnCtrlChanged;
+                _hotKeys.ShiftChanged += OnShiftChanged;
+                _hotKeys.AltChanged += OnAltChanged;
+                _hotKeys.EscapeChanged += OnEscapeChanged;
 
                 _log.Information("Hotkeys initialized.");
 
@@ -144,7 +154,7 @@ namespace CapYap.Windows
         private void ConfigureWindow()
         {
             WindowStyle = WindowStyle.None;
-            AllowsTransparency = false; // Keep GPU acceleration
+            AllowsTransparency = false;
             Background = System.Windows.Media.Brushes.Black;
             Topmost = true;
             Focusable = true;
@@ -584,6 +594,20 @@ namespace CapYap.Windows
         protected override void OnClosing(CancelEventArgs e)
         {
             base.OnClosing(e);
+        }
+
+        protected override void OnClosed(EventArgs e)
+        {
+            base.OnClosed(e);
+            _bitmap?.Dispose();
+            _imageSource = null;
+
+            _hotKeys.CtrlChanged -= OnCtrlChanged;
+            _hotKeys.ShiftChanged -= OnShiftChanged;
+            _hotKeys.AltChanged -= OnAltChanged;
+            _hotKeys.EscapeChanged -= OnEscapeChanged;
+
+            _overlayCanvas.Children.Clear();
         }
 
         private void OnCtrlChanged(bool down)
