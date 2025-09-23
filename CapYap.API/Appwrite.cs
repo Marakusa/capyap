@@ -8,11 +8,11 @@ namespace CapYap.API
     {
         private readonly HttpClient _client;
 
-        private readonly string endpoint = "https://aw.marakusa.me/v1";
-        private readonly string projectId = "67e6390300179aa2b086";
+        private readonly string _endpoint = "https://aw.marakusa.me/v1";
+        private readonly string _projectId = "67e6390300179aa2b086";
 
-        private DateTime? jwtKeyExpire = null;
-        private string? jwtKey = null;
+        private DateTime? _jwtKeyExpire = null;
+        private string? _jwtKey = null;
 
         private readonly Action _saveCookiesCall;
 
@@ -24,7 +24,7 @@ namespace CapYap.API
 
         public Uri GetHost()
         {
-            return new Uri(endpoint);
+            return new Uri(_endpoint);
         }
 
         public async Task<Session?> CreateSessionAsync(string userId, string secret)
@@ -49,65 +49,65 @@ namespace CapYap.API
 
             JWT? jwt = await SendAsync<JWT>(HttpMethod.Post, "/account/jwts") ?? throw new AppwriteException("No JWT key was returned from Appwrite.");
 
-            jwtKey = jwt.Jwt;
-            jwtKeyExpire = expireTime;
+            _jwtKey = jwt.Jwt;
+            _jwtKeyExpire = expireTime;
             return jwt;
         }
 
         public async Task<User?> GetAccountAsync()
         {
-            jwtKey = await CheckJWT();
+            _jwtKey = await CheckJWT();
 
             return await SendAsync<User>(
                 HttpMethod.Get,
                 "/account",
                 new Dictionary<string, string>
                 {
-                    {"X-Appwrite-JWT", jwtKey}
+                    {"X-Appwrite-JWT", _jwtKey}
                 });
         }
 
         public async Task DeleteSessionAsync()
         {
-            jwtKey = await CheckJWT();
+            _jwtKey = await CheckJWT();
             await SendAsync<User>(
                 HttpMethod.Delete,
                 "/account/sessions/current",
                 new Dictionary<string, string>
                 {
-                    {"X-Appwrite-JWT", jwtKey}
+                    {"X-Appwrite-JWT", _jwtKey}
                 });
-            jwtKey = null;
-            jwtKeyExpire = null;
+            _jwtKey = null;
+            _jwtKeyExpire = null;
         }
 
         public async Task<string> CheckJWT()
         {
-            if (jwtKey != null && DateTime.UtcNow < jwtKeyExpire)
+            if (_jwtKey != null && DateTime.UtcNow < _jwtKeyExpire)
             {
-                return jwtKey;
+                return _jwtKey;
             }
 
             await CreateJWTAsync();
 
-            if (jwtKey == null)
+            if (_jwtKey == null)
             {
                 throw new AppwriteException("Generate a JWT key before using this endpoint.");
             }
 
-            return jwtKey;
+            return _jwtKey;
         }
 
         public async Task<T?> SendAsync<T>(HttpMethod method, string endpointPath, Dictionary<string, string>? headers = null, HttpContent? content = null)
         {
-            HttpRequestMessage request = new(method, $"{endpoint}{endpointPath}")
+            HttpRequestMessage request = new(method, $"{_endpoint}{endpointPath}")
             {
                 Content = content
             };
 
             // Add headers
             request.Headers.Add("X-Appwrite-Response-Format", "1.6.0");
-            request.Headers.Add("X-Appwrite-Project", projectId);
+            request.Headers.Add("X-Appwrite-Project", _projectId);
             if (headers != null)
             {
                 foreach (KeyValuePair<string, string> header in headers)

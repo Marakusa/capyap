@@ -28,13 +28,12 @@ namespace CapYap.Views.Windows
         {
             _log = log;
 
+            ViewModel = viewModel;
+            _apiService = authorizationService;
+
             try
             {
                 _log.Information("Creating login window...");
-
-                ViewModel = viewModel;
-
-                _apiService = authorizationService;
 
                 InitializeComponent();
             }

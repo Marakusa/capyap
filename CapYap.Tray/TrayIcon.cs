@@ -80,12 +80,12 @@
 
         private class ModernColorTable : ProfessionalColorTable
         {
-            private readonly Color accent = ColorTranslator.FromHtml("#5E5EFF");
+            private readonly Color _accent = ColorTranslator.FromHtml("#5E5EFF");
 
-            public override Color MenuItemSelected => accent;
-            public override Color MenuItemSelectedGradientBegin => accent;
-            public override Color MenuItemSelectedGradientEnd => accent;
-            public override Color MenuBorder => accent;
+            public override Color MenuItemSelected => _accent;
+            public override Color MenuItemSelectedGradientBegin => _accent;
+            public override Color MenuItemSelectedGradientEnd => _accent;
+            public override Color MenuBorder => _accent;
             public override Color ToolStripDropDownBackground => Color.FromArgb(30, 30, 30);
         }
     }

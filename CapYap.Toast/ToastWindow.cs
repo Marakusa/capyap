@@ -26,15 +26,15 @@ namespace CapYap.Toast
         private int WindowWidth { get; } = 400;
         private int WindowHeight { get; } = 100;
 
-        private readonly Border textContainer;
-        private readonly TextBlock statusTextBlock;
-        private readonly Image loader;
-        private readonly Border timeoutBar;
+        private readonly Border _textContainer;
+        private readonly TextBlock _statusTextBlock;
+        private readonly Image _loader;
+        private readonly Border _timeoutBar;
 
-        private DispatcherTimer? closeTimer;
+        private DispatcherTimer? _closeTimer;
 
-        private bool isDone = false;
-        private bool canClose = false;
+        private bool _isDone = false;
+        private bool _canClose = false;
 
         public ToastWindow()
         {
@@ -57,7 +57,7 @@ namespace CapYap.Toast
             // Main container
             Grid grid = new();
 
-            loader = new Image
+            _loader = new Image
             {
                 Width = WindowHeight * 0.6,
                 Height = WindowHeight * 0.6,
@@ -68,8 +68,8 @@ namespace CapYap.Toast
 
             // Center transform for rotation
             RotateTransform rotate = new(0, 0.5, 0.5);
-            loader.RenderTransform = rotate;
-            loader.RenderTransformOrigin = new Point(0.5, 0.5);
+            _loader.RenderTransform = rotate;
+            _loader.RenderTransformOrigin = new Point(0.5, 0.5);
 
             // Infinite spin animation
             DoubleAnimation spinAnimation = new()
@@ -89,10 +89,10 @@ namespace CapYap.Toast
                 HorizontalAlignment = HorizontalAlignment.Left,
                 VerticalAlignment = VerticalAlignment.Center
             };
-            loaderContainer.Children.Add(loader);
+            loaderContainer.Children.Add(_loader);
             grid.Children.Add(loaderContainer);
 
-            textContainer = new Border
+            _textContainer = new Border
             {
                 Width = WindowWidth - WindowHeight,
                 Height = WindowHeight,
@@ -100,7 +100,7 @@ namespace CapYap.Toast
                 VerticalAlignment = VerticalAlignment.Center,
                 HorizontalAlignment = HorizontalAlignment.Left
             };
-            statusTextBlock = new TextBlock()
+            _statusTextBlock = new TextBlock()
             {
                 Text = "Uploading screen capture...",
                 TextWrapping = TextWrapping.Wrap,
@@ -111,11 +111,11 @@ namespace CapYap.Toast
                 FontWeight = FontWeights.Bold,
                 MaxHeight = WindowHeight
             };
-            textContainer.Child = statusTextBlock;
-            grid.Children.Add(textContainer);
+            _textContainer.Child = _statusTextBlock;
+            grid.Children.Add(_textContainer);
 
             // Timeout progress bar
-            timeoutBar = new Border
+            _timeoutBar = new Border
             {
                 Height = 3,
                 HorizontalAlignment = HorizontalAlignment.Left,
@@ -123,39 +123,39 @@ namespace CapYap.Toast
                 Background = Brushes.White,
                 Width = 0
             };
-            grid.Children.Add(timeoutBar);
+            grid.Children.Add(_timeoutBar);
 
             Content = grid;
         }
 
         public void SetStatus(bool loading, string message, bool error = false)
         {
-            isDone = !loading;
+            _isDone = !loading;
 
             if (loading)
             {
-                loader.Visibility = Visibility.Visible;
-                textContainer.Width = WindowWidth - WindowHeight;
-                textContainer.Height = WindowHeight;
-                textContainer.HorizontalAlignment = HorizontalAlignment.Left;
-                textContainer.Margin = new Thickness(WindowHeight, 0, 0, 0);
-                textContainer.Padding = new Thickness(0, 0, 0, 0);
+                _loader.Visibility = Visibility.Visible;
+                _textContainer.Width = WindowWidth - WindowHeight;
+                _textContainer.Height = WindowHeight;
+                _textContainer.HorizontalAlignment = HorizontalAlignment.Left;
+                _textContainer.Margin = new Thickness(WindowHeight, 0, 0, 0);
+                _textContainer.Padding = new Thickness(0, 0, 0, 0);
             }
             else
             {
-                loader.Visibility = Visibility.Hidden;
-                textContainer.Width = WindowWidth - 50;
-                textContainer.Height = WindowHeight - 20;
-                textContainer.HorizontalAlignment = HorizontalAlignment.Center;
-                textContainer.Margin = new Thickness(0, 0, 0, 0);
-                textContainer.Padding = new Thickness(10, 0, 10, 0);
+                _loader.Visibility = Visibility.Hidden;
+                _textContainer.Width = WindowWidth - 50;
+                _textContainer.Height = WindowHeight - 20;
+                _textContainer.HorizontalAlignment = HorizontalAlignment.Center;
+                _textContainer.Margin = new Thickness(0, 0, 0, 0);
+                _textContainer.Padding = new Thickness(10, 0, 10, 0);
 
                 Cursor = Cursors.Hand;
             }
 
-            statusTextBlock.Text = message;
-            statusTextBlock.Foreground = error ? Brushes.IndianRed : Brushes.White;
-            timeoutBar.Background = error ? Brushes.IndianRed : Brushes.White;
+            _statusTextBlock.Text = message;
+            _statusTextBlock.Foreground = error ? Brushes.IndianRed : Brushes.White;
+            _timeoutBar.Background = error ? Brushes.IndianRed : Brushes.White;
         }
 
         protected override void OnSourceInitialized(EventArgs e)
@@ -170,7 +170,7 @@ namespace CapYap.Toast
 
         protected override void OnClosing(CancelEventArgs e)
         {
-            if (!canClose)
+            if (!_canClose)
             {
                 e.Cancel = true;
                 return;
@@ -195,7 +195,7 @@ namespace CapYap.Toast
                 return;
             }
 
-            timeoutBar.Width = WindowWidth;
+            _timeoutBar.Width = WindowWidth;
 
             DoubleAnimation widthAnimation = new()
             {
@@ -203,25 +203,25 @@ namespace CapYap.Toast
                 To = 0,
                 Duration = TimeSpan.FromMilliseconds(closeTimeout)
             };
-            timeoutBar.BeginAnimation(WidthProperty, widthAnimation);
+            _timeoutBar.BeginAnimation(WidthProperty, widthAnimation);
 
-            closeTimer = new DispatcherTimer
+            _closeTimer = new DispatcherTimer
             {
                 Interval = TimeSpan.FromMilliseconds(closeTimeout)
             };
-            closeTimer.Tick += CloseTimer_Tick;
-            closeTimer.Start();
+            _closeTimer.Tick += CloseTimer_Tick;
+            _closeTimer.Start();
         }
 
         private void CloseTimer_Tick(object? sender, EventArgs e)
         {
-            closeTimer?.Stop();
+            _closeTimer?.Stop();
             CloseWindow();
         }
 
         private void OnClickWindow(object sender, MouseButtonEventArgs e)
         {
-            if (!isDone)
+            if (!_isDone)
             {
                 return;
             }
@@ -231,14 +231,14 @@ namespace CapYap.Toast
 
         internal void CloseWindow()
         {
-            canClose = true;
+            _canClose = true;
 
-            loader.RenderTransform.BeginAnimation(RotateTransform.AngleProperty, null);
+            _loader.RenderTransform.BeginAnimation(RotateTransform.AngleProperty, null);
 
-            if (closeTimer != null)
+            if (_closeTimer != null)
             {
-                closeTimer.Tick -= CloseTimer_Tick;
-                closeTimer = null;
+                _closeTimer.Tick -= CloseTimer_Tick;
+                _closeTimer = null;
             }
 
             Close();
