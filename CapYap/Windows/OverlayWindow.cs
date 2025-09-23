@@ -3,6 +3,7 @@ using CapYap.Settings;
 using CapYap.Utils;
 using CapYap.Utils.Models;
 using CapYap.Utils.Windows;
+using Newtonsoft.Json;
 using Serilog;
 using System.ComponentModel;
 using System.Drawing;
@@ -54,6 +55,8 @@ namespace CapYap.Windows
         {
             _log = log;
 
+            _log.Information("Showing overlay window");
+
             try
             {
                 _tempCapturePath = tempCapturePath;
@@ -62,39 +65,72 @@ namespace CapYap.Windows
 
                 _fullBounds = NativeUtils.GetFullVirtualBounds();
 
+                _log.Information("Window bounds: {Left}, {Top}, {Right}, {Bottom}", _fullBounds.Left, _fullBounds.Top, _fullBounds.Right, _fullBounds.Bottom);
+
+                _log.Information("Configuring window...");
+
                 // Configure window
                 ConfigureWindow();
                 _overlayCanvas = CreateCanvas();
                 Content = _overlayCanvas;
+
+                _log.Information("Configured window.");
 
                 // Add screenshot and darken overlay
                 AddScreenshot();
                 _darkOverlay = CreateDarkOverlay();
                 _overlayCanvas.Children.Add(_darkOverlay);
 
+                _log.Information("Screenshot and darkened overlay initialized.");
+
                 // Selection rectangle
                 _selectionRectangle = CreateSelectionRectangle();
                 _overlayCanvas.Children.Add(_selectionRectangle);
+
+                _log.Information("Selection rectangle initialized.");
 
                 // Magnifying glass
                 _magnifyingGlass = CreateMagnifyingGlass();
                 _magnifyingGlass.Visibility = _useMagnifier ? Visibility.Visible : Visibility.Hidden;
                 _overlayCanvas.Children.Add(_magnifyingGlass);
 
+                _log.Information("Magnifying glass initialized.");
+
                 // Position label
                 _positionLabel = CreatePositionLabel();
                 _overlayCanvas.Children.Add(_positionLabel);
+
+                _log.Information("Position label initialized.");
 
                 // Toolbar
                 _toolbar = CreateToolbar();
                 _overlayCanvas.Children.Add(_toolbar);
 
+                _log.Information("Toolbar initialized.");
+
                 _windowsOpen = NativeUtils.GetOpenWindowsBounds();
+
+                _log.Information("Window bounds fetched.");
 
                 hotKeys.CtrlChanged += OnCtrlChanged;
                 hotKeys.ShiftChanged += OnShiftChanged;
                 hotKeys.AltChanged += OnAltChanged;
                 hotKeys.EscapeChanged += OnEscapeChanged;
+
+                _log.Information("Hotkeys initialized.");
+
+                _log.Information(
+                    "Window details: Title={Title}, Left={Left}, Top={Top}, Width={Width}, Height={Height}, State={State}, Monitor={Monitor}, Virtual={Virtual}, OpenWindows={OpenCount}",
+                    Title,
+                    Left,
+                    Top,
+                    Width,
+                    Height,
+                    WindowState,
+                    $"{_monitorBounds.Left},{_monitorBounds.Top},{_monitorBounds.Right},{_monitorBounds.Bottom}",
+                    _fullBounds,
+                    _windowsOpen.Count
+                );
             }
             catch (Exception ex)
             {

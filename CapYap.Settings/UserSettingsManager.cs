@@ -49,7 +49,7 @@ namespace CapYap.Settings
         [JsonProperty]
         public WindowSettings WindowSettings { get; set; } = new();
 
-        internal UserSettings() : base(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "CapYap", "usersettings.json"))
+        internal UserSettings() : base(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "CapYap", "usersettings.json"))
         {
         }
 
@@ -61,7 +61,7 @@ namespace CapYap.Settings
     public static class UserSettingsManager
     {
         private static readonly string _filePath =
-            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "CapYap", "usersettings.json");
+            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "CapYap", "usersettings.json");
 
         private static UserSettings? _currentUserSettings;
         public static UserSettings Current

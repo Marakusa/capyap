@@ -8,7 +8,7 @@ namespace CapYap.Settings
 
         internal AppSettingsModel()
         {
-            _filePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "CapYap", "usersettings.json");
+            _filePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "CapYap", "usersettings.json");
         }
         internal AppSettingsModel(string path)
         {
