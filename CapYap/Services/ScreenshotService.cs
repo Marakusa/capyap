@@ -52,20 +52,12 @@ namespace CapYap.Services
 
                 string format = "jpg";
 
-                switch (UserSettingsManager.Current.UploadSettings.UploadFormat)
+                format = UserSettingsManager.Current.UploadSettings.UploadFormat switch
                 {
-                    default:
-                    case 0:
-                        format = "jpg";
-                        break;
-                    case 1:
-                        format = "png";
-                        break;
-                    case 2:
-                        format = "gif";
-                        break;
-                }
-
+                    1 => "png",
+                    2 => "gif",
+                    _ => "jpg",
+                };
                 _log.Information("Screen captured in format: {Format}", format);
 
                 string tempScreenshotPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "CapYap", "screenshot-temp." + format);

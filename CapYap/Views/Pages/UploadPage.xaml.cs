@@ -14,7 +14,7 @@ namespace CapYap.Views.Pages
     {
         public UploadViewModel ViewModel { get; }
 
-        private IApiService _apiService;
+        private readonly IApiService _apiService;
         private readonly IImageCacheService _imageCache;
 
         public UploadPage(
@@ -45,12 +45,12 @@ namespace CapYap.Views.Pages
 
         private async Task OnUploadClicked()
         {
-            OpenFileDialog openFileDialog = new OpenFileDialog()
+            OpenFileDialog openFileDialog = new()
             {
                 Title = "Upload a screenshot",
-                Multiselect = false
+                Multiselect = false,
+                Filter = "Image files (*.jpg, *.jpeg, *.png, *.gif)|*.jpg;*.jpeg;*.png;*.gif"
             };
-            openFileDialog.Filter = "Image files (*.jpg, *.jpeg, *.png, *.gif)|*.jpg;*.jpeg;*.png;*.gif";
 
             bool? fileSelected = openFileDialog.ShowDialog();
             if (fileSelected != null && fileSelected == true)

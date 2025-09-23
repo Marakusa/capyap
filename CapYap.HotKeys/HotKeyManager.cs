@@ -10,7 +10,7 @@ namespace CapYap.HotKeys.Windows
 
     public class HotKeyManager : IDisposable
     {
-        private readonly Dictionary<BindingAction, HotKey> hotKeys = new();
+        private readonly Dictionary<BindingAction, HotKey> hotKeys = [];
         private CancellationTokenSource? _pollingTokenSource;
 
         private DirectInput? _directInput;
@@ -167,7 +167,7 @@ namespace CapYap.HotKeys.Windows
             }
         }
 
-        private bool IsPressed(KeyboardState state, HotKey hotKey)
+        private static bool IsPressed(KeyboardState state, HotKey hotKey)
         {
             // Check main key
             bool mainKeyPressed = state.PressedKeys.Contains(hotKey.Key);

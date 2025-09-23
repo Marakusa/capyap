@@ -48,7 +48,7 @@ namespace CapYap.API
             File.WriteAllText(userSessionConfigPath, cookieData);
         }
 
-        private CookieCollection? LoadCookies()
+        private static CookieCollection? LoadCookies()
         {
             string userSessionConfigPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "CapYap", "usrSes.dat");
             if (File.Exists(userSessionConfigPath))
@@ -91,7 +91,7 @@ namespace CapYap.API
 
         private async Task StartHttpListenerAsync()
         {
-            using HttpListener listener = new HttpListener();
+            using HttpListener listener = new();
             listener.Prefixes.Add($"http://localhost:{LISTENER_PORT}/");
             listener.Start();
             _runListenerServer = true;
@@ -219,7 +219,7 @@ namespace CapYap.API
             try
             {
                 string jwt = await _appwrite.CheckJWT();
-                HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, $"{_apiHost}/f/all/stats")
+                HttpRequestMessage request = new(HttpMethod.Post, $"{_apiHost}/f/all/stats")
                 {
                     Content = new StringContent(
                         JsonConvert.SerializeObject(new CapYapApiJwtRequest(jwt)),
@@ -263,7 +263,7 @@ namespace CapYap.API
                     { new StringContent(filePath, Encoding.UTF8, "text/plain"), "file" }
                 };
 
-                HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, $"{_apiHost}/f/stats")
+                HttpRequestMessage request = new(HttpMethod.Post, $"{_apiHost}/f/stats")
                 {
                     Content = form
                 };
@@ -296,7 +296,7 @@ namespace CapYap.API
             try
             {
                 string jwt = await _appwrite.CheckJWT();
-                HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, $"{_apiHost}/f/fetchGallery?limit={limit}&page={page}")
+                HttpRequestMessage request = new(HttpMethod.Post, $"{_apiHost}/f/fetchGallery?limit={limit}&page={page}")
                 {
                     Content = new StringContent(
                         JsonConvert.SerializeObject(new CapYapApiJwtRequest(jwt)),
@@ -342,8 +342,8 @@ namespace CapYap.API
                 var capContent = new ByteArrayContent(await File.ReadAllBytesAsync(filePath));
                 form.Add(capContent, "file", Path.GetFileName(filePath));
 
-                HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, $"{_apiHost}/f/upload?" + 
-                                                                                        (quality > 0 ? $"quality={quality}&" : "") + 
+                HttpRequestMessage request = new(HttpMethod.Post, $"{_apiHost}/f/upload?" +
+                                                                                        (quality > 0 ? $"quality={quality}&" : "") +
                                                                                         (quality > 0 ? $"compressionLevel={level}&" : ""))
                 {
                     Content = form
@@ -390,7 +390,7 @@ namespace CapYap.API
                     { new StringContent(path, Encoding.UTF8, "text/plain"), "file" }
                 };
 
-                HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, $"{_apiHost}/f/delete")
+                HttpRequestMessage request = new(HttpMethod.Post, $"{_apiHost}/f/delete")
                 {
                     Content = form
                 };
@@ -419,7 +419,7 @@ namespace CapYap.API
                     { new StringContent(jwt, Encoding.UTF8, "text/plain"), "sessionKey" },
                     { new StringContent(url ?? "", Encoding.UTF8, "text/plain"), "file" }
                 };
-                HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, $"{_apiHost}/user/setAvatar")
+                HttpRequestMessage request = new(HttpMethod.Post, $"{_apiHost}/user/setAvatar")
                 {
                     Content = form
                 };

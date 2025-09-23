@@ -7,8 +7,8 @@ namespace CapYap.Services
 {
     public class ImageCacheService : IImageCacheService
     {
-        private readonly Dictionary<string, BitmapImage> _cache = new();
-        private readonly Dictionary<string, BitmapImage> _gifCache = new();
+        private readonly Dictionary<string, BitmapImage> _cache = [];
+        private readonly Dictionary<string, BitmapImage> _gifCache = [];
 
         private readonly HttpClient _client;
 

@@ -75,6 +75,7 @@
         {
             _notifyIcon.Visible = false;
             _notifyIcon.Dispose();
+            GC.SuppressFinalize(this);
         }
 
         private class ModernColorTable : ProfessionalColorTable

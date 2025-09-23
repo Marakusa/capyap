@@ -40,7 +40,7 @@ namespace CapYap.Utils.Windows.Native
 
                         // Allocate global memory for text
                         var bytes = (text.Length + 1) * 2;
-                        IntPtr hGlobal = GlobalAlloc(GMEM_MOVEABLE, (IntPtr)bytes);
+                        IntPtr hGlobal = GlobalAlloc(GMEM_MOVEABLE, bytes);
 
                         IntPtr target = GlobalLock(hGlobal);
                         Marshal.Copy(text.ToCharArray(), 0, target, text.Length);

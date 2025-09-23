@@ -26,10 +26,10 @@ namespace CapYap.Toast
         private int WindowWidth { get; } = 400;
         private int WindowHeight { get; } = 100;
 
-        private Border textContainer;
-        private TextBlock statusTextBlock;
-        private Image loader;
-        private Border timeoutBar;
+        private readonly Border textContainer;
+        private readonly TextBlock statusTextBlock;
+        private readonly Image loader;
+        private readonly Border timeoutBar;
 
         private DispatcherTimer? closeTimer;
 
@@ -55,7 +55,7 @@ namespace CapYap.Toast
             MouseLeftButtonDown += OnClickWindow;
 
             // Main container
-            Grid grid = new Grid();
+            Grid grid = new();
 
             loader = new Image
             {
@@ -67,12 +67,12 @@ namespace CapYap.Toast
             };
 
             // Center transform for rotation
-            RotateTransform rotate = new RotateTransform(0, 0.5, 0.5);
+            RotateTransform rotate = new(0, 0.5, 0.5);
             loader.RenderTransform = rotate;
             loader.RenderTransformOrigin = new Point(0.5, 0.5);
 
             // Infinite spin animation
-            DoubleAnimation spinAnimation = new DoubleAnimation
+            DoubleAnimation spinAnimation = new()
             {
                 From = 0,
                 To = 360,
@@ -82,7 +82,7 @@ namespace CapYap.Toast
             rotate.BeginAnimation(RotateTransform.AngleProperty, spinAnimation);
 
             // Loader container
-            Grid loaderContainer = new Grid
+            Grid loaderContainer = new()
             {
                 Width = WindowHeight,
                 Height = WindowHeight,
@@ -197,7 +197,7 @@ namespace CapYap.Toast
 
             timeoutBar.Width = WindowWidth;
 
-            DoubleAnimation widthAnimation = new DoubleAnimation
+            DoubleAnimation widthAnimation = new()
             {
                 From = WindowWidth,
                 To = 0,

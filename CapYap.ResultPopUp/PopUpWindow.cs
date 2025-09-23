@@ -1,4 +1,5 @@
 ﻿using System.Drawing;
+using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -9,14 +10,14 @@ namespace CapYap.ResultPopUp
 {
     internal class PopUpWindow : Window
     {
-        [System.Runtime.InteropServices.DllImport("gdi32.dll")]
-        [return: System.Runtime.InteropServices.MarshalAs(System.Runtime.InteropServices.UnmanagedType.Bool)]
+        [DllImport("gdi32.dll")]
+        [return: MarshalAs(unmanagedType: UnmanagedType.Bool)]
         private static extern bool DeleteObject(IntPtr hObject);
 
         private readonly int _maxWidth = 400;
         private readonly int _maxHeight = 300;
 
-        private System.Timers.Timer _timer;
+        private readonly System.Timers.Timer _timer;
 
         public PopUpWindow(Bitmap bitmap)
         {
@@ -50,10 +51,10 @@ namespace CapYap.ResultPopUp
             Background = new SolidColorBrush(System.Windows.Media.Color.FromRgb(200, 200, 200));
             Topmost = true;
             ShowInTaskbar = false;
-            
+
             MouseDown += OnClickWindow;
-            
-            Grid grid = new Grid();
+
+            Grid grid = new();
             Content = grid;
             System.Windows.Controls.Image image = new();
 
@@ -82,7 +83,7 @@ namespace CapYap.ResultPopUp
             {
                 if (_timer.Enabled)
                 {
-                    Application.Current.Dispatcher.Invoke(Close);
+                    Application.Current?.Dispatcher?.Invoke(Close);
                 }
             };
             _timer.Start();

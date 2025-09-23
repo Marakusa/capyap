@@ -1,8 +1,8 @@
-﻿using System.Drawing;
-using System.Runtime.InteropServices;
-using CapYap.Utils;
+﻿using CapYap.Utils;
 using CapYap.Utils.Models;
 using Serilog;
+using System.Drawing;
+using System.Runtime.InteropServices;
 
 namespace CapYap.ScreenCapture.Windows
 {
@@ -62,10 +62,9 @@ namespace CapYap.ScreenCapture.Windows
             // Capture cursor
             if (CaptureCursor)
             {
-                var ci = new NativeUtils.CURSORINFO();
-                ci.cbSize = Marshal.SizeOf(typeof(NativeUtils.CURSORINFO));
-                if (NativeUtils.GetCursorInfo(out ci) && (ci.flags & NativeUtils.CURSOR_SHOWING) != 0)
+                if (NativeUtils.GetCursorInfo(out NativeUtils.CURSORINFO ci) && (ci.flags & NativeUtils.CURSOR_SHOWING) != 0)
                 {
+                    ci.cbSize = Marshal.SizeOf(typeof(NativeUtils.CURSORINFO));
                     int cursorX = ci.ptScreenPos.x - left;
                     int cursorY = ci.ptScreenPos.y - top;
                     NativeUtils.DrawIcon(graphics.GetHdc(), cursorX, cursorY, ci.hCursor);

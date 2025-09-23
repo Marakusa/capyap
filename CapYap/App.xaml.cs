@@ -24,7 +24,6 @@ using System.Net.Http;
 using System.Runtime.InteropServices;
 using System.Windows.Threading;
 using Wpf.Ui;
-using Wpf.Ui.Appearance;
 using Wpf.Ui.DependencyInjection;
 
 namespace CapYap
@@ -203,7 +202,7 @@ namespace CapYap
             _host.Dispose();
         }
 
-        private bool IsAnotherInstanceRunning()
+        private static bool IsAnotherInstanceRunning()
         {
             var current = Process.GetCurrentProcess();
             var other = Process.GetProcessesByName(current.ProcessName)

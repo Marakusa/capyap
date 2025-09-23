@@ -135,14 +135,13 @@ namespace CapYap.Utils
             int deviceIndex = 0;
             while (true)
             {
-                DisplayDevice deviceData = new DisplayDevice
-                { cb = Marshal.SizeOf(typeof(DisplayDevice)) };
+                DisplayDevice deviceData = new() { cb = Marshal.SizeOf(typeof(DisplayDevice)) };
 
                 if (EnumDisplayDevices(null, deviceIndex, ref deviceData, 0) == 0)
                     break;
 
                 // Get the position and size of this particular display device
-                DEVMODE devMode = new DEVMODE();
+                DEVMODE devMode = new();
                 if (EnumDisplaySettings(deviceData.DeviceName, ENUM_CURRENT_SETTINGS, ref devMode))
                 {
                     // Update the virtual screen dimensions
@@ -163,13 +162,12 @@ namespace CapYap.Utils
             int deviceIndex = 0;
             while (true)
             {
-                DisplayDevice deviceData = new DisplayDevice
-                { cb = Marshal.SizeOf(typeof(DisplayDevice)) };
+                DisplayDevice deviceData = new() { cb = Marshal.SizeOf(typeof(DisplayDevice)) };
 
                 if (EnumDisplayDevices(null, deviceIndex, ref deviceData, 0) == 0)
                     break; // no more monitors
 
-                DEVMODE devMode = new DEVMODE();
+                DEVMODE devMode = new();
                 if (EnumDisplaySettings(deviceData.DeviceName, ENUM_CURRENT_SETTINGS, ref devMode))
                 {
                     int left = devMode.dmPositionX;
@@ -266,16 +264,16 @@ namespace CapYap.Utils
                 int length = GetWindowTextLength(hWnd);
                 if (length == 0) return true;
 
-                StringBuilder builder = new StringBuilder(length + 1);
+                StringBuilder builder = new(length + 1);
                 GetWindowText(hWnd, builder, builder.Capacity);
                 string title = builder.ToString();
 
                 if (GetClientRect(hWnd, out RECT clientRect))
                 {
-                    POINT topLeft = new POINT { x = clientRect.Left, y = clientRect.Top };
+                    POINT topLeft = new() { x = clientRect.Left, y = clientRect.Top };
                     ClientToScreen(hWnd, ref topLeft);
 
-                    Bounds bounds = new Bounds(
+                    Bounds bounds = new(
                         topLeft.x,
                         topLeft.y,
                         clientRect.Right + topLeft.x,
@@ -300,10 +298,10 @@ namespace CapYap.Utils
             int cy,
             uint uFlags);
 
-        public static readonly IntPtr HWND_TOP = new IntPtr(0);
-        public static readonly IntPtr HWND_BOTTOM = new IntPtr(1);
-        public static readonly IntPtr HWND_TOPMOST = new IntPtr(-1);
-        public static readonly IntPtr HWND_NOTOPMOST = new IntPtr(-2);
+        public static readonly IntPtr HWND_TOP = new(0);
+        public static readonly IntPtr HWND_BOTTOM = new(1);
+        public static readonly IntPtr HWND_TOPMOST = new(-1);
+        public static readonly IntPtr HWND_NOTOPMOST = new(-2);
 
         public const uint SWP_NOSIZE = 0x0001;
         public const uint SWP_NOMOVE = 0x0002;

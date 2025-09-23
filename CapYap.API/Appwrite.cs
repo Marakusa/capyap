@@ -8,13 +8,13 @@ namespace CapYap.API
     {
         private readonly HttpClient _client;
 
-        private string endpoint = "https://aw.marakusa.me/v1";
-        private string projectId = "67e6390300179aa2b086";
+        private readonly string endpoint = "https://aw.marakusa.me/v1";
+        private readonly string projectId = "67e6390300179aa2b086";
 
         private DateTime? jwtKeyExpire = null;
         private string? jwtKey = null;
 
-        private Action _saveCookiesCall;
+        private readonly Action _saveCookiesCall;
 
         public Appwrite(HttpClient client, Action saveCookies)
         {
@@ -46,12 +46,8 @@ namespace CapYap.API
         private async Task<JWT> CreateJWTAsync()
         {
             DateTime expireTime = DateTime.UtcNow.AddMinutes(15);
-            JWT? jwt = await SendAsync<JWT>(HttpMethod.Post, "/account/jwts");
 
-            if (jwt == null)
-            {
-                throw new AppwriteException("No JWT key was returned from Appwrite.");
-            }
+            JWT? jwt = await SendAsync<JWT>(HttpMethod.Post, "/account/jwts") ?? throw new AppwriteException("No JWT key was returned from Appwrite.");
 
             jwtKey = jwt.Jwt;
             jwtKeyExpire = expireTime;
@@ -91,7 +87,7 @@ namespace CapYap.API
             {
                 return jwtKey;
             }
-            
+
             await CreateJWTAsync();
 
             if (jwtKey == null)
@@ -104,7 +100,7 @@ namespace CapYap.API
 
         public async Task<T?> SendAsync<T>(HttpMethod method, string endpointPath, Dictionary<string, string>? headers = null, HttpContent? content = null)
         {
-            HttpRequestMessage request = new HttpRequestMessage(method, $"{endpoint}{endpointPath}")
+            HttpRequestMessage request = new(method, $"{endpoint}{endpointPath}")
             {
                 Content = content
             };

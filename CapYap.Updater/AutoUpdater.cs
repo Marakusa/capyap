@@ -1,5 +1,5 @@
-﻿using Serilog;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
+using Serilog;
 using System.Diagnostics;
 using System.Net.Http.Headers;
 using System.Text.Json;
@@ -12,7 +12,7 @@ namespace CapYap.Updater
         public string TagName { get; set; } = "";
 
         [JsonProperty("assets")]
-        public List<GitHubAsset> Assets { get; set; } = new();
+        public List<GitHubAsset> Assets { get; set; } = [];
     }
 
     public class GitHubAsset
@@ -99,7 +99,7 @@ namespace CapYap.Updater
             return latestTag == _currentVersion;
         }
 
-        private async Task DownloadFileAsync(string url, string filePath)
+        private static async Task DownloadFileAsync(string url, string filePath)
         {
             using var response = await _http.GetAsync(url);
             response.EnsureSuccessStatusCode();

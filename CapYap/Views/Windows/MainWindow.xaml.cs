@@ -27,7 +27,7 @@ namespace CapYap.Views.Windows
 {
     public partial class MainWindow : INavigationWindow
     {
-        private ILogger _log;
+        private readonly ILogger _log;
 
         public MainWindowViewModel ViewModel { get; }
 
@@ -41,7 +41,7 @@ namespace CapYap.Views.Windows
 
         private User? _currentUser;
 
-        private TrayIcon? _trayIcon;
+        private readonly TrayIcon? _trayIcon;
 
         public MainWindow(
             ILogger log,
@@ -160,34 +160,44 @@ namespace CapYap.Views.Windows
 
             AccountButton.ContextMenu = new ContextMenu();
 
-            Wpf.Ui.Controls.MenuItem username = new();
-            username.Header = _currentUser.Name;
-            username.IsEnabled = false;
+            Wpf.Ui.Controls.MenuItem username = new()
+            {
+                Header = _currentUser.Name,
+                IsEnabled = false
+            };
             AccountButton.ContextMenu.Items.Add(username);
 
-            Wpf.Ui.Controls.MenuItem email = new();
-            email.Header = _currentUser.Email;
-            email.IsEnabled = false;
+            Wpf.Ui.Controls.MenuItem email = new()
+            {
+                Header = _currentUser.Email,
+                IsEnabled = false
+            };
             AccountButton.ContextMenu.Items.Add(email);
 
-            Separator separator = new Separator();
+            Separator separator = new();
             AccountButton.ContextMenu.Items.Add(separator);
 
-            Wpf.Ui.Controls.MenuItem external = new();
-            external.Header = "Open in browser";
+            Wpf.Ui.Controls.MenuItem external = new()
+            {
+                Header = "Open in browser"
+            };
             external.Click += External_Click;
             AccountButton.ContextMenu.Items.Add(external);
 
-            Separator separator2 = new Separator();
+            Separator separator2 = new();
             AccountButton.ContextMenu.Items.Add(separator2);
 
-            Wpf.Ui.Controls.MenuItem logOut = new();
-            logOut.Header = "Log Out";
+            Wpf.Ui.Controls.MenuItem logOut = new()
+            {
+                Header = "Log Out"
+            };
             logOut.Click += LogOut_Click;
             AccountButton.ContextMenu.Items.Add(logOut);
 
-            Wpf.Ui.Controls.MenuItem quitApp = new();
-            quitApp.Header = "Quit CapYap";
+            Wpf.Ui.Controls.MenuItem quitApp = new()
+            {
+                Header = "Quit CapYap"
+            };
             quitApp.Click += (_, _) => Application.Current.Shutdown();
             AccountButton.ContextMenu.Items.Add(quitApp);
 
@@ -223,7 +233,7 @@ namespace CapYap.Views.Windows
         {
             OpenExternal();
         }
-        private void OpenExternal()
+        private static void OpenExternal()
         {
             AppUtils.OpenUrl(App.WebSiteHost + "/settings");
         }
@@ -567,7 +577,7 @@ namespace CapYap.Views.Windows
                 CloseButtonText = "Cancel"
             };
             ContentDialogResult dialogResult = await contentDialogService.ShowSimpleDialogAsync(options);
-            
+
             if (dialogResult != ContentDialogResult.Primary)
             {
                 return;
@@ -643,7 +653,7 @@ namespace CapYap.Views.Windows
         }
 
         bool _mouseDownPreview = false;
-        Point _lastMousePos = new Point();
+        Point _lastMousePos = new();
 
         private void PreviewPanelMouseDown(object sender, MouseButtonEventArgs e)
         {

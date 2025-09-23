@@ -14,8 +14,7 @@ namespace CapYap.Views.Pages
 
         public DashboardPage(
             DashboardViewModel viewModel,
-            IApiService apiService,
-            IImageCacheService imageCache
+            IApiService apiService
         )
         {
             ViewModel = viewModel;
