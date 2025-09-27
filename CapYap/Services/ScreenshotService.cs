@@ -37,15 +37,13 @@ namespace CapYap.Services
         {
             try
             {
-                if (_overlayWindow != null)
+                if (_overlayWindow != null && _overlayWindow.IsVisible)
                 {
                     _log.Error("Overlay is already open.");
                     return;
                 }
 
                 _audioUtils.PlayAudioClip(AudioClip.Capture);
-
-                _log.Information("Capturing screen...");
 
                 var screenshotService = new Screenshot(_log);
                 Bitmap screenshot = screenshotService.CaptureAllMonitors();
@@ -58,34 +56,43 @@ namespace CapYap.Services
                     2 => "gif",
                     _ => "jpg",
                 };
-                _log.Information("Screen captured in format: {Format}", format);
 
                 string tempScreenshotPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "CapYap", "screenshot-temp." + format);
-
-                _log.Information("Screen capture saved to: {Path}", tempScreenshotPath);
 
                 OverlayWindowOpening?.Invoke(this, EventArgs.Empty);
                 ToastManager.HideAllToasts();
                 ResultPopUpWindow.Close();
 
-                _overlayWindow = new OverlayWindow(_log, screenshot, tempScreenshotPath, async (path) =>
+                if (_overlayWindow == null)
                 {
-                    if (path != null)
+                    _overlayWindow = new OverlayWindow(_log, screenshot, tempScreenshotPath, async (path) =>
                     {
-                        await UploadImage(tempScreenshotPath);
-                    }
-                }, _hotKeys);
+                        if (path != null)
+                        {
+                            await UploadImage(tempScreenshotPath);
+                        }
+                    }, _hotKeys);
 
-                _overlayWindow.Closed += (_, _) =>
+                    _overlayWindow.IsVisibleChanged += (_, args) =>
+                    {
+                        if (_overlayWindow?.IsVisible == false)
+                        {
+                            OverlayWindowClosed?.Invoke(this, EventArgs.Empty);
+                            ToastManager.ShowAllToasts();
+                        }
+                    };
+
+                    _overlayWindow.Closed += (_, _) =>
+                    {
+                        _overlayWindow = null;
+                    };
+                }
+                else
                 {
-                    _overlayWindow = null;
+                    _overlayWindow.UpdateWindow(screenshot);
+                }
 
-                    OverlayWindowClosed?.Invoke(this, EventArgs.Empty);
-
-                    ToastManager.ShowAllToasts();
-                };
-
-                _overlayWindow.Show();
+            _overlayWindow.Show();
                 OverlayWindowOpened?.Invoke(this, EventArgs.Empty);
             }
             catch (Exception ex)
