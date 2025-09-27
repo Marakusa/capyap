@@ -1,4 +1,5 @@
 ﻿using CapYap.HotKeys.Windows;
+using CapYap.HotKeys.Windows.Models;
 using CapYap.Settings;
 using CapYap.Utils;
 using CapYap.Utils.Models;
@@ -22,16 +23,17 @@ namespace CapYap.Windows
         private readonly int _zoom = 12;
 
         private readonly string _tempCapturePath;
-        private readonly Bitmap _bitmap;
+        private Bitmap _bitmap;
         private readonly Action<string> _uploadCallback;
 
         private readonly Canvas _overlayCanvas;
+        private readonly System.Windows.Controls.Image _image;
         private readonly System.Windows.Shapes.Rectangle _darkOverlay;
         private readonly System.Windows.Shapes.Rectangle _selectionRectangle;
         private readonly Label _positionLabel;
         private ImageSource? _imageSource;
 
-        private readonly Bounds _fullBounds;
+        private Bounds _fullBounds;
 
         private bool _isMouseDown;
         private System.Windows.Point _mouseStart;
@@ -42,19 +44,20 @@ namespace CapYap.Windows
         private readonly Canvas? _magnifyingGlass;
 
         private readonly Grid _toolbar;
+        private Button _buttonRect;
+        private Button _buttonWindow;
+        private Button _buttonMonitor;
 
         private bool _isCtrlDown;
         private Bounds _monitorBounds = new(0, 0, 0, 0);
 
         private bool _isShiftDown;
         private Bounds _windowBounds = new(0, 0, 0, 0);
-        private readonly List<(string title, Bounds bounds)> _windowsOpen;
+        private List<(string title, Bounds bounds)> _windowsOpen;
 
         public OverlayWindow(ILogger log, Bitmap screenshot, string tempCapturePath, Action<string> uploadCallback, HotKeyManager hotKeys)
         {
             _log = log;
-
-            _log.Information("Showing overlay window");
 
             try
             {
@@ -64,81 +67,50 @@ namespace CapYap.Windows
 
                 _fullBounds = NativeUtils.GetFullVirtualBounds();
 
-                _log.Information("Window bounds: {Left}, {Top}, {Right}, {Bottom}", _fullBounds.Left, _fullBounds.Top, _fullBounds.Right, _fullBounds.Bottom);
-
-                _log.Information("Configuring window...");
-
                 // Configure window
                 ConfigureWindow();
                 _overlayCanvas = CreateCanvas();
                 Content = _overlayCanvas;
 
-                _log.Information("Configured window.");
+                // Add screenshot
+                _image = AddScreenshot();
+                RenderOptions.SetBitmapScalingMode(_image, BitmapScalingMode.LowQuality);
+                _overlayCanvas.Children.Add(_image);
 
-                // Add screenshot and darken overlay
-                AddScreenshot();
+                // Add darken overlay
                 _darkOverlay = CreateDarkOverlay();
                 _overlayCanvas.Children.Add(_darkOverlay);
 
                 _overlayCanvas.InvalidateVisual();
 
-                _log.Information("Screenshot and darkened overlay initialized.");
-
                 // Selection rectangle
                 _selectionRectangle = CreateSelectionRectangle();
                 _overlayCanvas.Children.Add(_selectionRectangle);
-
-                _log.Information("Selection rectangle initialized.");
 
                 // Magnifying glass
                 _magnifyingGlass = CreateMagnifyingGlass();
                 _magnifyingGlass.Visibility = _useMagnifier ? Visibility.Visible : Visibility.Hidden;
                 _overlayCanvas.Children.Add(_magnifyingGlass);
 
-                _log.Information("Magnifying glass initialized.");
-
                 // Position label
                 _positionLabel = CreatePositionLabel();
                 _overlayCanvas.Children.Add(_positionLabel);
-
-                _log.Information("Position label initialized.");
 
                 // Toolbar
                 _toolbar = CreateToolbar();
                 _overlayCanvas.Children.Add(_toolbar);
 
-                _log.Information("Toolbar initialized.");
-
                 // Set render options
                 RenderOptions.SetBitmapScalingMode(_overlayCanvas, BitmapScalingMode.LowQuality);
                 RenderOptions.SetEdgeMode(_overlayCanvas, EdgeMode.Aliased);
 
-                _log.Information("Set render options.");
-
                 _windowsOpen = NativeUtils.GetOpenWindowsBounds();
-
-                _log.Information("Window bounds fetched.");
 
                 _hotKeys = hotKeys;
                 _hotKeys.CtrlChanged += OnCtrlChanged;
                 _hotKeys.ShiftChanged += OnShiftChanged;
                 _hotKeys.AltChanged += OnAltChanged;
                 _hotKeys.EscapeChanged += OnEscapeChanged;
-
-                _log.Information("Hotkeys initialized.");
-
-                _log.Information(
-                    "Window details: Title={Title}, Left={Left}, Top={Top}, Width={Width}, Height={Height}, State={State}, Monitor={Monitor}, Virtual={Virtual}, OpenWindows={OpenCount}",
-                    Title,
-                    Left,
-                    Top,
-                    Width,
-                    Height,
-                    WindowState,
-                    $"{_monitorBounds.Left},{_monitorBounds.Top},{_monitorBounds.Right},{_monitorBounds.Bottom}",
-                    _fullBounds,
-                    _windowsOpen.Count
-                );
             }
             catch (Exception ex)
             {
@@ -149,10 +121,36 @@ namespace CapYap.Windows
 
         #region Window & Canvas Setup
 
+        public void UpdateWindow(Bitmap screenshot)
+        {
+            _bitmap = screenshot;
+
+            _fullBounds = NativeUtils.GetFullVirtualBounds();
+
+            // Configure window
+            ConfigureWindow();
+
+            // Update screenshot
+            _imageSource = BitmapUtils.BitmapToImageSource(_bitmap);
+            _imageSource.Freeze();
+            _image.Source = _imageSource;
+
+            _overlayCanvas.InvalidateVisual();
+
+            // Set render options
+            RenderOptions.SetBitmapScalingMode(_overlayCanvas, BitmapScalingMode.LowQuality);
+            RenderOptions.SetEdgeMode(_overlayCanvas, EdgeMode.Aliased);
+
+            _windowsOpen = NativeUtils.GetOpenWindowsBounds();
+        }
+
         private void ConfigureWindow()
         {
             WindowStyle = WindowStyle.None;
-            AllowsTransparency = false;
+            if (AllowsTransparency)
+            {
+                AllowsTransparency = false;
+            }
             Background = System.Windows.Media.Brushes.Black;
             Topmost = true;
             Focusable = true;
@@ -192,21 +190,18 @@ namespace CapYap.Windows
             return label;
         }
 
-        private void AddScreenshot()
+        private System.Windows.Controls.Image AddScreenshot()
         {
             _imageSource = BitmapUtils.BitmapToImageSource(_bitmap);
             _imageSource.Freeze();
 
-            var screenshot = new System.Windows.Controls.Image
+            return new System.Windows.Controls.Image
             {
                 Source = _imageSource,
                 Stretch = Stretch.None,
                 Width = Width,
                 Height = Height
             };
-
-            RenderOptions.SetBitmapScalingMode(screenshot, BitmapScalingMode.LowQuality);
-            _overlayCanvas.Children.Add(screenshot);
         }
 
         private System.Windows.Shapes.Rectangle CreateDarkOverlay()
@@ -359,28 +354,31 @@ namespace CapYap.Windows
             //buttonPanel.Children.Add(CreateToolbarButton("\uE932"));
 
             // Rect select button
-            buttonPanel.Children.Add(CreateToolbarButton("\uEF20", () =>
+            _buttonRect = CreateToolbarButton("\uEF20", () =>
             {
                 _isCtrlDown = false;
                 _isShiftDown = false;
                 UpdateDrawRect();
-            }));
+            });
+            buttonPanel.Children.Add(_buttonRect);
 
             // Monitor select button
-            buttonPanel.Children.Add(CreateToolbarButton("\uF7ED", () =>
+            _buttonMonitor = CreateToolbarButton("\uF7ED", () =>
             {
                 _isCtrlDown = true;
                 _isShiftDown = false;
                 UpdateDrawRect();
-            }));
+            });
+            buttonPanel.Children.Add(_buttonMonitor);
 
             // Window select button
-            buttonPanel.Children.Add(CreateToolbarButton("\uE7C4", () =>
+            _buttonWindow = CreateToolbarButton("\uE7C4", () =>
             {
                 _isCtrlDown = false;
                 _isShiftDown = true;
                 UpdateDrawRect();
-            }));
+            });
+            buttonPanel.Children.Add(_buttonWindow);
 
             // Put buttons inside the border
             background.Child = buttonPanel;
@@ -466,58 +464,99 @@ namespace CapYap.Windows
                 monitorBounds.Top + 12,
                 0,
                 0);
+
+            SolidColorBrush buttonBackground = new SolidColorBrush(System.Windows.Media.Color.FromRgb(40, 40, 40));
+            SolidColorBrush buttonBackgroundActive = new SolidColorBrush(System.Windows.Media.Color.FromRgb(120, 70, 255));
+
+            _buttonRect.IsEnabled = true;
+            _buttonMonitor.IsEnabled = true;
+            _buttonWindow.IsEnabled = true;
+
+            if (!_isCtrlDown && !_isShiftDown)
+            {
+                _buttonRect.Background = buttonBackgroundActive;
+                _buttonMonitor.Background = buttonBackground;
+                _buttonWindow.Background = buttonBackground;
+            }
+            else if (_isCtrlDown && !_isShiftDown)
+            {
+                _buttonRect.Background = buttonBackground;
+                _buttonMonitor.Background = buttonBackgroundActive;
+                _buttonWindow.Background = buttonBackground;
+
+            }
+            else if (_isShiftDown && !_isCtrlDown)
+            {
+                _buttonRect.Background = buttonBackground;
+                _buttonMonitor.Background = buttonBackground;
+                _buttonWindow.Background = buttonBackgroundActive;
+            }
+            else
+            {
+                _buttonRect.Background = buttonBackground;
+                _buttonMonitor.Background = buttonBackground;
+                _buttonWindow.Background = buttonBackground;
+            }
         }
 
         private void UpdateDrawRect()
         {
-            _monitorBounds = NativeUtils.GetCurrentMonitorBounds((int)_mousePosition.X, (int)_mousePosition.Y);
-
-            UpdateToolbar(
-                new Bounds(
-                    _monitorBounds.Left - _fullBounds.Left,
-                    _monitorBounds.Top - _fullBounds.Top,
-                    _monitorBounds.Right - _fullBounds.Left,
-                    _monitorBounds.Bottom - _fullBounds.Top));
-
-            if (!_isMouseDown && _isCtrlDown)
+            try
             {
-                _mouseStart = new System.Windows.Point(_monitorBounds.Left - _fullBounds.Left, _monitorBounds.Top - _fullBounds.Top);
-                _mouseEnd = new System.Windows.Point(_monitorBounds.Right - _fullBounds.Left, _monitorBounds.Bottom - _fullBounds.Top);
+                _monitorBounds = NativeUtils.GetCurrentMonitorBounds((int)_mousePosition.X, (int)_mousePosition.Y);
 
-                UpdateSelectionRectangle();
-            }
-            else if (!_isMouseDown && _isShiftDown)
-            {
-                // Default to full monitor bounds
-                _windowBounds = NativeUtils.GetCurrentMonitorBounds((int)_mousePosition.X, (int)_mousePosition.Y);
+                UpdateToolbar(
+                    new Bounds(
+                        _monitorBounds.Left - _fullBounds.Left,
+                        _monitorBounds.Top - _fullBounds.Top,
+                        _monitorBounds.Right - _fullBounds.Left,
+                        _monitorBounds.Bottom - _fullBounds.Top));
 
-                foreach (var (_, bounds) in _windowsOpen)
+                if (!_isMouseDown && _isCtrlDown)
                 {
-                    if (bounds.Left < _mousePosition.X && bounds.Right > _mousePosition.X &&
-                        bounds.Bottom > _mousePosition.Y && bounds.Top < _mousePosition.Y)
-                    {
-                        _windowBounds = bounds;
-                        break;
-                    }
+                    _mouseStart = new System.Windows.Point(_monitorBounds.Left - _fullBounds.Left, _monitorBounds.Top - _fullBounds.Top);
+                    _mouseEnd = new System.Windows.Point(_monitorBounds.Right - _fullBounds.Left, _monitorBounds.Bottom - _fullBounds.Top);
+
+                    UpdateSelectionRectangle();
                 }
+                else if (!_isMouseDown && _isShiftDown)
+                {
+                    // Default to full monitor bounds
+                    _windowBounds = NativeUtils.GetCurrentMonitorBounds((int)_mousePosition.X, (int)_mousePosition.Y);
 
-                _mouseStart = new System.Windows.Point(_windowBounds.Left - _fullBounds.Left, _windowBounds.Top - _fullBounds.Top);
-                _mouseEnd = new System.Windows.Point(_windowBounds.Right - _fullBounds.Left, _windowBounds.Bottom - _fullBounds.Top);
+                    foreach (var (_, bounds) in _windowsOpen)
+                    {
+                        if (bounds.Left < _mousePosition.X && bounds.Right > _mousePosition.X &&
+                            bounds.Bottom > _mousePosition.Y && bounds.Top < _mousePosition.Y)
+                        {
+                            _windowBounds = bounds;
+                            break;
+                        }
+                    }
 
-                UpdateSelectionRectangle();
+                    _mouseStart = new System.Windows.Point(_windowBounds.Left - _fullBounds.Left, _windowBounds.Top - _fullBounds.Top);
+                    _mouseEnd = new System.Windows.Point(_windowBounds.Right - _fullBounds.Left, _windowBounds.Bottom - _fullBounds.Top);
+
+                    UpdateSelectionRectangle();
+                }
+                else if (_isMouseDown)
+                {
+                    _mouseEnd = new System.Windows.Point(_mousePosition.X - _fullBounds.Left, _mousePosition.Y - _fullBounds.Top);
+
+                    UpdateSelectionRectangle();
+                }
+                else
+                {
+                    _mouseStart = new();
+                    _mouseEnd = new();
+
+                    UpdateSelectionRectangle();
+                }
             }
-            else if (_isMouseDown)
+            catch (Exception ex)
             {
-                _mouseEnd = new System.Windows.Point(_mousePosition.X - _fullBounds.Left, _mousePosition.Y - _fullBounds.Top);
-
-                UpdateSelectionRectangle();
-            }
-            else
-            {
-                _mouseStart = new();
-                _mouseEnd = new();
-
-                UpdateSelectionRectangle();
+                _log.Error("Failed to handle UpdateDrawRect: {Ex}", ex);
+                throw new Exception($"Failed to handle UpdateDrawRect: {ex}");
             }
         }
 
@@ -583,25 +622,6 @@ namespace CapYap.Windows
             Focus();
         }
 
-        protected override void OnClosing(CancelEventArgs e)
-        {
-            base.OnClosing(e);
-        }
-
-        protected override void OnClosed(EventArgs e)
-        {
-            base.OnClosed(e);
-            _bitmap?.Dispose();
-            _imageSource = null;
-
-            _hotKeys.CtrlChanged -= OnCtrlChanged;
-            _hotKeys.ShiftChanged -= OnShiftChanged;
-            _hotKeys.AltChanged -= OnAltChanged;
-            _hotKeys.EscapeChanged -= OnEscapeChanged;
-
-            _overlayCanvas.Children.Clear();
-        }
-
         private void OnCtrlChanged(bool down)
         {
             Dispatcher.Invoke(() =>
@@ -637,7 +657,7 @@ namespace CapYap.Windows
             {
                 Dispatcher.Invoke(() =>
                 {
-                    Close();
+                    Hide();
                 });
             }
         }
@@ -658,21 +678,31 @@ namespace CapYap.Windows
 
         protected override void OnMouseMove(MouseEventArgs e)
         {
-            base.OnMouseMove(e);
+            try
+            {
+                _log.Information("Mouse move {X},{Y}", e.GetPosition(this).X, e.GetPosition(this).Y);
 
-            _mousePosition = e.GetPosition(this);
+                base.OnMouseMove(e);
 
-            // Set offset
-            _mousePosition.X += _fullBounds.Left;
-            _mousePosition.Y += _fullBounds.Top;
+                _mousePosition = e.GetPosition(this);
 
-            _positionLabel.Content = $"{(int)_mousePosition.X}, {(int)_mousePosition.Y}";
-            _positionLabel.RenderTransform = new TranslateTransform(_mousePosition.X - _fullBounds.Left + 10, _mousePosition.Y - _fullBounds.Top + 10);
+                // Set offset
+                _mousePosition.X += _fullBounds.Left;
+                _mousePosition.Y += _fullBounds.Top;
 
-            UpdateDrawRect();
+                _positionLabel.Content = $"{(int)_mousePosition.X}, {(int)_mousePosition.Y}";
+                _positionLabel.RenderTransform = new TranslateTransform(_mousePosition.X - _fullBounds.Left + 10, _mousePosition.Y - _fullBounds.Top + 10);
 
-            // Update zoomed image
-            UpdateMagnifier();
+                UpdateDrawRect();
+
+                // Update zoomed image
+                UpdateMagnifier();
+            }
+            catch (Exception ex)
+            {
+                _log.Error("Failed to handle mouse move: {Ex}", ex);
+                throw new Exception($"Failed to handle mouse move: {ex}");
+            }
         }
 
         protected override void OnMouseUp(MouseButtonEventArgs e)
@@ -690,14 +720,14 @@ namespace CapYap.Windows
 
             if (width < 1 || height < 1)
             {
-                // No selection, close overlay
-                Close();
+                // No selection, hide overlay
+                Hide();
                 return;
             }
 
             var captureArea = new Rect((int)x, (int)y, (int)width, (int)height);
             SaveCapture(captureArea);
-            Close();
+            Hide();
         }
 
         #endregion
