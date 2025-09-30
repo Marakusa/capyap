@@ -1,6 +1,7 @@
 ﻿using CapYap.HotKeys.Windows;
 using CapYap.HotKeys.Windows.Models;
 using CapYap.Settings;
+using CapYap.Toast;
 using CapYap.Utils;
 using CapYap.Utils.Models;
 using CapYap.Utils.Windows;
@@ -19,18 +20,19 @@ namespace CapYap.Windows
     {
         private readonly ILogger _log;
 
-        private readonly HotKeyManager _hotKeys;
+        private HotKeyManager? _hotKeys;
+
         private readonly int _zoom = 12;
 
         private readonly string _tempCapturePath;
-        private Bitmap _bitmap;
+        private Bitmap? _bitmap;
         private readonly Action<string> _uploadCallback;
 
         private readonly Canvas _overlayCanvas;
-        private readonly System.Windows.Controls.Image _image;
-        private readonly System.Windows.Shapes.Rectangle _darkOverlay;
-        private readonly System.Windows.Shapes.Rectangle _selectionRectangle;
-        private readonly Label _positionLabel;
+        private System.Windows.Controls.Image? _image;
+        private System.Windows.Shapes.Rectangle? _darkOverlay;
+        private System.Windows.Shapes.Rectangle? _selectionRectangle;
+        private Label? _positionLabel;
         private ImageSource? _imageSource;
 
         private Bounds _fullBounds;
@@ -41,12 +43,12 @@ namespace CapYap.Windows
         private System.Windows.Point _mousePosition;
 
         private bool _useMagnifier = false;
-        private readonly Canvas? _magnifyingGlass;
+        private Canvas? _magnifyingGlass;
 
-        private readonly Grid _toolbar;
-        private Button _buttonRect;
-        private Button _buttonWindow;
-        private Button _buttonMonitor;
+        private Grid? _toolbar;
+        private Button? _buttonRect;
+        private Button? _buttonWindow;
+        private Button? _buttonMonitor;
 
         private bool _isCtrlDown;
         private Bounds _monitorBounds = new(0, 0, 0, 0);
@@ -62,55 +64,23 @@ namespace CapYap.Windows
             try
             {
                 _tempCapturePath = tempCapturePath;
-                _bitmap = screenshot;
+
                 _uploadCallback = uploadCallback;
 
                 _fullBounds = NativeUtils.GetFullVirtualBounds();
+                _windowsOpen = NativeUtils.GetOpenWindowsBounds();
 
                 // Configure window
                 ConfigureWindow();
                 _overlayCanvas = CreateCanvas();
                 Content = _overlayCanvas;
 
-                // Add screenshot
-                _image = AddScreenshot();
-                RenderOptions.SetBitmapScalingMode(_image, BitmapScalingMode.LowQuality);
-                _overlayCanvas.Children.Add(_image);
+                IsVisibleChanged += Overlay_IsVisibleChanged;
 
-                // Add darken overlay
-                _darkOverlay = CreateDarkOverlay();
-                _overlayCanvas.Children.Add(_darkOverlay);
+                SetScreenshot(screenshot);
+                SetUpVisuals();
 
-                _overlayCanvas.InvalidateVisual();
-
-                // Selection rectangle
-                _selectionRectangle = CreateSelectionRectangle();
-                _overlayCanvas.Children.Add(_selectionRectangle);
-
-                // Magnifying glass
-                _magnifyingGlass = CreateMagnifyingGlass();
-                _magnifyingGlass.Visibility = _useMagnifier ? Visibility.Visible : Visibility.Hidden;
-                _overlayCanvas.Children.Add(_magnifyingGlass);
-
-                // Position label
-                _positionLabel = CreatePositionLabel();
-                _overlayCanvas.Children.Add(_positionLabel);
-
-                // Toolbar
-                _toolbar = CreateToolbar();
-                _overlayCanvas.Children.Add(_toolbar);
-
-                // Set render options
-                RenderOptions.SetBitmapScalingMode(_overlayCanvas, BitmapScalingMode.LowQuality);
-                RenderOptions.SetEdgeMode(_overlayCanvas, EdgeMode.Aliased);
-
-                _windowsOpen = NativeUtils.GetOpenWindowsBounds();
-
-                _hotKeys = hotKeys;
-                _hotKeys.CtrlChanged += OnCtrlChanged;
-                _hotKeys.ShiftChanged += OnShiftChanged;
-                _hotKeys.AltChanged += OnAltChanged;
-                _hotKeys.EscapeChanged += OnEscapeChanged;
+                SetUpHotKeys(hotKeys);
             }
             catch (Exception ex)
             {
@@ -123,25 +93,57 @@ namespace CapYap.Windows
 
         public void UpdateWindow(Bitmap screenshot)
         {
+            _fullBounds = NativeUtils.GetFullVirtualBounds();
+            _windowsOpen = NativeUtils.GetOpenWindowsBounds();
+
+            ConfigureWindow();
+            SetScreenshot(screenshot);
+            SetUpVisuals();
+        }
+
+        private void SetScreenshot(Bitmap screenshot)
+        {
+            _bitmap?.Dispose();
             _bitmap = screenshot;
 
-            _fullBounds = NativeUtils.GetFullVirtualBounds();
+            _image = AddScreenshot();
 
-            // Configure window
-            ConfigureWindow();
-
-            // Update screenshot
             _imageSource = BitmapUtils.BitmapToImageSource(_bitmap);
             _imageSource.Freeze();
+
             _image.Source = _imageSource;
+        }
 
-            _overlayCanvas.InvalidateVisual();
+        private void SetUpVisuals()
+        {
+            _overlayCanvas.Children.Clear();
 
-            // Set render options
+            _darkOverlay = CreateDarkOverlay();
+            _selectionRectangle = CreateSelectionRectangle();
+            _magnifyingGlass = CreateMagnifyingGlass();
+            _positionLabel = CreatePositionLabel();
+            _toolbar = CreateToolbar();
+
+            _overlayCanvas.Children.Add(_image);
+            _overlayCanvas.Children.Add(_darkOverlay);
+            _overlayCanvas.Children.Add(_selectionRectangle);
+            _overlayCanvas.Children.Add(_magnifyingGlass);
+            _overlayCanvas.Children.Add(_positionLabel);
+            _overlayCanvas.Children.Add(_toolbar);
+
             RenderOptions.SetBitmapScalingMode(_overlayCanvas, BitmapScalingMode.LowQuality);
             RenderOptions.SetEdgeMode(_overlayCanvas, EdgeMode.Aliased);
 
-            _windowsOpen = NativeUtils.GetOpenWindowsBounds();
+            _overlayCanvas.UpdateLayout();
+        }
+
+        private void SetUpHotKeys(HotKeyManager hotKeys)
+        {
+            _hotKeys = hotKeys;
+            _hotKeys.CtrlChanged += OnCtrlChanged;
+            _hotKeys.ShiftChanged += OnShiftChanged;
+            _hotKeys.AltChanged += OnAltChanged;
+            _hotKeys.EscapeChanged += OnEscapeChanged;
         }
 
         private void ConfigureWindow()
@@ -192,6 +194,11 @@ namespace CapYap.Windows
 
         private System.Windows.Controls.Image AddScreenshot()
         {
+            if (_bitmap == null)
+            {
+                throw new Exception("Bitmap was null.");
+            }
+
             _imageSource = BitmapUtils.BitmapToImageSource(_bitmap);
             _imageSource.Freeze();
 
@@ -242,7 +249,8 @@ namespace CapYap.Windows
             {
                 Width = size,
                 Height = size,
-                IsHitTestVisible = false
+                IsHitTestVisible = false,
+                Visibility = _useMagnifier ? Visibility.Visible : Visibility.Hidden
             };
 
             // Zoomed image
@@ -397,6 +405,11 @@ namespace CapYap.Windows
         {
             try
             {
+                if (_bitmap == null)
+                {
+                    throw new Exception("Bitmap was null.");
+                }
+
                 ImageFormat format = ImageFormat.Jpeg;
 
                 format = UserSettingsManager.Current.UploadSettings.UploadFormat switch
@@ -728,6 +741,18 @@ namespace CapYap.Windows
             var captureArea = new Rect((int)x, (int)y, (int)width, (int)height);
             SaveCapture(captureArea);
             Hide();
+        }
+
+        private void Overlay_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            if (IsVisible == false)
+            {
+                _overlayCanvas.Children.Clear();
+                _imageSource = null;
+                _bitmap?.Dispose();
+                _bitmap = null;
+                GC.Collect();
+            }
         }
 
         #endregion

@@ -92,7 +92,7 @@ namespace CapYap.Services
                     _overlayWindow.UpdateWindow(screenshot);
                 }
 
-            _overlayWindow.Show();
+                _overlayWindow.Show();
                 OverlayWindowOpened?.Invoke(this, EventArgs.Empty);
             }
             catch (Exception ex)
